@@ -5,3 +5,11 @@ CREATE TABLE IF NOT EXISTS disques (
   data TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Souhaits réservés par la famille (« Je l'offre »)
+CREATE TABLE IF NOT EXISTS reservations (
+  disque_id TEXT PRIMARY KEY,
+  nom TEXT NOT NULL,
+  jeton TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

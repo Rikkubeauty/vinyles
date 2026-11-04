@@ -26,3 +26,15 @@ Ouverte en fichier local, la page marche aussi, mais garde tout dans le navigate
 ## Sauvegarde
 
 « Télécharger collection.json » dans le panneau d'ajout exporte toute la collection.
+
+
+## Sauvegardes
+
+À chaque modification, si la semaine n'a pas encore sa copie, toute la base est copiée dans R2 (`sauvegardes/AAAA-Sxx.json`).
+Le bouton « Sauvegarde » de la vue Liste télécharge une copie immédiate (clé d'édition requise).
+`GET /api/sauvegarde?liste` liste les copies hebdomadaires, `?semaine=2026-S45` en télécharge une.
+
+## Liste de souhaits partagée
+
+Le bouton Partager donne le lien `/?souhaits`. La famille peut y réserver un disque (« Je l'offre »).
+Les réservations sont dans la table `reservations` (voir `schema.sql`) et ne sont jamais affichées en mode édition.
