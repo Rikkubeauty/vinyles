@@ -267,12 +267,6 @@ dd{margin:0}
 .res b{font-weight:500}
 .res small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.03em}
 .res.added .rc::after{content:"Ajouté ✓";opacity:1;background:#7bd389}
-.tokenbox summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.tokenbox .body{display:grid;gap:10px;padding-top:10px}
-.tokenbox p{margin:0;font-size:15px;color:var(--muted)}
-.tokenbox a{color:var(--amber)}
-.coltools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:12px;border-top:1px solid var(--line)}
-.coltools span{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:auto}
 .btn.pri{background:var(--amber);border-color:var(--amber);color:var(--on-accent)}
 .btn.pri:hover{color:var(--on-accent);filter:brightness(1.08)}
 .btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:var(--field);color:var(--fg);padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-block}
@@ -341,18 +335,6 @@ dd{margin:0}
     <div class="imsg" id="aMsg" role="status"></div>
     <div class="results" id="results"></div>
     <button class="btn" type="button" id="moreBtn" hidden>Voir plus de résultats</button>
-    <details class="tokenbox" id="tokenBox" hidden>
-      <summary>Jeton Discogs</summary>
-      <div class="body">
-        <p>La recherche Discogs demande ton jeton personnel (« Personal access token » sur <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>). Il reste dans ce navigateur.</p>
-        <form id="tokForm" class="addform"><label for="tok">Jeton personnel<input id="tok" type="password" autocomplete="off"></label><button class="btn" type="submit">Enregistrer</button></form>
-      </div>
-    </details>
-    <div class="coltools">
-      <span id="colCount"></span>
-      <button class="btn" type="button" id="exportBtn">Télécharger collection.json</button>
-      <label class="btn" for="importFile">Charger un fichier<input id="importFile" type="file" accept="application/json,.json" hidden></label>
-    </div>
   </section>
 </div>
 
@@ -468,7 +450,8 @@ const cloud={on:false,key:null};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
-const discogsToken=()=>cloud.on?"cloud":store.get("dg-token");
+const viaRelais=location.protocol.startsWith("http");
+const discogsToken=()=>viaRelais||cloud.on?"cloud":"";
 const LABELS=[["#b0201c","#fff"],["#1f4e8c","#fff"],["#e9b84a","#222"],["#d9d2c2","#222"],["#2f6b4f","#fff"],["#6a2b6e","#fff"],["#1b1b1b","#eee"]];
 const hash=s=>[...String(s)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7)>>>0;
 const demo=DISQUES.map(d=>({...d,source:"demo",tracks:d.pistes.map((t,i)=>({title:t,side:i<d.faceA?"A":"B"})),details:true}));
@@ -536,7 +519,7 @@ const deezerSearch=d=>`https://www.deezer.com/search/${encodeURIComponent(d.arti
 const DG="https://api.discogs.com";
 const cleanName=s=>String(s||"").replace(/\s\(\d+\)$/,"").replace(/\*$/,"");
 async function dgFetch(path,token){
-  const url=cloud.on?"/api/discogs"+path:DG+path+(token?(path.includes("?")?"&":"?")+"token="+encodeURIComponent(token):"");
+  const url=(viaRelais||cloud.on)?"/api/discogs"+path:DG+path+(token?(path.includes("?")?"&":"?")+"token="+encodeURIComponent(token):"");
   const r=await fetch(url,{headers:{Accept:"application/vnd.discogs.v2.discogs+json"}});
   if(!r.ok){
     let info="";try{info=(await r.json()).erreur||""}catch(e){}
@@ -818,7 +801,6 @@ function rebuild(focusId){
   $("#nCol").textContent=col.length||""; $("#nWish").textContent=wish.length||"";
   $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
-  $("#colCount").textContent=mine.length?`${mine.length} disque${mine.length>1?"s":""} dans ta discothèque`:"Ta discothèque est vide : les 5 disques affichés sont des exemples.";
 }
 function saveMine(){store.set(KEY,mine);if(cloud.on)scheduleSync()}
 
@@ -915,7 +897,7 @@ const niceErr=err=>err.message==="Failed to fetch"?"Discogs est injoignable depu
 const srch={q:"",page:1,pages:1,items:[],seq:0};
 async function searchDiscogs(q,page){
   const token=discogsToken();
-  if(!token){$("#tokenBox").open=true;throw new Error("Ajoute d'abord ton jeton Discogs (ci-dessous).")}
+  if(!token) throw new Error("La recherche Discogs marche seulement depuis ton site.");
   const digits=q.replace(/[\s-]/g,"");
   const path=/^\d{8,14}$/.test(digits)
     ?`/database/search?barcode=${digits}&type=release&per_page=30&page=${page}`
@@ -969,9 +951,8 @@ let typeT=null;
 $("#aq").addEventListener("input",()=>{clearTimeout(typeT);const q=$("#aq").value.trim();
   if(q.length<3){srch.seq++;$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";return}
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
-$("#tokForm").addEventListener("submit",e=>{e.preventDefault();const t=$("#tok").value.trim();if(t){store.set("dg-token",t);$("#tok").value="";$("#tokenBox").open=false;$("#aMsg").className="imsg";$("#aMsg").textContent="Jeton enregistré dans ce navigateur."}});
 function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
-  if(open){if(!discogsToken())$("#tokenBox").open=true;$("#aq").focus()}else{stopScan();$("#addBtn").focus()}}
+  if(open){$("#aq").focus()}else{stopScan();$("#addBtn").focus()}}
 $("#addBtn").addEventListener("click",()=>toggleAdder($("#adder").hidden));
 $("#adClose").addEventListener("click",()=>toggleAdder(false));
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
@@ -994,20 +975,6 @@ $("#scanBtn").addEventListener("click",async()=>{
 });
 function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").textContent="Scanner le code-barres"}
 
-/* sauvegarde : collection.json */
-$("#exportBtn").addEventListener("click",()=>{
-  const blob=new Blob([JSON.stringify({discotheque:"Eduardo",exporte:new Date().toISOString(),disques:mine},null,2)],{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="collection.json"; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-});
-$("#importFile").addEventListener("change",async e=>{
-  const f=e.target.files[0]; if(!f) return;
-  try{const j=JSON.parse(await f.text()); const list=Array.isArray(j)?j:j.disques; if(!Array.isArray(list)) throw 0;
-    const ids=new Set(mine.map(d=>d.id)); list.forEach(d=>{if(d&&d.id&&!ids.has(d.id)){mine.push(d);ids.add(d.id)}});
-    saveMine(); rebuild(); $("#aMsg").className="imsg"; $("#aMsg").textContent=`${list.length} disques chargés depuis ${f.name}.`;
-  }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent="Ce fichier n'est pas une collection valide."}
-  e.target.value="";
-});
 function removeRecord(d){
   mine=mine.filter(x=>x.id!==d.id); saveMine(); if(!$("#detail").hidden) closeDetail(); rebuild();
 }
@@ -1155,9 +1122,11 @@ async function translateRecord(d){
         store.set(KEY,mine); setEditable(!!cloud.key); $("#lockBtn").hidden=false;
         const extra=local.filter(d=>!snap.has(d.id));
         if(extra.length){mine=mine.concat(extra);toast(`${extra.length} disque${extra.length>1?"s":""} de cet appareil à envoyer en ligne…`);scheduleSync()}
+      }else if(location.hostname.endsWith(".pages.dev")||r.status>=500){
+        let info="";try{info=(await r.json()).erreur||""}catch(e){}
+        toast("La base en ligne ne répond pas ("+r.status+(info?" : "+info:"")+").",true);
       }}catch(e){}
   }
-  if(!cloud.on) $("#tokenBox").hidden=false;
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
   rebuild();
