@@ -455,6 +455,10 @@ dd{margin:0}
   #addBtn svg{display:block;width:26px;height:26px}
   #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
   body.readonly:not(.partage) #addBtn{display:grid!important}
+  #topBtn{all:unset;box-sizing:border-box;cursor:pointer;position:fixed;z-index:59;right:calc(23px + env(safe-area-inset-right,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--fg);color:var(--night);box-shadow:0 8px 20px rgba(0,0,0,.28);opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;transition:opacity .2s,transform .2s}
+  #topBtn.on{opacity:1;transform:none;pointer-events:auto}
+  #topBtn:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  body.readonly.partage #topBtn{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
   .msheet .sortmenu{z-index:100}
   .mtools{position:relative;z-index:0}
   .caption{grid-template-columns:minmax(0,1fr)}
@@ -517,6 +521,8 @@ dd{margin:0}
   #flowView{min-height:calc(100vh - 260px)}
   .viewtog{left:28px;bottom:26px}
   .viewtog button{width:50px;height:44px}
+  #topBtn{right:36px;bottom:96px}
+  body.readonly.partage #topBtn{bottom:32px}
   #addBtn{right:28px;bottom:24px;width:60px;height:60px;font-size:0;letter-spacing:0;padding:0;display:grid;place-items:center}
   .caption{margin-top:10px}
 }
@@ -1878,6 +1884,12 @@ function textToTracks(txt){
 }
 // les panneaux latéraux doivent passer au-dessus de la fiche ouverte (.wrap crée son propre empilement)
 document.body.append($("#editor"),$("#adder"));
+/* bouton « haut de page », au-dessus du + */
+{const tb=document.createElement("button");tb.type="button";tb.id="topBtn";tb.setAttribute("aria-label","Haut de page");tb.title="Haut de page";
+ tb.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V5.5M6 11.5l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ document.body.append(tb);
+ const upd=()=>tb.classList.toggle("on",scrollY>400);addEventListener("scroll",upd,{passive:true});upd();
+ tb.addEventListener("click",()=>{scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});tb.blur()});}
 function openEditor(d){
   const blank=!d;
   editing=d||{id:"m"+Date.now().toString(36),source:"manuel",titre:"",artiste:"",annee:null,sortie:"",label:"",cat:"",cover:null,genres:"",pays:"",ean:"",lieu:"",compositeurs:"",credits:"",anecdotes:[],tracks:[],details:true,anecdotesFr:true,
