@@ -19,15 +19,15 @@
   --f-body:"Newsreader",Georgia,"Times New Roman",serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --S:300px;
-  --field:rgba(0,0,0,.35);--scrim:rgba(10,8,7,.55);--panel:rgba(18,15,13,.92);--on-accent:#1b1206;--hover:rgba(255,255,255,.07);
-  --amb:blur(70px) saturate(1.4) brightness(.55);--amb-op:1;--shadow:0 30px 60px rgba(0,0,0,.6);--shadow-lg:0 40px 80px rgba(0,0,0,.65);
+  --field:rgba(0,0,0,.35);--scrim:rgba(10,8,7,.92);--panel:rgba(18,15,13,.92);--on-accent:#1b1206;--hover:rgba(255,255,255,.07);
+  --amb:blur(7px) saturate(1.4) brightness(.55);--amb-op:1;--shadow:0 30px 60px rgba(0,0,0,.6);--shadow-lg:0 40px 80px rgba(0,0,0,.65);
   --dw:800;--ds:normal;--dt:none;--dx:100%;
   color-scheme:dark;
 }
 /* ===== Maquette 1 · Galerie : mur blanc de galerie, typo suisse large, rouge vif ===== */
 :root[data-look="galerie"]{--night:#f1efea;--fg:#141414;--muted:#6d6a64;--line:rgba(20,20,20,.14);--amber:#e2231a;--on-accent:#fff;--groove:#151515;
-  --field:rgba(255,255,255,.75);--scrim:rgba(241,239,234,.86);--panel:rgba(250,249,246,.97);--hover:rgba(0,0,0,.05);
-  --amb:blur(90px) saturate(1.3) brightness(1.15);--amb-op:.32;--shadow:0 26px 40px rgba(40,30,20,.28);--shadow-lg:0 36px 60px rgba(40,30,20,.3);
+  --field:rgba(255,255,255,.75);--scrim:rgba(241,239,234,.97);--panel:rgba(250,249,246,.97);--hover:rgba(0,0,0,.05);
+  --amb:blur(9px) saturate(1.3) brightness(1.15);--amb-op:.32;--shadow:0 26px 40px rgba(40,30,20,.28);--shadow-lg:0 36px 60px rgba(40,30,20,.3);
   --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"Archivo","Helvetica Neue",Arial,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --dw:900;--dx:118%;color-scheme:light}
 :root[data-look="galerie"] h1{letter-spacing:-.045em;font-size:clamp(28px,4vw,44px)}
@@ -45,7 +45,7 @@ button{font:inherit;color:inherit}
 
 /* fond ambiant : la pochette au centre, floutée en grand */
 .ambient{position:fixed;inset:-10%;z-index:0;pointer-events:none}
-.ambient div{position:absolute;inset:0;background-size:cover;background-position:center;filter:var(--amb);opacity:0;transition:opacity 1.1s ease;transform:scale(1.2)}
+.ambient div{position:absolute;left:0;top:0;width:10%;height:10%;background-size:cover;background-position:center;filter:var(--amb);opacity:0;transition:opacity 1.1s ease;transform:scale(10.4);transform-origin:0 0;will-change:opacity}
 .ambient div.on{opacity:var(--amb-op)}
 .ambient::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 40%,transparent,var(--night) 85%)}
 
@@ -66,23 +66,24 @@ h1 span{color:var(--amber)}
 .status.on i{background:#7bd389;box-shadow:0 0 8px #7bd389}
 
 /* ---------- Cover Flow ---------- */
-.flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;
-  -webkit-mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;}
 .lane{position:absolute;left:50%;top:calc(var(--S) * .12);width:0;height:0;transform-style:preserve-3d}
 .cv{position:absolute;left:calc(var(--S) / -2);top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;cursor:pointer;
-  transition:transform .75s cubic-bezier(.2,.8,.2,1),filter .75s;will-change:transform}
-.cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  transition:transform .75s cubic-bezier(.2,.8,.2,1);will-change:transform;backface-visibility:hidden}
+.cv .shade{position:absolute;left:0;right:0;top:0;height:calc(200% + 6px);background:var(--night);opacity:0;transition:opacity .75s;pointer-events:none;transform:translateZ(1px)}
+.cv .refl{position:absolute;left:0;right:0;top:calc(100% + 6px);height:100%;background-size:cover;background-position:center;transform:scaleY(-1);opacity:.22;border-radius:3px;pointer-events:none;
+  -webkit-mask-image:linear-gradient(to top,#000,transparent 40%);mask-image:linear-gradient(to top,#000,transparent 40%)}
+.cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.cv.center .tilt{transition:transform .18s ease-out}
 .sleeve{position:absolute;inset:0;border-radius:3px;background-size:cover;background-position:center;overflow:hidden;
-  box-shadow:var(--shadow),inset 0 0 0 1px var(--hover);
-  -webkit-box-reflect:below 6px linear-gradient(transparent 62%,rgba(255,255,255,.22))}
+  box-shadow:var(--shadow),inset 0 0 0 1px var(--hover);}
 .sleeve img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .sleeve .tt{position:absolute;left:8%;right:8%;bottom:8%;font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:calc(var(--S) * .085);line-height:1.02;text-wrap:balance}
 .sleeve .tt small{display:block;font-family:var(--f-mono);font-weight:400;font-size:calc(var(--S) * .037);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5em;opacity:.85}
 .sleeve::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(60% 60% at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.28),transparent 60%),linear-gradient(90deg,rgba(0,0,0,.25),transparent 6%,transparent 94%,rgba(0,0,0,.2));
-  mix-blend-mode:soft-light}
+  background:radial-gradient(60% 60% at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.16),transparent 60%),linear-gradient(90deg,rgba(0,0,0,.14),transparent 6%,transparent 94%,rgba(0,0,0,.12))}
 .vinyl{position:absolute;top:2%;left:2%;width:96%;height:96%;transform:translateZ(-2px);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
-.disc{position:absolute;inset:0;border-radius:50%;
+.disc{position:absolute;inset:0;border-radius:50%;will-change:transform;
   background:radial-gradient(circle,transparent 0 17%,var(--hover) 17.3%,transparent 18%),repeating-radial-gradient(circle,var(--groove) 0 1.2px,#1f1e1e 1.2px 1.9px);
   box-shadow:0 12px 30px rgba(0,0,0,.6)}
 .vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 30deg,transparent 0 25deg,rgba(255,255,255,.16) 40deg,transparent 58deg 205deg,rgba(255,255,255,.1) 222deg,transparent 240deg)}
@@ -105,9 +106,64 @@ h1 span{color:var(--amber)}
 .nav:focus-visible{outline:2px solid var(--amber)}
 .scrub{width:100%;max-width:520px;margin:0 auto;display:block;accent-color:var(--amber)}
 .empty{text-align:center;color:var(--muted);padding:80px 0}
+/* ---------- Bascule et mode liste ---------- */
+.shelftog{display:inline-flex;gap:4px}
+.shelftog button{all:unset;cursor:pointer;font-family:var(--f-display);font-weight:800;font-stretch:var(--dx);font-size:17px;letter-spacing:-.02em;padding:4px 10px;border-radius:6px;color:var(--muted)}
+.shelftog button[aria-pressed="true"]{color:var(--fg);box-shadow:inset 0 -3px 0 var(--amber)}
+.shelftog button:focus-visible{outline:2px solid var(--amber)}
+.shelftog small{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);margin-left:4px}
+.subleft{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.dest{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dest label{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;text-transform:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--fg)}
+.dest input{position:absolute;opacity:0;pointer-events:none}
+.dest label:has(input:checked){background:var(--fg);color:var(--night);border-color:var(--fg)}
+.dest label:focus-within{outline:2px solid var(--amber)}
+.subbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.viewtog{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--field)}
+.viewtog button{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;letter-spacing:.05em;padding:6px 13px;border-radius:999px;color:var(--muted)}
+.viewtog button[aria-pressed="true"]{background:var(--fg);color:var(--night)}
+.viewtog button:focus-visible{outline:2px solid var(--amber)}
+.listbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.listbar .count{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:auto}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table.coll{width:100%;border-collapse:collapse;font-size:15px;min-width:760px}
+.coll th{text-align:left;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.coll th button{all:unset;cursor:pointer}
+.coll th button:focus-visible{outline:2px solid var(--amber)}
+.coll th[aria-sort="ascending"] button::after{content:" ↑"}
+.coll th[aria-sort="descending"] button::after{content:" ↓"}
+.coll td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.coll tr:last-child td{border-bottom:0}
+.coll tbody tr:hover{background:var(--hover)}
+.coll tr.sel{background:var(--hover)}
+.coll .thumb{width:46px;height:46px;border-radius:2px;background:#ccc center/cover;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.coll .tt{font-weight:600;cursor:pointer}
+.coll .tt:hover{color:var(--amber)}
+.coll .mono{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);white-space:nowrap}
+.coll .acts2{white-space:nowrap;text-align:right}
+.mini{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+.mini:hover{border-color:var(--amber);color:var(--amber)}
+.mini:focus-visible{outline:2px solid var(--amber)}
+.mini.danger{color:var(--amber);border-color:var(--amber)}
+.coll input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber)}
+.listempty{padding:50px 16px;text-align:center;color:var(--muted);display:grid;gap:14px;justify-items:center}
+/* formulaire d'édition */
+.edform{display:grid;gap:12px}
+.edform .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.edform .two{grid-template-columns:1fr}}
+.edform label{display:grid;gap:5px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:0}
+.edform input,.edform textarea{font-family:var(--f-body);font-size:15px;letter-spacing:0;text-transform:none;background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+.edform textarea{min-height:90px;resize:vertical;line-height:1.45}
+.edform textarea.mono{font-family:var(--f-mono);font-size:13px}
+.edform input:focus,.edform textarea:focus{outline:2px solid var(--amber);border-color:transparent}
+.edform small{font-family:var(--f-body);font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted)}
+.edcover{display:flex;gap:14px;align-items:center}
+.edcover .thumb{width:96px;height:96px;flex:none;border-radius:3px;background:#ccc center/cover;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.edcover div{display:grid;gap:8px;flex:1;min-width:0}
+.edfoot{display:flex;flex-wrap:wrap;gap:10px;padding-top:6px}
 
 /* ---------- Vue détail ---------- */
-.detail{position:fixed;inset:0;z-index:50;overflow-y:auto;background:var(--scrim);backdrop-filter:blur(30px) saturate(1.2);-webkit-backdrop-filter:blur(30px) saturate(1.2);
+.detail{position:fixed;inset:0;z-index:50;overflow-y:auto;background:var(--scrim);
   padding-block:max(28px,env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .detail .in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start;min-height:100%}
 @media (max-width:880px){.detail .in{grid-template-columns:minmax(0,1fr)}}
@@ -116,7 +172,7 @@ h1 span{color:var(--amber)}
 .pack{position:relative;width:min(380px,34vw);aspect-ratio:1;max-width:100%;margin:clamp(10px,4vw,40px) 0 0;perspective:1200px}
 @media (max-width:880px){.pack{width:min(340px,52vw);margin-left:max(0px,calc(50% - min(340px,52vw) * .7))}}
 .pack .tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg));transition:transform .3s ease-out}
-.pack .sleeve{-webkit-box-reflect:unset;box-shadow:var(--shadow-lg)}
+.pack .sleeve{box-shadow:var(--shadow-lg)}
 .pack .sleeve .tt{font-size:clamp(18px,2.8vw,32px)}
 .pack .vinyl{transform:translateZ(-2px);transition:transform 1.1s cubic-bezier(.2,.8,.2,1)}
 .pack.out .vinyl{transform:translateZ(-2px) translateX(40%)}
@@ -161,7 +217,7 @@ dd{margin:0}
 .widget iframe{display:block;width:100%;height:320px;border:0}
 
 /* ---------- Ajouter un disque ---------- */
-.adder{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:var(--panel);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+.adder{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:var(--panel);
   border-left:1px solid var(--line);box-shadow:-30px 0 60px rgba(0,0,0,.5);display:grid;gap:14px;align-content:start;
   padding-block:max(20px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px));animation:slidein .35s cubic-bezier(.2,.8,.2,1)}
 @keyframes slidein{from{transform:translateX(40px);opacity:0}}
@@ -216,8 +272,13 @@ dd{margin:0}
       <button class="btn pri" id="addBtn" type="button" aria-expanded="false" aria-controls="adder">+ Ajouter un disque</button>
     </div>
   </header>
-  <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div>
+  <div class="subbar">
+    <div class="subleft"><div class="shelftog" role="group" aria-label="Étagère"><button type="button" id="sCol" aria-pressed="true">Ma collection<small id="nCol"></small></button><button type="button" id="sWish" aria-pressed="false">Mes souhaits<small id="nWish"></small></button></div>
+    <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div></div>
+    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button></div>
+  </div>
 
+  <div id="flowView">
   <section class="flow" id="flow" tabindex="0" aria-label="Pochettes, flèches gauche et droite pour parcourir, Entrée pour ouvrir">
     <div class="lane" id="lane"></div>
   </section>
@@ -227,9 +288,23 @@ dd{margin:0}
     <button class="nav" id="next" aria-label="Pochette suivante">→</button>
   </div>
   <input class="scrub" id="scrub" type="range" min="0" max="0" value="0" aria-label="Parcourir la collection">
+  </div>
+  <section id="listView" hidden aria-label="Liste des disques">
+    <div class="listbar">
+      <span class="count" id="lCount"></span>
+      <button class="btn" type="button" id="bulkDel" hidden>Supprimer la sélection</button>
+      <button class="btn" type="button" id="newBlank">+ Disque vierge</button>
+    </div>
+    <div class="tablewrap" id="tableWrap"></div>
+  </section>
 
+  <section class="adder" id="editor" hidden role="dialog" aria-labelledby="edTitle">
+    <div class="adhead"><h2 id="edTitle">Modifier le disque</h2><button class="close2" id="edClose" type="button" aria-label="Fermer">✕</button></div>
+    <form class="edform" id="edForm"></form>
+  </section>
   <section class="adder" id="adder" hidden role="dialog" aria-label="Ajouter un disque">
     <div class="adhead"><h2>Ajouter un disque</h2><button class="close2" id="adClose" type="button" aria-label="Fermer">✕</button></div>
+    <div class="dest" role="radiogroup" aria-label="Ajouter à">Ajouter à <label><input type="radio" name="dest" value="collection" checked>Ma collection</label><label><input type="radio" name="dest" value="souhait">Mes souhaits</label></div>
     <form class="addform" id="addForm">
       <label for="aq">Titre, artiste, EAN ou code-barres<input id="aq" type="search" autocomplete="off" placeholder="ex. Melody Nelson Gainsbourg, ou 042281204721" required></label>
       <button class="btn pri" type="submit" id="aGo">Chercher sur Discogs</button>
@@ -471,7 +546,7 @@ const S=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyVal
 const decadeOf=d=>d.annee?Math.floor(d.annee/10)*10:null;
 const bgOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`;
 const labOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.labelColor}`;
-const WINDOW=9; // pochettes dessinées de chaque côté
+const WINDOW=6; // pochettes dessinées de chaque côté
 function renderChips(){
   const ds=[...new Set(records.map(decadeOf).filter(Boolean))].sort();
   const opts=[["all","Tous"],...ds.map(x=>[String(x),"Années "+String(x).slice(2)])];
@@ -485,15 +560,16 @@ function refilter(focusId){
   $("#lane").innerHTML="";
   const fi=focusId?Math.max(0,state.list.findIndex(d=>d.id===focusId)):Math.min(2,state.list.length-1);
   $("#scrub").max=Math.max(0,state.list.length-1);
-  if(!state.list.length){$("#caption").innerHTML=`<div class="empty">Aucun disque ne correspond.</div>`;return}
+  if(typeof renderList==="function"&&!$("#listView").hidden) renderList();
+  if(!state.list.length){$("#caption").innerHTML=`<div class="empty">${!records.length&&shelf==="souhaits"?"Ta liste de souhaits est vide. Ajoute un disque avec « Mes souhaits » coché dans « + Ajouter un disque ».":!records.length?"Ta collection est vide.":"Aucun disque ne correspond."}</div>`;return}
   setFocus(fi,true);
 }
 function cvEl(d,i){
   const el=document.createElement("div"); el.className="cv"; el.dataset.i=i; el.dataset.id=d.id;
   el.innerHTML=`<div class="tilt">
       <div class="vinyl"><div class="disc"><div class="lab" style="${labOf(d)}"></div></div></div>
-      <div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}</div>
-      <button class="open" type="button" tabindex="-1" aria-label="Ouvrir ${esc(d.titre)}">Ouvrir</button></div>`;
+      <div class="refl" style="${bgOf(d)}"></div><div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}</div>
+      <div class="shade"></div><button class="open" type="button" tabindex="-1" aria-label="Ouvrir ${esc(d.titre)}">Ouvrir</button></div>`;
   return el;
 }
 function place(el,k){
@@ -502,7 +578,7 @@ function place(el,k){
   if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
   else tf=`translate3d(${sg*(s*.62+(a-1)*s*.26)}px,0,${-a*s*.06}px) rotateY(${-sg*62}deg)`;
   el.style.transform=tf; el.style.zIndex=100-a;
-  el.style.filter=k===0?"none":`brightness(${Math.max(.35,1-a*.12)})`;
+  el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW-1?1:Math.min(.7,a*.13)).toFixed(2);
   el.classList.toggle("center",k===0);
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
@@ -536,12 +612,14 @@ $("#lane").addEventListener("click",e=>{
   const el=e.target.closest(".cv"); if(!el) return;
   const i=+el.dataset.i; if(i===state.focus) openDetail(state.list[i],el); else setFocus(i);
 });
-$("#lane").addEventListener("mousemove",e=>{
+let mmQ=null,mmE=null;
+$("#lane").addEventListener("mousemove",e=>{mmE=e;if(mmQ)return;mmQ=requestAnimationFrame(()=>{mmQ=null;tiltCenter(mmE)})});
+function tiltCenter(e){
   const el=e.target.closest(".cv.center"); if(!el) return;
   const r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
   const t=el.querySelector(".tilt"); t.style.setProperty("--ry",((x-.5)*30).toFixed(1)+"deg"); t.style.setProperty("--rx",((.5-y)*22).toFixed(1)+"deg");
   const sl=el.querySelector(".sleeve"); sl.style.setProperty("--gx",(x*100).toFixed(0)+"%"); sl.style.setProperty("--gy",(y*100).toFixed(0)+"%");
-});
+}
 $("#lane").addEventListener("mouseout",e=>{const el=e.target.closest(".cv.center");if(el&&!el.contains(e.relatedTarget)){const t=el.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")}});
 $("#prev").addEventListener("click",()=>setFocus(state.focus-1));
 $("#next").addEventListener("click",()=>setFocus(state.focus+1));
@@ -563,6 +641,7 @@ function applyCover(d){
   d.cover=info.cover;
   document.querySelectorAll(`.cv[data-id="${d.id}"]`).forEach(el=>{
     const sl=el.querySelector(".sleeve"); sl.style.background=""; sl.style.backgroundImage=`url('${d.cover}')`; sl.innerHTML="";
+    const rf=el.querySelector(".refl"); if(rf){rf.style.background="";rf.style.backgroundImage=`url('${d.cover}')`}
     const lb=el.querySelector(".lab"); lb.style.background=""; lb.style.backgroundImage=`url('${d.cover}')`;
   });
   if(state.list[state.focus]===d){const a=$("#amb"+ambFlip);a.style.cssText=`background-image:url('${d.cover}')`}
@@ -634,12 +713,15 @@ function renderInfo(d){
       ${playable?`<button class="pri" id="playAll" type="button">${state.track>=0?"Pause":"▶ Écouter"}</button>`:""}
       ${info?`<button id="fullBtn" type="button">Lecteur Deezer complet</button><a href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener">Ouvrir dans Deezer</a>`:""}
       ${d.discogsId?`<a href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener">Fiche Discogs</a>`:""}
-      ${mine.some(x=>x.id===d.id)?`<button id="rmBtn" type="button">Retirer de ma discothèque</button>`:""}
+      ${isWish(d)?`<button class="pri" id="gotBtn" type="button">Je l'ai !</button>${d.discogsId?`<a href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener">Voir les offres Discogs</a>`:""}`:""}
+      ${mine.some(x=>x.id===d.id)?`<button id="edBtn" type="button">Modifier</button><button id="rmBtn" type="button">Retirer de ma discothèque</button>`:""}
     </div>
     <div class="widget" id="widget"></div>`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   $("#playAll")&&$("#playAll").addEventListener("click",()=>{state.track<0?playTrack(firstPlayable(d)):stopAudio()});
+  const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{delete d.statut;d.ajoute=new Date().toISOString().slice(0,10);saveMine();closeDetail();setShelf("collection");rebuild(d.id)});
+  const eb=$("#edBtn"); if(eb) eb.addEventListener("click",()=>openEditor(d));
   const rm=$("#rmBtn");
   if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.textContent="Confirmer le retrait"}});
   const fb=$("#fullBtn");
@@ -668,13 +750,21 @@ function highlight(){document.querySelectorAll(".tr").forEach(b=>b.classList.tog
 /* ---------- Ma collection ---------- */
 const KEY="mes-disques";
 let mine=store.get(KEY)||[];
+const isWish=d=>d.statut==="souhait";
+let shelf=store.get("etagere")==="souhaits"?"souhaits":"collection";
 function rebuild(focusId){
-  records=mine.length?mine:demo;
+  const col=mine.filter(d=>!isWish(d)), wish=mine.filter(isWish);
+  records=shelf==="souhaits"?wish:(col.length?col:(mine.length?[]:demo));
+  $("#nCol").textContent=col.length||""; $("#nWish").textContent=wish.length||"";
+  $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
   $("#colCount").textContent=mine.length?`${mine.length} disque${mine.length>1?"s":""} dans ta discothèque`:"Ta discothèque est vide : les 5 disques affichés sont des exemples.";
   $("#foot").textContent=mine.length?"":"Ajoute ton premier vinyle avec « + Ajouter un disque » : les exemples disparaîtront.";
 }
 function saveMine(){store.set(KEY,mine)}
+function setShelf(v){shelf=v;store.set("etagere",v);const r=document.querySelector(`input[name=dest][value="${v==="souhaits"?"souhait":"collection"}"]`);if(r)r.checked=true;rebuild();if(!$("#listView").hidden)renderList()}
+$("#sCol").addEventListener("click",()=>setShelf("collection"));
+$("#sWish").addEventListener("click",()=>setShelf("souhaits"));
 
 /* une fiche Discogs complète devient un disque de la discothèque */
 function recordFromRelease(r){
@@ -690,15 +780,20 @@ function recordFromRelease(r){
 }
 async function addRelease(id,btn){
   const token=discogsToken();
-  if(mine.some(d=>d.discogsId===id)){setFocus(state.list.findIndex(d=>d.discogsId===id));$("#aMsg").textContent="Ce disque est déjà dans ta discothèque.";return}
+  const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
+  const ex=mine.find(d=>d.discogsId===id);
+  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans tes souhaits.":"Ce disque est déjà dans ta collection.";return}
   btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche Discogs…";
   try{
     const r=await dgFetch(`/releases/${id}`,token);
     const d=recordFromRelease(r); await loadDetails(d);
     $("#aMsg").textContent="Traduction des notes en français…"; await translateRecord(d);
-    mine.unshift(d); saveMine(); rebuild(d.id);
+    if(dest==="souhait") d.statut="souhait";
+    mine.unshift(d); saveMine();
+    if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
+    rebuild(d.id);
     btn&&btn.classList.add("added");
-    $("#aMsg").textContent=`« ${d.titre} » ajouté.`;
+    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"à tes souhaits":"à ta collection"}.`;
     resolveDeezer(d).then(()=>applyCover(d));
   }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err)}
   finally{btn&&(btn.disabled=false)}
@@ -803,8 +898,118 @@ $("#importFile").addEventListener("change",async e=>{
   e.target.value="";
 });
 function removeRecord(d){
-  mine=mine.filter(x=>x.id!==d.id); saveMine(); closeDetail(); rebuild();
+  mine=mine.filter(x=>x.id!==d.id); saveMine(); if(!$("#detail").hidden) closeDetail(); rebuild();
 }
+
+/* ---------- Mode liste ---------- */
+const lst={sort:"artiste",dir:1,sel:new Set(),confirm:null};
+const COLS=[["titre","Titre"],["artiste","Artiste"],["annee","Année"],["label","Label"],["cat","Réf."],["genres","Genre"]];
+function setView(v){
+  const list=v==="list";
+  $("#flowView").hidden=list; $("#listView").hidden=!list;
+  $("#vFlow").setAttribute("aria-pressed",String(!list)); $("#vList").setAttribute("aria-pressed",String(list));
+  store.set("vue",v); if(list) renderList(); else setFocus(state.focus,true);
+}
+$("#vFlow").addEventListener("click",()=>setView("flow"));
+$("#vList").addEventListener("click",()=>setView("list"));
+function renderList(){
+  const rows=mine.filter(d=>state.list.includes(d));
+  const cmp=(a,b)=>{const k=lst.sort,x=a[k]??"",y=b[k]??"";return (typeof x==="number"&&typeof y==="number"?x-y:String(x).localeCompare(String(y),"fr",{numeric:true,sensitivity:"base"}))*lst.dir};
+  rows.sort(cmp);
+  lst.sel.forEach(id=>{if(!mine.some(d=>d.id===id))lst.sel.delete(id)});
+  const tot=mine.filter(d=>records.includes(d)).length;
+  $("#lCount").textContent=tot?`${rows.length} disque${rows.length>1?"s":""}${rows.length!==tot?` sur ${tot}`:""}${shelf==="souhaits"?" souhaités":""}`:"";
+  $("#bulkDel").hidden=!lst.sel.size;
+  $("#bulkDel").textContent=lst.confirm==="bulk"?`Confirmer : supprimer ${lst.sel.size} disque${lst.sel.size>1?"s":""}`:`Supprimer la sélection (${lst.sel.size})`;
+  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide. Les pochettes de l'autre vue sont des exemples."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
+  if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à ta recherche.</p></div>`;return}
+  const all=rows.every(d=>lst.sel.has(d.id));
+  $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
+    <th><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></th><th></th>
+    ${COLS.map(([k,l])=>`<th aria-sort="${lst.sort===k?(lst.dir>0?"ascending":"descending"):"none"}"><button type="button" data-sort="${k}">${l}</button></th>`).join("")}<th></th></tr></thead>
+    <tbody>${rows.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
+      <td><input type="checkbox" data-sel="${esc(d.id)}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></td>
+      <td><div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div></td>
+      <td><span class="tt" data-open="${esc(d.id)}">${esc(d.titre)}</span></td><td>${esc(d.artiste)}</td>
+      <td class="mono">${esc(d.annee||"")}</td><td>${esc(d.label)}</td><td class="mono">${esc(d.cat)}</td><td>${esc((d.genres||"").split(", ").slice(0,2).join(", "))}</td>
+      <td class="acts2"><button class="mini" type="button" data-edit="${esc(d.id)}">Modifier</button>
+        <button class="mini${lst.confirm===d.id?" danger":""}" type="button" data-del="${esc(d.id)}">${lst.confirm===d.id?"Confirmer":"Supprimer"}</button></td></tr>`).join("")}</tbody></table>`;
+}
+$("#tableWrap").addEventListener("click",e=>{
+  const t=e.target, byId=id=>mine.find(d=>d.id===id);
+  const so=t.closest("[data-sort]"); if(so){const k=so.dataset.sort; lst.dir=lst.sort===k?-lst.dir:1; lst.sort=k; renderList(); return}
+  if(t.id==="selAll"){const rows=mine.filter(d=>state.list.includes(d)); rows.forEach(d=>t.checked?lst.sel.add(d.id):lst.sel.delete(d.id)); lst.confirm=null; renderList(); return}
+  if(t.dataset.sel){t.checked?lst.sel.add(t.dataset.sel):lst.sel.delete(t.dataset.sel); lst.confirm=null; renderList(); return}
+  const ed=t.closest("[data-edit]"); if(ed){openEditor(byId(ed.dataset.edit)); return}
+  const del=t.closest("[data-del]"); if(del){const id=del.dataset.del; if(lst.confirm===id){lst.confirm=null; lst.sel.delete(id); removeRecord(byId(id)); renderList()} else {lst.confirm=id; renderList()} return}
+  const op=t.closest("[data-open]"); if(op){openDetail(byId(op.dataset.open))}
+});
+$("#bulkDel").addEventListener("click",()=>{
+  if(lst.confirm!=="bulk"){lst.confirm="bulk";renderList();return}
+  mine=mine.filter(d=>!lst.sel.has(d.id)); lst.sel.clear(); lst.confirm=null; saveMine(); rebuild(); renderList();
+});
+
+/* ---------- Édition d'un disque ---------- */
+let editing=null;
+const tracksToText=d=>(d.tracks||[]).map(t=>[t.pos||t.side,t.title,t.duration?fmt(t.duration):""].join(" | ").replace(/ \| $/,"")).join("\n");
+function textToTracks(txt){
+  return txt.split("\n").map(l=>l.trim()).filter(Boolean).map((l,i)=>{
+    const p=l.split("|").map(x=>x.trim()); let pos="",title=l,dur="";
+    if(p.length>=2){pos=p[0];title=p[1];dur=p[2]||""}
+    const m=/^([A-Z])/i.exec(pos), [mm,ss]=dur.split(":");
+    return {pos,title,side:m?m[1].toUpperCase():"A",duration:dur&&ss!==undefined?(+mm*60+ +ss)||0:0};
+  });
+}
+function openEditor(d){
+  const blank=!d;
+  editing=d||{id:"m"+Date.now().toString(36),source:"manuel",titre:"",artiste:"",annee:null,sortie:"",label:"",cat:"",cover:null,genres:"",pays:"",ean:"",lieu:"",compositeurs:"",credits:"",anecdotes:[],tracks:[],details:true,anecdotesFr:true,
+    sleeve:{bg:"linear-gradient(135deg,#d9d4ca,#a9a195)",ink:"#141414"},labelColor:"#e2231a",labelInk:"#fff",ajoute:new Date().toISOString().slice(0,10)};
+  $("#edTitle").textContent=blank?"Nouveau disque":"Modifier le disque";
+  const f=(id,label,val,type="text",extra="")=>`<label for="${id}">${label}<input id="${id}" type="${type}" value="${esc(val??"")}" ${extra}></label>`;
+  const e=editing;
+  $("#edForm").innerHTML=`
+    <div class="edcover"><span class="thumb" id="edThumb" style="${e.cover?`background-image:url('${esc(e.cover)}')`:`background:${e.sleeve.bg}`}"></span>
+      <div><label for="edCover">Pochette (adresse de l'image)<input id="edCover" type="url" value="${esc(e.cover&&!e.cover.startsWith("data:")?e.cover:"")}" placeholder="https://…"></label>
+      <label class="btn" for="edFile" style="justify-self:start">Choisir une photo<input id="edFile" type="file" accept="image/*" hidden></label></div></div>
+    <div class="dest" role="radiogroup" aria-label="Étagère">Étagère <label><input type="radio" name="edStat" value="collection" ${isWish(e)?"":"checked"}>Ma collection</label><label><input type="radio" name="edStat" value="souhait" ${isWish(e)?"checked":""}>Mes souhaits</label></div>
+    ${f("edT","Titre",e.titre,"text","required")}
+    ${f("edA","Artiste",e.artiste,"text","required")}
+    <div class="two">${f("edY","Année",e.annee||"","number",'min="1900" max="2100"')}${f("edS","Date de sortie",e.sortie)}</div>
+    <div class="two">${f("edL","Label",e.label)}${f("edC","Référence catalogue",e.cat)}</div>
+    <div class="two">${f("edE","EAN / code-barres",e.ean)}${f("edP","Pays",e.pays)}</div>
+    ${f("edG","Genre",e.genres)}
+    ${f("edLi","Lieu d'enregistrement",e.lieu)}
+    ${f("edCo","Compositeurs",e.compositeurs)}
+    ${f("edCr","Crédits",e.credits)}
+    <label for="edN">Anecdotes et notes <small>une par ligne</small><textarea id="edN">${esc((e.anecdotes||[]).join("\n"))}</textarea></label>
+    <label for="edTr">Morceaux <small>une ligne par morceau : A1 | Titre | 4:18</small><textarea id="edTr" class="mono" rows="8">${esc(tracksToText(e))}</textarea></label>
+    <div class="edfoot"><button class="btn pri" type="submit">Enregistrer</button><button class="btn" type="button" id="edCancel">Annuler</button>
+      ${blank?"":`<button class="btn" type="button" id="edDel" style="margin-left:auto">Supprimer ce disque</button>`}</div>
+    <div class="imsg" id="edMsg" role="status"></div>`;
+  $("#editor").hidden=false; $("#edT").focus();
+  $("#edCover").addEventListener("input",ev=>{const v=ev.target.value.trim();if(v){editing._cover=v;$("#edThumb").style.cssText=`background-image:url('${v.replace(/'/g,"%27")}')`}});
+  $("#edFile").addEventListener("change",async ev=>{const file=ev.target.files[0];if(!file)return;
+    try{editing._cover=await shrink(file);$("#edThumb").style.cssText=`background-image:url('${editing._cover}')`;$("#edCover").value=""}catch(err){$("#edMsg").className="imsg err";$("#edMsg").textContent="Impossible de lire cette image."}});
+  $("#edCancel").addEventListener("click",closeEditor);
+  const del=$("#edDel"); if(del) del.addEventListener("click",()=>{if(del.dataset.sure){removeRecord(editing);closeEditor();renderList()}else{del.dataset.sure="1";del.textContent="Confirmer la suppression"}});
+}
+function shrink(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const m=600,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c.toDataURL("image/jpeg",.85))};img.onerror=rej;img.src=URL.createObjectURL(file)})}
+function closeEditor(){$("#editor").hidden=true;editing=null}
+$("#edClose").addEventListener("click",closeEditor);
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#editor").hidden)closeEditor()});
+$("#edForm").addEventListener("submit",ev=>{
+  ev.preventDefault(); const e=editing, v=id=>$("#"+id).value.trim();
+  e.titre=v("edT"); e.artiste=v("edA"); e.annee=v("edY")?+v("edY"):null; e.sortie=v("edS")||(e.annee?String(e.annee):"");
+  e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
+  e.anecdotes=$("#edN").value.split("\n").map(x=>x.trim()).filter(Boolean); e.anecdotesFr=true;
+  e.tracks=textToTracks($("#edTr").value);
+  if((document.querySelector("input[name=edStat]:checked")||{}).value==="souhait") e.statut="souhait"; else delete e.statut;
+  if(e._cover!==undefined){e.cover=e._cover||null;delete e._cover}
+  const i=mine.findIndex(x=>x.id===e.id); if(i>=0) mine[i]=e; else mine.unshift(e);
+  delete dz[e.id]; saveMine(); closeEditor(); rebuild(e.id);
+  if(state.cur&&state.cur.id===e.id&&!$("#detail").hidden){paintPack(e);renderInfo(e)}
+});
+$("#newBlank").addEventListener("click",()=>{openEditor(null);if(shelf==="souhaits")document.querySelector("input[name=edStat][value=souhait]").checked=true});
 
 /* ---------- Traduction des notes Discogs (souvent en anglais) ---------- */
 const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing)\b/gi;
@@ -833,6 +1038,8 @@ async function translateRecord(d){
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
   rebuild();
+  if(store.get("vue")==="list") setView("list");
+  if(shelf==="souhaits") setShelf("souhaits");
   for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)}
 })();
 </script>
