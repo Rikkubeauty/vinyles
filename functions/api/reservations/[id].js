@@ -4,7 +4,7 @@ import { json, isAdmin } from "../../../lib/http.js";
 export async function onRequestPost({ request, env, params }) {
   const b = await request.json().catch(() => ({}));
   const nom = String(b.nom || "").trim().slice(0, 40);
-  if (!nom) return json({ erreur: "Indique ton prénom." }, 400);
+  if (!nom) return json({ erreur: "Prénom requis." }, 400);
   const row = await env.DB.prepare("SELECT statut FROM disques WHERE id = ?1").bind(params.id).first();
   if (!row || row.statut !== "souhait") return json({ erreur: "Ce disque n'est pas dans la liste de souhaits." }, 404);
   const jeton = crypto.randomUUID();
