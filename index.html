@@ -772,7 +772,7 @@ function place(el,k){
   const s=S(), a=Math.abs(k), sg=Math.sign(k);
   let tf;
   if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
-  else tf=`translate3d(${sg*(s*.62+(a-1)*s*.26)}px,0,${-a*s*.06}px) rotateY(${-sg*62}deg)`;
+  else tf=`translate3d(${sg*(s*.62+(a-1)*s*.26)}px,0,${-s*.3-a*s*.06}px) rotateY(${-sg*62}deg)`; // assez en retrait pour ne jamais traverser la pochette centrale
   el.style.transform=tf; el.style.zIndex=100-a;
   el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW-1?1:Math.min(.7,a*.13)).toFixed(2);
   el.classList.toggle("center",k===0);
@@ -789,7 +789,7 @@ function setFocus(i,instant){
     let el=have.get(k);
     if(!el){el=cvEl(state.list[k],k); // entre depuis le bord
       const s=S(),sg=Math.sign(k-i)||1; el.style.transition="none";
-      el.style.transform=`translate3d(${sg*(s*.62+(WINDOW)*s*.26)}px,0,${-WINDOW*s*.06}px) rotateY(${-sg*62}deg)`;
+      el.style.transform=`translate3d(${sg*(s*.62+(WINDOW)*s*.26)}px,0,${-s*.3-WINDOW*s*.06}px) rotateY(${-sg*62}deg)`;
       lane.appendChild(el); el.getBoundingClientRect(); el.style.transition="";}
     if(instant) el.style.transition="none";
     place(el,k-i);
