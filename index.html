@@ -61,7 +61,7 @@ body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.read
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
-.keydlg{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:16px}
+.keydlg{position:fixed;inset:0;z-index:90;background:rgba(10,10,10,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:grid;place-items:center;padding:16px}
 #dupDlg{z-index:200}
 .keybox{background:var(--night);color:var(--fg);border-radius:14px;padding:22px;width:min(400px,100%);display:grid;gap:12px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
 .keybox h2{margin:0;font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:24px;letter-spacing:-.03em}
@@ -375,7 +375,7 @@ dd{margin:0}
   .capline .nav{display:none}
   #sortBtn{padding:6px 10px;font-size:11.5px}
   #addBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
-  #addBtn::before{content:"+";font-size:24px;line-height:1}
+  #addBtn::before{content:"";width:18px;height:18px;background:linear-gradient(currentColor,currentColor) center/100% 2.4px no-repeat,linear-gradient(currentColor,currentColor) center/2.4px 100% no-repeat}
   .subbar{gap:8px}
   .subleft{width:100%;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;width:calc(100% + 32px)}
   .subleft::-webkit-scrollbar{display:none}
@@ -404,7 +404,7 @@ dd{margin:0}
   body.msearch .tools .search{display:block;position:absolute;left:0;right:88px;top:50%;transform:translateY(-50%);width:auto;height:42px;font-size:14px;z-index:2;background:var(--night);border-color:var(--fg)}
   body.msearch #mSearch{color:var(--amber)}
   #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
-  #addBtn::before{font-size:30px}
+  #addBtn::before{width:24px;height:24px;background-size:100% 2.8px,2.8px 100%}
   body.readonly:not(.partage) #addBtn{display:grid!important}
   .msheet .sortmenu{z-index:100}
   .mtools{position:relative;z-index:0}
