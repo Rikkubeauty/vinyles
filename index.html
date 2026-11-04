@@ -528,7 +528,7 @@ async function dgFetch(path,token){
   if(!r.ok){
     let info="";try{info=(await r.json()).erreur||""}catch(e){}
     if(r.status===401||r.status===403) throw new Error("Discogs refuse le jeton"+(cloud.on?" configuré sur Cloudflare":"")+(info?" ("+info+")":"")+".");
-    if(r.status===404) throw new Error("Introuvable sur Discogs.");
+    if(r.status===404) throw new Error("Introuvable sur Discogs"+(info?" ("+info+")":"")+".");
     if(r.status===429) throw new Error("Discogs est saturé pour l'instant, réessaie dans quelques secondes."+(info?" ("+info+")":""));
     throw new Error(info||("Discogs a répondu "+r.status+"."));
   }
@@ -960,9 +960,14 @@ function lev(a,b){if(Math.abs(a.length-b.length)>1)return 2;const m=[...Array(a.
   for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
 $("#results").addEventListener("click",e=>{const b=e.target.closest(".res");if(b)addRelease(+b.dataset.id,b)});
 $("#moreBtn").addEventListener("click",()=>runSearch(srch.q,true));
-$("#addForm").addEventListener("submit",e=>{e.preventDefault();const q=$("#aq").value.trim();if(q)runSearch(q)});
+$("#addForm").addEventListener("submit",e=>{e.preventDefault();const q=cleanQ($("#aq").value);$("#aq").value=q;if(q)runSearch(q)});
 let typeT=null;
-$("#aq").addEventListener("input",()=>{clearTimeout(typeT);const q=$("#aq").value.trim();
+const cleanQ=v=>v.replace(/[\u00a0\u200b\ufeff]/g," ").replace(/\s+/g," ").trim();
+$("#aq").addEventListener("paste",e=>{const t=(e.clipboardData||window.clipboardData).getData("text");if(t==null)return;e.preventDefault();
+  const el=e.target,v=el.value,a=el.selectionStart??v.length,b=el.selectionEnd??v.length,ins=cleanQ(t);
+  el.value=(v.slice(0,a)+ins+v.slice(b)).replace(/^\s+/,"");el.dispatchEvent(new Event("input",{bubbles:true}))});
+$("#aq").addEventListener("blur",e=>{e.target.value=cleanQ(e.target.value)});
+$("#aq").addEventListener("input",()=>{clearTimeout(typeT);const el=$("#aq");if(/^\s/.test(el.value))el.value=el.value.replace(/^\s+/,"");const q=cleanQ(el.value);
   if(q.length<3){srch.seq++;$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";return}
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
 function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
