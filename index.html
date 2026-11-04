@@ -30,6 +30,15 @@
   --amb:blur(9px) saturate(1.3) brightness(1.15);--amb-op:.32;--shadow:0 26px 40px rgba(40,30,20,.28);--shadow-lg:0 36px 60px rgba(40,30,20,.3);
   --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"Archivo","Helvetica Neue",Arial,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --dw:900;--dx:118%;color-scheme:light}
+:root[data-look="galerie"][data-theme="sombre"]{--night:#121212;--fg:#f1efea;--muted:#9c978e;--line:rgba(241,239,234,.15);--on-accent:#fff;--groove:#0a0a0a;
+  --field:rgba(255,255,255,.06);--scrim:#121212;--panel:rgba(26,26,26,.97);--hover:rgba(255,255,255,.07);--menu:#1e1e1e;
+  --amb:blur(9px) saturate(1.3) brightness(.6);--amb-op:.38;--shadow:0 26px 40px rgba(0,0,0,.55);--shadow-lg:0 36px 60px rgba(0,0,0,.6);color-scheme:dark}
+:root[data-theme="sombre"] .gcard .gc{box-shadow:0 10px 22px rgba(0,0,0,.45)}
+:root[data-theme="sombre"] .sortmenu{box-shadow:0 18px 40px rgba(0,0,0,.5)}
+#grpMenu{left:auto;right:0}
+#themeBtn .sun{display:none}
+:root[data-theme="sombre"] #themeBtn .sun{display:block}
+:root[data-theme="sombre"] #themeBtn .moon{display:none}
 :root[data-look="galerie"] h1{letter-spacing:-.045em;font-size:clamp(28px,4vw,44px)}
 :root[data-look="galerie"] .caption .ct,:root[data-look="galerie"] .info h2{letter-spacing:-.045em}
 :root[data-look="galerie"] .info .by,:root[data-look="galerie"] .caption .ca{font-style:normal;font-weight:500}
@@ -73,7 +82,7 @@ body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .coll tr.gh td{background:var(--field);font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:17px;letter-spacing:-.01em;padding:12px}
 .coll tr.gh small{font-family:var(--f-mono);font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px}
 .subbar{position:relative;z-index:30}
-.sortmenu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:180px;margin:0;padding:6px;list-style:none;background:#fbfaf7;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(40,30,20,.16);text-transform:none;letter-spacing:.02em}
+.sortmenu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:180px;margin:0;padding:6px;list-style:none;background:var(--menu,#fbfaf7);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(40,30,20,.16);text-transform:none;letter-spacing:.02em}
 .sortmenu li{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--fg);padding:8px 12px;border-radius:9px;display:flex;justify-content:space-between;gap:12px}
 .sortmenu li:hover,.sortmenu li.kb{background:var(--hover)}
 .sortmenu li[aria-selected="true"]{background:var(--fg);color:var(--night)}
@@ -104,7 +113,7 @@ body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .gift .btn{margin-left:auto}
 .cy .res-tag,.restag{display:inline-block;margin-left:8px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:#1fa64a;color:#fff;padding:2px 7px;border-radius:999px;vertical-align:middle}
 .detail:not([hidden]) ~ #dbStat{display:none}
-#dbStat{position:fixed;z-index:90;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;padding:6px 11px 6px 9px;border-radius:999px;background:var(--bg,#f1efea);border:1px solid var(--line,#d9d5cc);font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--muted);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+#dbStat{position:fixed;z-index:90;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;padding:6px 11px 6px 9px;border-radius:999px;background:var(--night,#f1efea);border:1px solid var(--line,#d9d5cc);font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--muted);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 #dbStat i{width:9px;height:9px;border-radius:50%;background:#a9a59c;flex:none}
 #dbStat.ok i{background:#1fa64a;box-shadow:0 0 0 3px rgba(31,166,74,.18)}
 #dbStat.ko i{background:#e2231a;box-shadow:0 0 0 3px rgba(226,35,26,.18)}
@@ -370,7 +379,7 @@ dd{margin:0}
 </style>
 </head>
 <body>
-<script>document.documentElement.dataset.look="galerie"</script>
+<script>document.documentElement.dataset.look="galerie";try{const t=JSON.parse(localStorage.getItem("theme"));if(t==="sombre"||(t===null&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.dataset.theme="sombre"}catch(e){}</script>
 
 <div class="ambient" aria-hidden="true"><div id="amb0"></div><div id="amb1"></div></div>
 
@@ -381,6 +390,7 @@ dd{margin:0}
       <input class="search" id="q" type="search" placeholder="Chercher un disque, un artiste…" aria-label="Chercher">
       <div class="status" id="status" hidden><i></i><span></span></div>
       <button class="lock" id="lockBtn" type="button" hidden aria-label="Mode édition" title="Mode édition"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+      <button class="lock" id="themeBtn" type="button" aria-label="Mode sombre" title="Mode sombre"><svg class="moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <button class="lock" id="shareBtn" type="button" aria-label="Partager ma liste de souhaits" title="Partager ma liste de souhaits"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8" stroke="currentColor" stroke-width="1.8"/></svg></button>
       <button class="btn pri" id="addBtn" type="button" aria-expanded="false" aria-controls="adder">+ Ajouter un disque</button>
     </div>
@@ -1451,6 +1461,9 @@ function setView(v){
 }
 $("#vFlow").addEventListener("click",()=>setView("flow"));
 $("#vGrid").addEventListener("click",()=>setView("grid"));
+function paintTheme(){const d=document.documentElement.dataset.theme==="sombre";$("#themeBtn").setAttribute("aria-label",d?"Mode clair":"Mode sombre");$("#themeBtn").title=d?"Mode clair":"Mode sombre";$("#themeBtn").setAttribute("aria-pressed",String(d))}
+paintTheme();
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,d=r.dataset.theme!=="sombre";if(d)r.dataset.theme="sombre";else delete r.dataset.theme;store.set("theme",d?"sombre":"clair");paintTheme()});
 $("#vList").addEventListener("click",()=>setView("list"));
 $("#vStats").addEventListener("click",()=>setView("stats"));
 $("#backupBtn").addEventListener("click",async()=>{
