@@ -175,7 +175,7 @@ h1 span{color:var(--amber)}
 .disc .lab::after{content:"";position:absolute;left:50%;top:50%;width:8%;height:8%;margin:-4%;border-radius:50%;background:var(--night)}
 .cv.center .tilt{transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg))}
 .cv.center:hover .vinyl{transform:translateZ(-2px) translateX(34%) rotate(40deg)}
-.cv:not(.center):hover .tilt{transform:rotateY(var(--hov,0deg)) translateZ(30px)}
+.cv:not(.center):hover .tilt{transform:translateY(-4%)}
 .open{position:absolute;right:6%;top:6%;width:calc(var(--S) * .22);height:calc(var(--S) * .22);border-radius:50%;border:0;background:var(--amber);color:var(--on-accent);cursor:pointer;
   display:grid;place-items:center;font-family:var(--f-mono);font-size:calc(var(--S) * .036);letter-spacing:.06em;text-transform:uppercase;line-height:1.2;
   box-shadow:0 8px 20px rgba(0,0,0,.45);opacity:0;transform:translateZ(1px) scale(.6);transition:.35s;pointer-events:none}
@@ -769,7 +769,7 @@ function place(el,k){
   const s=S(), a=Math.abs(k), sg=Math.sign(k);
   let tf;
   if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
-  else tf=`translate3d(${sg*(s*.62+(a-1)*s*.26)}px,0,${-s*.3-a*s*.06}px) rotateY(${-sg*62}deg)`; // assez en retrait pour ne jamais traverser la pochette centrale
+  else tf=`translate3d(${sg*(s*1.08+(a-1)*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`; // à plat, côte à côte, sans chevauchement
   el.style.transform=tf; el.style.zIndex=100-a;
   el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW-1?1:Math.min(.7,a*.13)).toFixed(2);
   el.classList.toggle("center",k===0);
@@ -786,7 +786,7 @@ function setFocus(i,instant){
     let el=have.get(k);
     if(!el){el=cvEl(state.list[k],k); // entre depuis le bord
       const s=S(),sg=Math.sign(k-i)||1; el.style.transition="none";
-      el.style.transform=`translate3d(${sg*(s*.62+(WINDOW)*s*.26)}px,0,${-s*.3-WINDOW*s*.06}px) rotateY(${-sg*62}deg)`;
+      el.style.transform=`translate3d(${sg*(s*1.08+WINDOW*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`;
       lane.appendChild(el); el.getBoundingClientRect(); el.style.transition="";}
     if(instant) el.style.transition="none";
     place(el,k-i);
