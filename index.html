@@ -538,10 +538,13 @@ const cleanName=s=>String(s||"").replace(/\s\(\d+\)$/,"").replace(/\*$/,"");
 async function dgFetch(path,token){
   const url=cloud.on?"/api/discogs"+path:DG+path+(token?(path.includes("?")?"&":"?")+"token="+encodeURIComponent(token):"");
   const r=await fetch(url,{headers:{Accept:"application/vnd.discogs.v2.discogs+json"}});
-  if(r.status===401||r.status===403) throw new Error("Collection privée ou jeton invalide.");
-  if(r.status===404) throw new Error("Utilisateur Discogs introuvable.");
-  if(r.status===429) throw new Error("Discogs limite à 60 requêtes par minute. Réessaie dans une minute.");
-  if(!r.ok) throw new Error("Discogs a répondu "+r.status+".");
+  if(!r.ok){
+    let info="";try{info=(await r.json()).erreur||""}catch(e){}
+    if(r.status===401||r.status===403) throw new Error("Discogs refuse le jeton"+(cloud.on?" configuré sur Cloudflare":"")+(info?" ("+info+")":"")+".");
+    if(r.status===404) throw new Error("Introuvable sur Discogs.");
+    if(r.status===429) throw new Error("Discogs est saturé pour l'instant, réessaie dans quelques secondes."+(info?" ("+info+")":""));
+    throw new Error(info||("Discogs a répondu "+r.status+"."));
+  }
   return r.json();
 }
 function fromBasic(b,i){
