@@ -392,7 +392,9 @@ dd{margin:0}
   #dbStat{padding:8px}
   #dbStat span{display:none}
   .detail .close{top:10px;left:10px}
-  /* ===== mobile « plein écran » : en-tête court, interrupteur fixe, barre de vues en bas, + flottant ===== */
+}
+/* ===== « plein écran » : en-tête court, interrupteur fixe, barre de vues en bas, + flottant (mobile ET PC) ===== */
+@media all{
   :root{--S:min(78vw,320px)}
   .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
   header{flex-wrap:nowrap;position:relative}
@@ -404,7 +406,7 @@ dd{margin:0}
   body.msearch .tools .search{display:block;position:absolute;left:0;right:88px;top:50%;transform:translateY(-50%);width:auto;height:42px;font-size:14px;z-index:2;background:var(--night);border-color:var(--fg)}
   body.msearch #mSearch{color:var(--amber)}
   #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
-  #addBtn::before{width:24px;height:24px;background-size:100% 2.8px,2.8px 100%}
+  #addBtn::before{width:24px;height:24px;background-size:100% 2.8px,2.8px 100%;position:absolute;inset:0;margin:auto}
   body.readonly:not(.partage) #addBtn{display:grid!important}
   .msheet .sortmenu{z-index:100}
   .mtools{position:relative;z-index:0}
@@ -445,6 +447,32 @@ dd{margin:0}
   .mtools #dbStat{display:flex;position:static;margin-left:auto;box-shadow:none}
   .mtools #dbStat span{display:inline}
   .mtools .status{display:none}
+}
+/* ===== PC : même principe, en plus grand ===== */
+@media (min-width:641px){
+  :root{--S:320px}
+  .wrap{padding-block:22px calc(110px + env(safe-area-inset-bottom,0px));gap:14px}
+  :root[data-look="galerie"] h1{font-size:clamp(22px,2.2vw,28px)}
+  .tools{gap:4px}
+  .tools .lock{width:44px;height:44px}
+  body.msearch .tools .search{position:static;transform:none;width:300px;height:42px}
+  .subbar{display:flex;justify-content:center}
+  .subleft{width:auto}
+  .shelftog{width:360px}
+  .shelftog button{font-size:15px;padding:9px 0}
+  .msheet{left:auto;right:max(28px,calc(50% - 650px + 16px));top:78px;width:340px}
+  .caption{text-align:center;grid-template-columns:minmax(0,1fr);padding-inline:0}
+  .caption .ct{font-size:clamp(28px,3vw,38px)}
+  .caption .ca{font-size:19px}
+  .caption .cy{text-align:center}
+  .capline .nav{display:none}
+  .flow{height:calc(var(--S) * 1.32)}
+  #flowView{min-height:calc(100vh - 260px)}
+  .viewtog{left:28px;bottom:26px}
+  .viewtog button{width:50px;height:44px}
+  #addBtn{right:28px;bottom:24px;width:60px;height:60px;font-size:0;letter-spacing:0;padding:0;display:grid;place-items:center}
+  #addBtn::before{content:"";background:linear-gradient(currentColor,currentColor) center/100% 2.8px no-repeat,linear-gradient(currentColor,currentColor) center/2.8px 100% no-repeat}
+  .caption{margin-top:10px}
 }
 </style>
 </head>
@@ -1587,7 +1615,7 @@ function setView(v){
 $("#vFlow").addEventListener("click",()=>setView("flow"));
 $("#vGrid").addEventListener("click",()=>setView("grid"));
 /* ---------- Mobile : déplace tri, décennies et réglages dans le panneau « Filtres » ---------- */
-const mq=matchMedia("(max-width:640px)");
+const mq=matchMedia("all");
 const mMoves=[[".sortsel:not(#grpSel)","#mshTri"],["#grpSel","#mshTri"],["#chips","#mshChips"],["#lockBtn","#mshTools"],["#themeBtn","#mshTools"],["#shareBtn","#mshTools"],["#dbStat","#mshTools"],[".viewtog","body"]].map(([sel,to])=>{const el=document.querySelector(sel);return {el,to,home:el.parentNode,next:el.nextSibling}});
 function mobileLayout(){
   for(const m of mMoves){ if(mq.matches){ if(m.el.parentNode!==$(m.to)) $(m.to).appendChild(m.el) } else if(m.el.parentNode!==m.home) m.home.insertBefore(m.el,m.next&&m.next.parentNode===m.home?m.next:null) }
