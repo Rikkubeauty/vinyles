@@ -53,12 +53,25 @@ body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .subright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .sortsel{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .sortsel{position:relative}
-#sortBtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.03em;text-transform:none;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 13px;white-space:nowrap}
-#sortBtn b{font-weight:400}
-#sortBtn svg{transition:transform .2s;color:var(--muted)}
-#sortBtn[aria-expanded="true"]{border-color:var(--fg)}
-#sortBtn[aria-expanded="true"] svg{transform:rotate(180deg)}
-#sortBtn:focus-visible{outline:2px solid var(--amber)}
+#sortBtn,#grpBtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.03em;text-transform:none;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 13px;white-space:nowrap}
+#sortBtn b,#grpBtn b{font-weight:400}
+#sortBtn svg,#grpBtn svg{transition:transform .2s;color:var(--muted)}
+#sortBtn[aria-expanded="true"],#grpBtn[aria-expanded="true"]{border-color:var(--fg)}
+#sortBtn[aria-expanded="true"] svg,#grpBtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+#sortBtn:focus-visible,#grpBtn:focus-visible{outline:2px solid var(--amber)}
+#gridView{display:grid;gap:30px}
+.grp>h3{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:clamp(20px,2.4vw,26px);letter-spacing:-.02em}
+.grp>h3 small{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted);letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 18px}
+.gcard{all:unset;cursor:pointer;display:grid;gap:7px;min-width:0}
+.gcard .gc{position:relative;display:block;aspect-ratio:1;border-radius:2px;background:#ccc center/cover;box-shadow:0 10px 22px rgba(40,30,20,.18);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.gcard:hover .gc,.gcard:focus-visible .gc{transform:translateY(-4px);box-shadow:0 16px 30px rgba(40,30,20,.24)}
+.gcard:focus-visible{outline:2px solid var(--amber);outline-offset:4px}
+.gcard .gc em{position:absolute;left:9%;right:9%;bottom:9%;font-style:normal;font-family:var(--f-display);font-weight:var(--dw);font-size:15px;line-height:1.05}
+.gcard b{font-weight:600;font-size:15px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcard i{font-style:normal;font-size:13.5px;color:var(--muted);margin-top:-5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coll tr.gh td{background:var(--field);font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:17px;letter-spacing:-.01em;padding:12px}
+.coll tr.gh small{font-family:var(--f-mono);font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px}
 .subbar{position:relative;z-index:30}
 .sortmenu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:180px;margin:0;padding:6px;list-style:none;background:#fbfaf7;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(40,30,20,.16);text-transform:none;letter-spacing:.02em}
 .sortmenu li{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--fg);padding:8px 12px;border-radius:9px;display:flex;justify-content:space-between;gap:12px}
@@ -333,7 +346,10 @@ dd{margin:0}
   .tools{width:100%;flex-wrap:nowrap;gap:8px}
   .tools .search{flex:1 1 0;min-width:0;width:0}
   .wrap>*{min-width:0}
-  .viewtog button{padding:6px 8px;font-size:11px;letter-spacing:.02em}
+  .viewtog button{padding:6px 7px;font-size:10.5px;letter-spacing:0}
+  .subright{flex-wrap:wrap!important;row-gap:8px}
+  #grpBtn{padding:6px 10px;font-size:11.5px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
   .capline .nav{display:none}
   #sortBtn{padding:6px 10px;font-size:11.5px}
   #addBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
@@ -374,7 +390,9 @@ dd{margin:0}
     <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div></div>
     <div class="subright"><div class="sortsel"><span>Tri</span><button type="button" id="sortBtn" aria-haspopup="listbox" aria-expanded="false"><b id="sortLbl">Derniers ajouts</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Derniers ajouts</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
-    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button><button type="button" id="vStats" aria-pressed="false">Stats</button></div></div>
+    <div class="sortsel" id="grpSel" hidden><span>Par</span><button type="button" id="grpBtn" aria-haspopup="listbox" aria-expanded="false"><b id="grpLbl">Artiste</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <ul class="sortmenu" id="grpMenu" role="listbox" aria-label="Regrouper" hidden><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="style">Style</li><li role="option" data-v="decennie">Décennie</li><li role="option" data-v="aucun">Sans regroupement</li></ul></div>
+    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Flow</button><button type="button" id="vGrid" aria-pressed="false">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button><button type="button" id="vStats" aria-pressed="false">Stats</button></div></div>
   </div>
 
   <div id="flowView">
@@ -388,6 +406,7 @@ dd{margin:0}
   </div>
   <input class="scrub" id="scrub" type="range" min="0" max="0" value="0" aria-label="Parcourir la collection">
   </div>
+  <section id="gridView" hidden aria-label="Pochettes par groupe"></section>
   <section id="listView" hidden aria-label="Liste des disques">
     <div class="listbar">
       <span class="count" id="lCount"></span>
@@ -715,6 +734,7 @@ function refilter(focusId){
   const fi=focusId?Math.max(0,state.list.findIndex(d=>d.id===focusId)):Math.min(2,state.list.length-1);
   $("#scrub").max=Math.max(0,state.list.length-1);
   if(typeof renderList==="function"&&!$("#listView").hidden) renderList();
+  if(typeof renderGrid==="function"&&!$("#gridView").hidden) renderGrid();
   document.body.classList.toggle("vide",!state.list.length);
   if(!state.list.length){$("#caption").innerHTML=`<div class="empty">${!records.length&&shelf==="souhaits"?"Ta liste de souhaits est vide. Ajoute un disque avec « Mes souhaits » coché dans « + Ajouter un disque ».":!records.length?"Ta collection est vide.":"Aucun disque ne correspond."}</div>`;
     if(state.q){$("#caption").innerHTML="";$("#lane").innerHTML=`<div class="laneEmpty"><p>Aucun disque « ${esc($("#q").value.trim())} » dans ta discothèque.</p>${onlineOffer()}</div>`}
@@ -823,7 +843,7 @@ async function openDetail(d,fromEl){
   det.hidden=false; det.scrollTop=0; document.body.style.overflow="hidden";
   if(!reduce){
     det.animate([{opacity:0},{opacity:1}],{duration:350,easing:"ease-out"});
-    const src=(fromEl||document.querySelector(".cv.center"))?.querySelector(".sleeve");
+    const src=(fromEl||document.querySelector(".cv.center"))?.querySelector(".sleeve,.gc");
     if(src){const a=src.getBoundingClientRect(),b=pack.getBoundingClientRect();
       pack.animate([{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width})`,transformOrigin:"0 0"},{transform:"none",transformOrigin:"0 0"}],{duration:650,easing:"cubic-bezier(.2,.8,.2,1)"});}
   }
@@ -1423,13 +1443,14 @@ async function burstLoop(){
 const lst={sort:"artiste",dir:1,sel:new Set(),confirm:null};
 const COLS=[["titre","Titre"],["artiste","Artiste"],["annee","Année"],["label","Label"],["cat","Réf."],["genres","Genre"]];
 function setView(v){
-  const list=v==="list", stats=v==="stats";
-  $("#flowView").hidden=list||stats; $("#listView").hidden=!list; $("#statsView").hidden=!stats;
-  $("#vFlow").setAttribute("aria-pressed",String(!list&&!stats)); $("#vList").setAttribute("aria-pressed",String(list)); $("#vStats").setAttribute("aria-pressed",String(stats));
-  $(".sortsel").hidden=stats;
-  store.set("vue",v); if(list) renderList(); else if(stats) renderStats(); else setFocus(state.focus,true);
+  const list=v==="list", stats=v==="stats", grid=v==="grid", flow=!list&&!stats&&!grid;
+  $("#flowView").hidden=!flow; $("#gridView").hidden=!grid; $("#listView").hidden=!list; $("#statsView").hidden=!stats;
+  $("#vFlow").setAttribute("aria-pressed",String(flow)); $("#vGrid").setAttribute("aria-pressed",String(grid)); $("#vList").setAttribute("aria-pressed",String(list)); $("#vStats").setAttribute("aria-pressed",String(stats));
+  $(".sortsel").hidden=stats; $("#grpSel").hidden=!(grid||list);
+  store.set("vue",v); if(list) renderList(); else if(grid) renderGrid(); else if(stats) renderStats(); else setFocus(state.focus,true);
 }
 $("#vFlow").addEventListener("click",()=>setView("flow"));
+$("#vGrid").addEventListener("click",()=>setView("grid"));
 $("#vList").addEventListener("click",()=>setView("list"));
 $("#vStats").addEventListener("click",()=>setView("stats"));
 $("#backupBtn").addEventListener("click",async()=>{
@@ -1444,10 +1465,40 @@ function paintSort(){
 }
 function sortMenu(open){$("#sortMenu").hidden=!open;$("#sortBtn").setAttribute("aria-expanded",String(open))}
 paintSort();
-$("#sortBtn").addEventListener("click",e=>{e.stopPropagation();sortMenu($("#sortMenu").hidden)});
+$("#sortBtn").addEventListener("click",e=>{e.stopPropagation();typeof grpMenu==="function"&&grpMenu(false);sortMenu($("#sortMenu").hidden)});
 $("#sortMenu").addEventListener("click",e=>{const li=e.target.closest("li");if(!li)return;sortBy=li.dataset.v;store.set("tri",sortBy);paintSort();sortMenu(false);refilter();if(!$("#listView").hidden)renderList()});
 document.addEventListener("click",e=>{if(!e.target.closest(".sortsel"))sortMenu(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sortMenu").hidden){sortMenu(false);$("#sortBtn").focus()}});
+/* ---------- Regroupements (vue Pochettes et Liste) ---------- */
+let groupBy=store.get("groupe")||"artiste";
+const artKey=a=>String(a||"").replace(/^(the|les|le|la)\s+/i,"");
+const GROUPS={
+  artiste:d=>{const a=(d.artiste||"").trim();return a?{k:artKey(a).toLowerCase(),l:a}:{k:"\uffff",l:"Artiste inconnu"}},
+  style:d=>{const g=(d.genres||"").split(/,\s*/)[0].trim();return g?{k:g.toLowerCase(),l:g}:{k:"\uffff",l:"Sans style"}},
+  decennie:d=>{const x=decadeOf(d);return x?{k:x,l:"Années "+(x>=2000?x:String(x).slice(2))}:{k:99999,l:"Année inconnue"}}};
+function groupRows(rows){
+  const f=GROUPS[groupBy]; if(!f) return [[null,rows]];
+  const m=new Map();
+  for(const d of rows){const g=f(d); const e=m.get(g.l)||m.set(g.l,{k:g.k,l:g.l,items:[]}).get(g.l); e.items.push(d)}
+  return [...m.values()].sort((a,b)=>typeof a.k==="number"?a.k-b.k:cmpTxt(a.k,b.k)).map(g=>[g.l,g.items]);
+}
+function paintGrp(){
+  $("#grpMenu").querySelectorAll("li").forEach(li=>li.setAttribute("aria-selected",String(li.dataset.v===groupBy)));
+  const cur=$("#grpMenu").querySelector(`li[data-v="${groupBy}"]`); $("#grpLbl").textContent=cur?(groupBy==="aucun"?"Rien":cur.textContent):"";
+}
+function grpMenu(open){$("#grpMenu").hidden=!open;$("#grpBtn").setAttribute("aria-expanded",String(open))}
+paintGrp();
+$("#grpBtn").addEventListener("click",e=>{e.stopPropagation();sortMenu(false);grpMenu($("#grpMenu").hidden)});
+$("#grpMenu").addEventListener("click",e=>{const li=e.target.closest("li");if(!li)return;groupBy=li.dataset.v;store.set("groupe",groupBy);paintGrp();grpMenu(false);if(!$("#gridView").hidden)renderGrid();if(!$("#listView").hidden)renderList()});
+document.addEventListener("click",e=>{if(!e.target.closest("#grpSel"))grpMenu(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#grpMenu").hidden){grpMenu(false);$("#grpBtn").focus()}});
+function renderGrid(){
+  const rows=state.list;
+  if(!rows.length){$("#gridView").innerHTML=`<div class="listempty"><p>${!records.length?(shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide."):"Aucun disque ne correspond."}</p>${state.q?onlineOffer():""}</div>`;return}
+  const card=d=>`<button type="button" class="gcard" data-open="${esc(d.id)}"><span class="gc" style="${bgOf(d)}">${d.cover?"":`<em style="color:${d.sleeve.ink}">${esc(d.titre)}</em>`}</span><b>${esc(d.titre)}</b><i>${esc(d.artiste)}${d.annee?" · "+d.annee:""}</i></button>`;
+  $("#gridView").innerHTML=groupRows(rows).map(([l,items])=>`<section class="grp">${l===null?"":`<h3>${esc(l)}<small>${items.length}</small></h3>`}<div class="grid">${items.map(card).join("")}</div></section>`).join("");
+}
+$("#gridView").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openDetail(state.list.find(d=>d.id===c.dataset.open),c)});
 function renderList(){
   const rows=mine.filter(d=>state.list.includes(d));
   const cmp=(a,b)=>{const k=lst.sort,x=a[k]??"",y=b[k]??"";return (typeof x==="number"&&typeof y==="number"?x-y:String(x).localeCompare(String(y),"fr",{numeric:true,sensitivity:"base"}))*lst.dir};
@@ -1463,13 +1514,13 @@ function renderList(){
   $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
     <th><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></th><th></th>
     ${COLS.map(([k,l])=>`<th aria-sort="${lst.sort===k?(lst.dir>0?"ascending":"descending"):"none"}"><button type="button" data-sort="${k}">${l}</button></th>`).join("")}<th></th></tr></thead>
-    <tbody>${rows.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
+    <tbody>${groupRows(rows).map(([l,items])=>(l===null?"":`<tr class="gh"><td colspan="${COLS.length+3}">${esc(l)}<small>${items.length}</small></td></tr>`)+items.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
       <td><input type="checkbox" data-sel="${esc(d.id)}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></td>
       <td><div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div></td>
       <td><span class="tt" data-open="${esc(d.id)}">${esc(d.titre)}</span></td><td>${esc(d.artiste)}</td>
       <td class="mono">${esc(d.annee||"")}</td><td>${esc(d.label)}</td><td class="mono">${esc(d.cat)}</td><td>${esc((d.genres||"").split(", ").slice(0,2).join(", "))}</td>
       <td class="acts2"><button class="mini" type="button" data-edit="${esc(d.id)}">Modifier</button>
-        <button class="mini${lst.confirm===d.id?" danger":""}" type="button" data-del="${esc(d.id)}">${lst.confirm===d.id?"Confirmer":"Supprimer"}</button></td></tr>`).join("")}</tbody></table>`;
+        <button class="mini${lst.confirm===d.id?" danger":""}" type="button" data-del="${esc(d.id)}">${lst.confirm===d.id?"Confirmer":"Supprimer"}</button></td></tr>`).join("")).join("")}</tbody></table>`;
 }
 $("#tableWrap").addEventListener("click",e=>{
   const t=e.target, byId=id=>mine.find(d=>d.id===id);
@@ -1590,7 +1641,7 @@ async function translateRecord(d){
   rebuild();
   if(new URLSearchParams(location.search).has("souhaits")) shelf="souhaits";
   await loadResas();
-  if(store.get("vue")==="list"||store.get("vue")==="stats") setView(store.get("vue"));
+  if(["list","grid","stats"].includes(store.get("vue"))) setView(store.get("vue"));
   if(shelf==="souhaits") setShelf("souhaits");
   for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)}
 })();
