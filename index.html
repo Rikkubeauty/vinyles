@@ -160,13 +160,13 @@ h1 span{color:var(--amber)}
 .status.on i{background:#7bd389;box-shadow:0 0 8px #7bd389}
 
 /* ---------- Cover Flow ---------- */
-.flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;}
+.flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;-webkit-mask-image:linear-gradient(#000 calc(100% - 48px),transparent);mask-image:linear-gradient(#000 calc(100% - 48px),transparent)}
 .lane{position:absolute;left:50%;top:calc(var(--S) * .12);width:0;height:0;transform-style:preserve-3d}
 .cv{position:absolute;left:calc(var(--S) / -2);top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;cursor:pointer;
   transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform;backface-visibility:hidden;contain:layout style}
-.cv .shade{position:absolute;left:0;right:0;top:0;height:calc(200% + 6px);background:var(--night);opacity:0;transition:opacity .55s;pointer-events:none;transform:translateZ(1px)}
-.cv .refl{position:absolute;left:0;right:0;top:calc(100% + 6px);height:100%;background-size:cover;background-position:center;transform:scaleY(-1);opacity:.22;border-radius:3px;pointer-events:none;
-  -webkit-mask-image:linear-gradient(to top,#000,transparent 40%);mask-image:linear-gradient(to top,#000,transparent 40%)}
+.cv .shade{position:absolute;left:0;right:0;top:0;height:100%;background:var(--night);opacity:0;transition:opacity .55s;pointer-events:none;transform:translateZ(1px)}
+.cv .refl{position:absolute;left:0;right:0;top:calc(100% + 6px);height:100%;background-size:cover;background-position:center;transform:scaleY(-1);opacity:.22;border-radius:3px;pointer-events:none;transition:opacity .55s;
+  -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,.45) 12%,rgba(0,0,0,.12) 24%,transparent 34%);mask-image:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,.45) 12%,rgba(0,0,0,.12) 24%,transparent 34%)}
 .cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .cv.center .tilt{will-change:transform}
 .cv:not(.center) .vinyl{display:none}
@@ -879,7 +879,7 @@ function place(el,k){
   if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
   else tf=ringTf(s,sg,a);
   el.style.transform=tf; el.style.zIndex=100-a;
-  el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW?1:Math.min(.72,a*.17)).toFixed(2);
+  const sh=k===0?0:(a>=WINDOW?1:Math.min(.72,a*.17));el.querySelector(".shade").style.opacity=sh.toFixed(2);const rf0=el.querySelector(".refl");if(rf0)rf0.style.opacity=(.22*(1-sh)).toFixed(3);
   el.classList.toggle("center",k===0);
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
