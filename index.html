@@ -773,28 +773,37 @@ function cvEl(d,i){
       <div class="shade"></div></div>`;
   return el;
 }
+// en arc de cercle : la 1re voisine à plat à côté, les suivantes de plus en plus loin derrière
+const RING=[[1.08,.3,.72],[1.62,.68,.62],[2.02,1.08,.54],[2.3,1.5,.47],[2.5,1.9,.41],[2.62,2.3,.36]];
+const ringTf=(s,sg,a)=>{const [x,z,k]=RING[Math.min(a,RING.length)-1];const fx=innerWidth<640?.62:1;return `translate3d(${sg*x*s*fx}px,${s*(1-k)/2}px,${-z*s}px) scale(${k})`};
 function place(el,k){
   const s=S(), a=Math.abs(k), sg=Math.sign(k);
   let tf;
   if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
-  else tf=`translate3d(${sg*(s*1.08+(a-1)*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`; // à plat, côte à côte, sans chevauchement
+  else tf=ringTf(s,sg,a);
   el.style.transform=tf; el.style.zIndex=100-a;
-  el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW-1?1:Math.min(.7,a*.13)).toFixed(2);
+  el.querySelector(".shade").style.opacity=k===0?0:(a>=WINDOW?1:Math.min(.72,a*.17)).toFixed(2);
   el.classList.toggle("center",k===0);
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
 }
 let ambFlip=0, ambT=0;
-function setFocus(i,instant){
-  if(!state.list.length) return;
-  i=Math.max(0,Math.min(state.list.length-1,i)); state.focus=i; $("#scrub").value=i;
+// la discothèque tourne en boucle : state.v est la position "virtuelle" (sans fin), state.focus l'index réel
+const modn=(a,n)=>((a%n)+n)%n;
+const step=dir=>setFocus((state.v??state.focus)+dir,false,true);
+function setFocus(i,instant,virt){
+  const n=state.list.length; if(!n) return;
+  const loop=n>2, W=loop?Math.min(WINDOW,Math.floor((n-1)/2)):WINDOW;
+  if(!virt) i=Math.max(0,Math.min(n-1,i))+(loop?(state.v??state.focus??0)-(state.focus??0):0);
+  if(!loop) i=Math.max(0,Math.min(n-1,i));
+  state.v=i; state.focus=loop?modn(i,n):i; $("#scrub").value=state.focus;
   const lane=$("#lane"), have=new Map([...lane.children].map(el=>[+el.dataset.i,el]));
-  for(const [k,el] of have) if(Math.abs(k-i)>WINDOW) el.remove();
+  for(const [k,el] of have) if(Math.abs(k-i)>W){el.remove();have.delete(k)}
   // nouvelles pochettes : posées au bord d'un coup, puis un seul recalcul de mise en page pour tout le lot
-  const s=S(), fresh=[], lo=Math.max(0,i-WINDOW), hi=Math.min(state.list.length-1,i+WINDOW);
+  const s=S(), fresh=[], lo=loop?i-W:Math.max(0,i-W), hi=loop?i+W:Math.min(n-1,i+W);
   for(let k=lo;k<=hi;k++) if(!have.has(k)){
-    const el=cvEl(state.list[k],k), sg=Math.sign(k-i)||1; el.style.transition="none";
-    el.style.transform=`translate3d(${sg*(s*1.08+WINDOW*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`;
+    const el=cvEl(state.list[modn(k,n)],k), sg=Math.sign(k-i)||1; el.style.transition="none";
+    el.style.transform=ringTf(s,sg,WINDOW+1);
     lane.appendChild(el); have.set(k,el); fresh.push(el);
   }
   if(instant) for(const el of have.values()) el.style.transition="none";
@@ -802,7 +811,7 @@ function setFocus(i,instant){
   for(const el of fresh) el.style.transition="";
   for(let k=lo;k<=hi;k++) place(have.get(k),k-i);
   if(instant){lane.offsetWidth; for(let k=lo;k<=hi;k++) have.get(k).style.transition=""}
-  const d=state.list[i];
+  const d=state.list[state.focus];
   $("#caption").innerHTML=`<div class="ct">${esc(d.titre)}</div><div class="ca">${esc(d.artiste)}</div><div class="cy">${[d.annee,d.label].filter(Boolean).map(esc).join(" · ")}${resaOf(d)?`<span class="restag">Réservé</span>`:""}</div>`;
   // fond ambiant et Deezer : seulement quand le défilement se pose (évite de tout repeindre à chaque cran)
   clearTimeout(ambT); ambT=setTimeout(()=>{
@@ -815,7 +824,7 @@ function setFocus(i,instant){
 }
 $("#lane").addEventListener("click",e=>{
   const el=e.target.closest(".cv"); if(!el) return;
-  const i=+el.dataset.i; if(i===state.focus) openDetail(state.list[i],el); else setFocus(i);
+  const i=+el.dataset.i; if(i===state.v) openDetail(state.list[state.focus],el); else setFocus(i,false,true);
 });
 let mmQ=null,mmE=null;
 $("#lane").addEventListener("mousemove",e=>{mmE=e;if(mmQ)return;mmQ=requestAnimationFrame(()=>{mmQ=null;tiltCenter(mmE)})});
@@ -826,19 +835,28 @@ function tiltCenter(e){
   const sl=el.querySelector(".sleeve"); sl.style.setProperty("--gx",(x*100).toFixed(0)+"%"); sl.style.setProperty("--gy",(y*100).toFixed(0)+"%");
 }
 $("#lane").addEventListener("mouseout",e=>{const el=e.target.closest(".cv.center");if(el&&!el.contains(e.relatedTarget)){const t=el.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")}});
-$("#prev").addEventListener("click",()=>setFocus(state.focus-1));
-$("#next").addEventListener("click",()=>setFocus(state.focus+1));
+$("#prev").addEventListener("click",()=>step(-1));
+$("#next").addEventListener("click",()=>step(1));
 $("#scrub").addEventListener("input",e=>setFocus(+e.target.value));
 $("#flow").addEventListener("keydown",e=>{
-  if(e.key==="ArrowLeft"){setFocus(state.focus-1);e.preventDefault()}
-  else if(e.key==="ArrowRight"){setFocus(state.focus+1);e.preventDefault()}
+  if(e.key==="ArrowLeft"){step(-1);e.preventDefault()}
+  else if(e.key==="ArrowRight"){step(1);e.preventDefault()}
   else if(e.key==="Enter"||e.key===" "){openDetail(state.list[state.focus]);e.preventDefault()}
 });
-let wl=0;
-$("#flow").addEventListener("wheel",e=>{const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(Math.abs(v)<4)return;e.preventDefault();const n=Date.now();if(n-wl<110)return;wl=n;setFocus(state.focus+(v>0?1:-1))},{passive:false});
+// molette / pavé tactile : une pochette par geste (un geste = des évènements à moins de 180 ms d'écart, inertie comprise)
+let wAcc=0,wPrev=0,wDone=false;
+$("#flow").addEventListener("wheel",e=>{const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault();
+  const n=performance.now(); if(n-wPrev>180){wAcc=0;wDone=false} wPrev=n;
+  if(wDone) return;
+  wAcc+=v; if(Math.abs(wAcc)<30) return;
+  step(wAcc>0?1:-1); wDone=true},{passive:false});
+// glisser au doigt ou à la souris : une pochette par glissé
 let drag=null;
-$("#flow").addEventListener("pointerdown",e=>{drag={x:e.clientX,f:state.focus,moved:false}});
-addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>8)drag.moved=true;if(drag.moved)setFocus(drag.f-Math.round(dx/(S()*.3)))});
+$("#flow").addEventListener("pointerdown",e=>{if(e.button>0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,stepped:false}});
+addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.moved&&Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy))drag.moved=true;
+  if(drag.moved&&!drag.stepped&&Math.abs(dx)>Math.min(60,S()*.22)){drag.stepped=true;step(dx<0?1:-1)}});
+addEventListener("pointercancel",e=>{if(drag&&e.pointerId===drag.id)drag=null});
 addEventListener("pointerup",()=>{if(drag&&drag.moved){const stop=ev=>{ev.stopPropagation();ev.preventDefault()};addEventListener("click",stop,{capture:true,once:true});setTimeout(()=>removeEventListener("click",stop,{capture:true}),50)}drag=null});
 addEventListener("resize",()=>setFocus(state.focus,true));
 function applyCover(d){
