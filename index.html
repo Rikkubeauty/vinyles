@@ -560,7 +560,7 @@ dd{margin:0}
 </div>
 <div class="keydlg" id="dupDlg" hidden role="alertdialog" aria-modal="true" aria-labelledby="dupTitle" aria-describedby="dupTxt">
   <div class="keybox">
-    <h2 id="dupTitle">Déjà dans ta discothèque</h2>
+    <h2 id="dupTitle">Déjà dans la discothèque</h2>
     <p id="dupTxt"></p>
     <div class="keyacts"><button class="btn pri" type="button" id="dupAdd">Ajouter quand même</button><button class="btn" type="button" id="dupNo">Annuler</button></div>
   </div>
@@ -568,7 +568,7 @@ dd{margin:0}
 <div class="keydlg" id="keyDlg" hidden role="dialog" aria-modal="true" aria-labelledby="keyTitle">
   <form id="keyForm" class="keybox">
     <h2 id="keyTitle">Mode édition</h2>
-    <p>Entre la clé d'édition pour ajouter, modifier ou supprimer des disques. Elle reste sur cet appareil.</p>
+    <p>Clé d'édition requise pour ajouter, modifier ou supprimer des disques. Elle reste enregistrée sur cet appareil.</p>
     <input id="keyIn" type="password" autocomplete="current-password" aria-label="Clé d'édition">
     <div class="imsg err" id="keyMsg" role="status"></div>
     <div class="keyacts"><button class="btn pri" type="submit">Valider</button><button class="btn" type="button" id="keyCancel">Annuler</button></div>
@@ -761,7 +761,7 @@ async function dgFetch(path,token){
     let info="";try{const j=await r.json();info=j.erreur||j.message||""}catch(e){}
     if(r.status===401||r.status===403) throw new Error("Discogs refuse le jeton"+(cloud.on?" configuré sur Cloudflare":"")+(info?" ("+info+")":"")+".");
     if(r.status===404) throw new Error("Introuvable sur Discogs"+(info?" ("+info+")":"")+".");
-    if(r.status===429) throw new Error("Discogs est saturé pour l'instant, réessaie dans quelques secondes."+(info?" ("+info+")":""));
+    if(r.status===429) throw new Error("Discogs est saturé pour l'instant, nouvel essai possible dans quelques secondes."+(info?" ("+info+")":""));
     throw new Error(info||("Discogs a répondu "+r.status+"."));
   }
   return r.json();
@@ -857,8 +857,8 @@ function refilter(focusId){
   if(typeof renderList==="function"&&!$("#listView").hidden) renderList();
   if(typeof renderGrid==="function"&&!$("#gridView").hidden) renderGrid();
   document.body.classList.toggle("vide",!state.list.length);
-  if(!state.list.length){$("#caption").innerHTML=`<div class="empty">${!records.length&&shelf==="souhaits"?"Ta liste de souhaits est vide. Ajoute un disque avec « Mes souhaits » coché dans « + Ajouter un disque ».":!records.length?"Ta collection est vide.":"Aucun disque ne correspond."}</div>`;
-    if(state.q){$("#caption").innerHTML="";$("#lane").innerHTML=`<div class="laneEmpty"><p>Aucun disque « ${esc($("#q").value.trim())} » dans ta discothèque.</p>${onlineOffer()}</div>`}
+  if(!state.list.length){$("#caption").innerHTML=`<div class="empty">${!records.length&&shelf==="souhaits"?"Liste de souhaits vide. Pour y ajouter un disque : bouton +, puis « Mes souhaits ».":!records.length?"Collection vide.":"Aucun disque ne correspond."}</div>`;
+    if(state.q){$("#caption").innerHTML="";$("#lane").innerHTML=`<div class="laneEmpty"><p>Aucun disque « ${esc($("#q").value.trim())} » dans la discothèque.</p>${onlineOffer()}</div>`}
     return}
   setFocus(fi,true);
 }
@@ -1048,7 +1048,7 @@ function renderInfo(d){
       ${d.mbid?`<a class="ico" href="https://musicbrainz.org/release/${esc(d.mbid)}" target="_blank" rel="noopener" aria-label="Fiche MusicBrainz" title="Fiche MusicBrainz">${ICON.mb}</a>`:""}
       ${isWish(d)&&d.discogsId?`<a class="ico" href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Offres de vente sur Discogs" title="Offres de vente sur Discogs">${ICON.tag}</a>`:""}
       </span>
-      ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Clique encore pour supprimer</span></span>`:""}
+      ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Cliquer encore pour supprimer</span></span>`:""}
     </div>
     ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc("album",info.albumId,false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}`;
   highlight();
@@ -1111,7 +1111,7 @@ async function dataUrlToBlob(u){return (await fetch(u)).blob()}
 async function syncNow(){
   if(syncing){scheduleSync();return} syncing=true;
   try{
-    if(!cloud.key&&!(await askKey())){toast("Modifications gardées sur cet appareil seulement : entre la clé d'édition pour les enregistrer en ligne.");return}
+    if(!cloud.key&&!(await askKey())){toast("Modifications gardées sur cet appareil seulement. La clé d'édition permet de les enregistrer en ligne.");return}
     const ids=new Set(mine.map(d=>d.id)); let n=0;
     for(const d of mine){
       if(d.cover&&d.cover.startsWith("data:")){
@@ -1131,7 +1131,7 @@ async function syncNow(){
       if(r.ok){snap.delete(id);n++}
     }
     if(n){toast("Enregistré en ligne ✓");dbStatus("ok","Base connectée")}
-  }catch(err){toast(err.message==="Failed to fetch"?"Pas de connexion : réessaie dans un instant.":err.message,true);if(err.message==="Failed to fetch")dbStatus("ko","Base injoignable");else checkDb()}
+  }catch(err){toast(err.message==="Failed to fetch"?"Pas de connexion. Nouvel essai possible dans un instant.":err.message,true);if(err.message==="Failed to fetch")dbStatus("ko","Base injoignable");else checkDb()}
   finally{syncing=false}
 }
 function dbStatus(state,txt){const el=$("#dbStat");if(!el)return;el.className=state;el.querySelector("span").textContent=txt}
@@ -1156,8 +1156,8 @@ let dupBusy=Promise.resolve();
 function confirmDup(d){
   const ex=sameTitle(d); if(!ex) return Promise.resolve(true);
   const ask=()=>new Promise(res=>{
-    const where=isWish(ex)?"dans tes souhaits":"dans ta collection";
-    $("#dupTxt").textContent=`Tu as déjà « ${ex.titre} »${ex.artiste?` de ${ex.artiste}`:""}${ex.annee?` (${ex.annee})`:""} ${where}. Ajouter « ${d.titre} »${d.artiste?` de ${d.artiste}`:""}${d.annee?` (${d.annee})`:""} quand même ?`;
+    const where=isWish(ex)?"dans les souhaits":"dans la collection";
+    $("#dupTxt").textContent=`Déjà présent : « ${ex.titre} »${ex.artiste?` de ${ex.artiste}`:""}${ex.annee?` (${ex.annee})`:""} ${where}. Ajouter « ${d.titre} »${d.artiste?` de ${d.artiste}`:""}${d.annee?` (${d.annee})`:""} quand même ?`;
     const dlg=$("#dupDlg"); dlg.hidden=false; $("#dupNo").focus();
     const done=v=>{dlg.hidden=true;$("#dupAdd").onclick=$("#dupNo").onclick=dlg.onkeydown=null;res(v)};
     $("#dupAdd").onclick=()=>done(true); $("#dupNo").onclick=()=>done(false);
@@ -1200,7 +1200,7 @@ async function addRelease(id,btn){
   const token=discogsToken();
   const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
   const ex=mine.find(d=>d.discogsId===id);
-  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans tes souhaits.":"Ce disque est déjà dans ta collection.";return}
+  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans les souhaits.":"Ce disque est déjà dans la collection.";return}
   btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche Discogs…";
   try{
     const r=await dgFetch(`/releases/${id}`,token);
@@ -1214,18 +1214,18 @@ async function addRelease(id,btn){
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
     rebuild(d.id);
     btn&&btn.classList.add("added");
-    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"à tes souhaits":"à ta collection"}.`;
+    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}.`;
     resolveDeezer(d).then(()=>applyCover(d));
   }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err)}
   finally{btn&&(btn.disabled=false)}
 }
-const niceErr=err=>err.message==="Failed to fetch"?"Discogs est injoignable depuis cet aperçu. Ouvre la page depuis ton site ou ton ordinateur.":err.message;
+const niceErr=err=>err.message==="Failed to fetch"?"Discogs est injoignable depuis cet aperçu. Ouvrir la page depuis le site ou un ordinateur.":err.message;
 
 /* recherche : titre / artiste, ou EAN / code-barres. Les suggestions arrivent pendant la frappe. */
 const srch={q:"",page:1,pages:1,items:[],seq:0};
 async function searchDiscogs(q,page){
   const token=discogsToken();
-  if(!token) throw new Error("La recherche Discogs marche seulement depuis ton site.");
+  if(!token) throw new Error("La recherche Discogs marche seulement depuis le site.");
   const digits=q.replace(/[\s-]/g,"");
   const path=/^\d{8,14}$/.test(digits)
     ?`/database/search?barcode=${digits}&type=release&per_page=30&page=${page}`
@@ -1319,7 +1319,7 @@ function recordFromMb(rel){
 async function addMbRelease(id,btn){
   const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
   const ex=mine.find(d=>d.mbid===id);
-  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans tes souhaits.":"Ce disque est déjà dans ta collection.";return}
+  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans les souhaits.":"Ce disque est déjà dans la collection.";return}
   btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche MusicBrainz…";
   try{
     const d=recordFromMb(await mbFetch(`release/${id}?inc=${MB_INC}`));
@@ -1329,7 +1329,7 @@ async function addMbRelease(id,btn){
     mine.unshift(d); saveMine();
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
     rebuild(d.id); btn&&btn.classList.add("added");
-    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"à tes souhaits":"à ta collection"}.`;
+    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}.`;
     resolveDeezer(d).then(()=>applyCover(d));
   }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=err.message}
   finally{btn&&(btn.disabled=false)}
@@ -1364,7 +1364,7 @@ async function runSearch(q,more){
   }catch(err){if(my!==srch.seq)return;dgErr=err}
   if(srch.items.length){
     renderResults(rank(srch.q,srch.items));
-    $("#aMsg").textContent=`Les plus proches de « ${srch.q} » en premier. Clique sur ton pressage pour l'ajouter.`;
+    $("#aMsg").textContent=`Les plus proches de « ${srch.q} » en premier. Choisir le pressage pour l'ajouter.`;
     $("#moreBtn").hidden=srch.page>=srch.pages; return;
   }
   $("#moreBtn").hidden=true;
@@ -1373,10 +1373,10 @@ async function runSearch(q,more){
   $("#aMsg").textContent="Rien sur Discogs, recherche sur MusicBrainz…";
   try{
     const list=await searchMb(srch.q); if(my!==srch.seq) return;
-    if(list.length){renderResults(rank(srch.q,list));$("#aMsg").textContent=`Trouvé sur MusicBrainz (pas sur Discogs). Clique sur ton disque pour l'ajouter.`;return}
+    if(list.length){renderResults(rank(srch.q,list));$("#aMsg").textContent=`Trouvé sur MusicBrainz (pas sur Discogs). Choisir le disque pour l'ajouter.`;return}
     $("#results").innerHTML="";
     $("#aMsg").className=dgErr?"imsg err":"imsg";
-    $("#aMsg").textContent=dgErr?niceErr(dgErr):"Aucun résultat sur Discogs ni sur MusicBrainz. Essaie avec moins de mots, ou le numéro de catalogue.";
+    $("#aMsg").textContent=dgErr?niceErr(dgErr):"Aucun résultat sur Discogs ni sur MusicBrainz. Essayer avec moins de mots, ou le numéro de catalogue.";
   }catch(err){if(my!==srch.seq)return;$("#results").innerHTML="";$("#aMsg").className="imsg err";$("#aMsg").textContent=dgErr?niceErr(dgErr):"Aucun résultat sur Discogs. "+err.message}
 }
 /* Discogs cherche aussi dans les crédits et les morceaux : on garde d'abord ce qui correspond au titre ou à l'artiste */
@@ -1428,7 +1428,7 @@ $("#scanBtn").addEventListener("click",async()=>{
       try{const c=await det.detect(v); if(c.length){$("#aq").value=c[0].rawValue;stopScan();$("#addForm").requestSubmit();return}}catch(e){}
       setTimeout(tick,120)};
     tick();
-  }catch(err){stopScan();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible. Tape le code-barres à la main."}
+  }catch(err){stopScan();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible. Saisir le code-barres à la main."}
 });
 $("#burstBtn").addEventListener("click",()=>{
   if(burst){stopBurst();return}
@@ -1474,21 +1474,21 @@ async function loadResas(){
 function giftBox(d){
   if(cloud.key||!cloud.on) return "";
   const r=resa[d.id], mien=mesResas()[d.id];
-  if(r&&mien) return `<div class="gift">🎁 Tu as réservé ce disque, ${esc(r.nom)}. Eduardo ne le voit pas.<button class="btn" type="button" id="giftCancel">Annuler</button></div>`;
+  if(r&&mien) return `<div class="gift">🎁 Disque réservé par ${esc(r.nom)}. Eduardo ne le voit pas.<button class="btn" type="button" id="giftCancel">Annuler</button></div>`;
   if(r) return `<div class="gift">🎁 Déjà réservé par ${esc(r.nom)}.</div>`;
-  return `<div class="gift">Tu veux lui offrir ce disque ? Réserve-le pour que personne d'autre ne l'achète. Eduardo ne verra rien.<button class="btn pri" type="button" id="giftBtn">🎁 Je l'offre</button></div>`;
+  return `<div class="gift">Envie d'offrir ce disque ? Une réservation évite que quelqu'un d'autre l'achète. Eduardo ne verra rien.<button class="btn pri" type="button" id="giftBtn">🎁 Je l'offre</button></div>`;
 }
 function bindGift(d){
   const g=$("#giftBtn");
   if(g) g.addEventListener("click",async()=>{
-    const nom=(prompt("Ton prénom (les autres verront que tu l'offres) :",store.get("mon-prenom")||"")||"").trim(); if(!nom) return;
+    const nom=(prompt("Prénom (visible par les autres, pas par Eduardo) :",store.get("mon-prenom")||"")||"").trim(); if(!nom) return;
     store.set("mon-prenom",nom); g.disabled=true;
     try{const r=await fetch("/api/reservations/"+encodeURIComponent(d.id),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({nom})});
       const j=await r.json().catch(()=>({}));
       if(!r.ok){toast(j.erreur||"Réservation impossible.",true);await loadResas();renderInfo(d);return}
       const m=mesResas(); m[d.id]=j.jeton; store.set("mes-resas",m);
       resa[d.id]={disque_id:d.id,nom}; toast("C'est noté, merci "+nom+" 🎁"); renderInfo(d); refilter(d.id);
-    }catch(e){toast("Pas de connexion, réessaie.",true)}finally{g.disabled=false}
+    }catch(e){toast("Pas de connexion, nouvel essai nécessaire.",true)}finally{g.disabled=false}
   });
   const c=$("#giftCancel");
   if(c) c.addEventListener("click",async()=>{
@@ -1503,7 +1503,7 @@ $("#shareBtn").addEventListener("click",async()=>{
   const url=location.origin+location.pathname+"?souhaits";
   const data={title:"La discothèque d'Eduardo",text:"Les disques qu'Eduardo aimerait recevoir 🎁",url};
   try{ if(navigator.share){await navigator.share(data);return} }catch(e){if(e&&e.name==="AbortError")return}
-  try{await navigator.clipboard.writeText(url);toast("Lien copié : "+url)}catch(e){prompt("Copie ce lien :",url)}
+  try{await navigator.clipboard.writeText(url);toast("Lien copié : "+url)}catch(e){prompt("Lien à copier :",url)}
 });
 
 /* ---------- Statistiques ---------- */
@@ -1518,7 +1518,7 @@ function renderStats(){
   const mins=Math.round(base.reduce((s,d)=>s+(d.tracks||[]).reduce((a,t)=>a+(t.duration||0),0),0)/60);
   const favDec=dec.slice().sort((a,b)=>b[1]-a[1])[0];
   const added=count(base,d=>d.ajoute?d.ajoute.slice(0,7):null).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6).map(([k,n])=>{const [y,m]=k.split("-");return [`${["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."][+m-1]} ${y}`,n]});
-  $("#statsView").innerHTML=!base.length?`<p class="empty">Pas encore de statistiques : ajoute tes premiers disques.</p>`:`
+  $("#statsView").innerHTML=!base.length?`<p class="empty">Pas encore de statistiques : la collection est vide.</p>`:`
     <div class="kpis">
       <div class="kpi"><span>Disques</span><b>${base.length}</b><small>${wish.length} en souhait</small></div>
       <div class="kpi"><span>Artistes</span><b>${count(base,d=>d.artiste).length}</b><small>${count(base,d=>d.label).length} labels</small></div>
@@ -1576,7 +1576,7 @@ async function burstLoop(){
   const log=$("#burstLog"), queue=[];
   let busy=false, det;
   try{det=await getDetector(); await startCamera()}catch(e){stopBurst();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible sur cet appareil.";return}
-  $("#aMsg").className="imsg"; $("#aMsg").textContent="Passe les pochettes une par une devant la caméra. Chaque disque est ajouté tout seul.";
+  $("#aMsg").className="imsg"; $("#aMsg").textContent="Pochettes une par une devant la caméra : chaque disque est ajouté tout seul.";
   const run=async()=>{
     if(busy||!queue.length) return; busy=true;
     const code=queue.shift(), li=document.createElement("li");
@@ -1680,7 +1680,7 @@ document.addEventListener("click",e=>{if(!e.target.closest("#grpSel"))grpMenu(fa
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#grpMenu").hidden){grpMenu(false);$("#grpBtn").focus()}});
 function renderGrid(){
   const rows=state.list;
-  if(!rows.length){$("#gridView").innerHTML=`<div class="listempty"><p>${!records.length?(shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide."):"Aucun disque ne correspond."}</p>${state.q?onlineOffer():""}</div>`;return}
+  if(!rows.length){$("#gridView").innerHTML=`<div class="listempty"><p>${!records.length?(shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."):"Aucun disque ne correspond."}</p>${state.q?onlineOffer():""}</div>`;return}
   const card=d=>`<button type="button" class="gcard" data-open="${esc(d.id)}"><span class="gc" style="${bgOf(d)}">${d.cover?"":`<em style="color:${d.sleeve.ink}">${esc(d.titre)}</em>`}</span><b>${esc(d.titre)}</b><i>${esc(d.artiste)}${d.annee?" · "+d.annee:""}</i></button>`;
   $("#gridView").innerHTML=groupRows(rows).map(([l,items])=>`<section class="grp">${l===null?"":`<h3>${esc(l)}<small>${items.length}</small></h3>`}<div class="grid">${items.map(card).join("")}</div></section>`).join("");
 }
@@ -1698,8 +1698,8 @@ function renderList(){
   $("#lCount").textContent=tot?`${rows.length} disque${rows.length>1?"s":""}${rows.length!==tot?` sur ${tot}`:""}${shelf==="souhaits"?" souhaités":""}`:"";
   $("#bulkDel").hidden=!lst.sel.size;
   $("#bulkDel").textContent=lst.confirm==="bulk"?`Confirmer : supprimer ${lst.sel.size} disque${lst.sel.size>1?"s":""}`:`Supprimer la sélection (${lst.sel.size})`;
-  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
-  if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à ta recherche.</p>${state.q?onlineOffer():""}</div>`;return}
+  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
+  if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à la recherche.</p>${state.q?onlineOffer():""}</div>`;return}
   const all=rows.every(d=>lst.sel.has(d.id));
   $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
     <th><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></th><th></th>
