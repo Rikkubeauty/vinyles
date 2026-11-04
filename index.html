@@ -881,7 +881,7 @@ $("#pack").addEventListener("mousemove",e=>{const r=e.currentTarget.getBoundingC
   const t=e.currentTarget.querySelector(".tilt");t.style.setProperty("--ry",((x-.5)*18).toFixed(1)+"deg");t.style.setProperty("--rx",((.5-y)*14).toFixed(1)+"deg");
   $("#dSleeve").style.setProperty("--gx",(x*100)+"%");$("#dSleeve").style.setProperty("--gy",(y*100)+"%")});
 $("#pack").addEventListener("mouseleave",e=>{const t=e.currentTarget.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")});
-$("#pack").addEventListener("click",()=>{const d=state.cur;if(!d||!dz[d.id])return;if($("#pack").classList.contains("playing"))stopAudio();else playAlbum()});
+$("#pack").addEventListener("click",()=>{const d=state.cur;if(!d||!dz[d.id])return;if(state.track>=0)playAlbum()});
 
 const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',mb:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7.5l8-4.5 8 4.5v9l-8 4.5-8-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 15V9.5l4 3 4-3V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const sideName=s=>/^[A-H]$/.test(s)?`Face ${s}`:"Autres";
@@ -906,7 +906,6 @@ function renderInfo(d){
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
     <div class="acts">
-      ${playable?`<button class="ico big" id="playAll" type="button" aria-label="Écouter l'album" title="Écouter l'album">${ICON.play}</button>`:""}
       ${isWish(d)?`<button class="ico big" id="gotBtn" type="button" aria-label="Je l'ai : passer dans ma collection" title="Je l'ai : passer dans ma collection">${ICON.check}</button>`:""}
       <span class="grp">
       ${info?`<a class="ico" href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener" aria-label="Ouvrir dans Deezer" title="Ouvrir dans Deezer">${ICON.deezer}</a>`:""}
@@ -919,7 +918,6 @@ function renderInfo(d){
     ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc("album",info.albumId,false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
-  $("#playAll")&&$("#playAll").addEventListener("click",playAlbum);
   bindGift(d);
   const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{if(resa[d.id]||cloud.key)api("/reservations/"+encodeURIComponent(d.id),{method:"DELETE"}).catch(()=>{});delete d.statut;d.ajoute=new Date().toISOString().slice(0,10);saveMine();closeDetail();setShelf("collection");rebuild(d.id)});
   const eb=$("#edBtn"); if(eb) eb.addEventListener("click",()=>openEditor(d));
@@ -945,8 +943,8 @@ function playTrack(i){
 }
 function playAlbum(){
   const d=state.cur, info=d&&dz[d.id]; if(!info) return;
-  setWidget("album",info.albumId,true); state.track=-1; highlight();
-  $("#pack").classList.add("out","playing"); const now=$("#now"); if(now) now.textContent="";
+  setWidget("album",info.albumId,false); state.track=-1; highlight();
+  $("#pack").classList.add("out"); const now=$("#now"); if(now) now.textContent="";
 }
 function stopAudio(){
   const d=state.cur, info=d&&dz[d.id];
