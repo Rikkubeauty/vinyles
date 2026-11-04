@@ -19,14 +19,14 @@
   --f-body:"Newsreader",Georgia,"Times New Roman",serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --S:300px;
-  --field:rgba(0,0,0,.35);--scrim:rgba(10,8,7,.92);--panel:rgba(18,15,13,.92);--on-accent:#1b1206;--hover:rgba(255,255,255,.07);
+  --field:rgba(0,0,0,.35);--scrim:#0d0b0a;--panel:rgba(18,15,13,.92);--on-accent:#1b1206;--hover:rgba(255,255,255,.07);
   --amb:blur(7px) saturate(1.4) brightness(.55);--amb-op:1;--shadow:0 30px 60px rgba(0,0,0,.6);--shadow-lg:0 40px 80px rgba(0,0,0,.65);
   --dw:800;--ds:normal;--dt:none;--dx:100%;
   color-scheme:dark;
 }
 /* ===== Maquette 1 · Galerie : mur blanc de galerie, typo suisse large, rouge vif ===== */
 :root[data-look="galerie"]{--night:#f1efea;--fg:#141414;--muted:#6d6a64;--line:rgba(20,20,20,.14);--amber:#e2231a;--on-accent:#fff;--groove:#151515;
-  --field:rgba(255,255,255,.75);--scrim:rgba(241,239,234,.97);--panel:rgba(250,249,246,.97);--hover:rgba(0,0,0,.05);
+  --field:rgba(255,255,255,.75);--scrim:#f1efea;--panel:rgba(250,249,246,.97);--hover:rgba(0,0,0,.05);
   --amb:blur(9px) saturate(1.3) brightness(1.15);--amb-op:.32;--shadow:0 26px 40px rgba(40,30,20,.28);--shadow-lg:0 36px 60px rgba(40,30,20,.3);
   --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"Archivo","Helvetica Neue",Arial,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --dw:900;--dx:118%;color-scheme:light}
@@ -214,7 +214,18 @@ dd{margin:0}
 .acts .pri:hover{color:var(--on-accent);filter:brightness(1.08)}
 .hint{font-size:14.5px;font-style:italic;color:var(--muted);margin:10px 0 0}
 .widget{margin-top:14px;border-radius:8px;overflow:hidden}
-.widget iframe{display:block;width:100%;height:320px;border:0}
+.widget iframe{display:block;width:100%;height:160px;border:0}
+.acts{align-items:center;gap:14px}
+.acts .grp{display:inline-flex;gap:8px;align-items:center}
+.acts .ico{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--field);color:var(--fg);transition:transform .15s,border-color .15s,color .15s}
+.acts .ico:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-1px)}
+.acts .ico:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.acts .ico.big{width:56px;height:56px;background:var(--amber);border-color:var(--amber);color:var(--on-accent)}
+.acts .ico svg{width:22px;height:22px}
+.acts .ico.big svg{width:26px;height:26px}
+.acts .ico.big:hover{color:var(--on-accent);transform:scale(1.05)}
+.acts .ico.danger{background:var(--amber);border-color:var(--amber);color:var(--on-accent)}
+.acts .confirm{font-family:var(--f-mono);font-size:11.5px;color:var(--amber)}
 
 /* ---------- Ajouter un disque ---------- */
 .adder{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:var(--panel);
@@ -710,6 +721,8 @@ $("#pack").addEventListener("mouseleave",e=>{const t=e.currentTarget.querySelect
 $("#pack").addEventListener("click",()=>{const d=state.cur;if(!d)return;if(state.track>=0)stopAudio();else{const i=firstPlayable(d);if(i>=0)playTrack(i)}});
 function firstPlayable(d){return d.tracks.findIndex((t,i)=>{const pv=previewFor(d,i);return pv&&pv.preview})}
 
+const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+const sideName=s=>/^[A-H]$/.test(s)?`Face ${s}`:"Autres";
 function renderInfo(d){
   const info=dz[d.id], sides=[...new Set(d.tracks.map(t=>t.side))];
   const row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
@@ -726,25 +739,26 @@ function renderInfo(d){
     ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
     <dl>${row("Sortie",d.sortie)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
-    ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>Face ${esc(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
+    ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now">${state.track>=0?"":"Clique la pochette ou un morceau pour écouter un extrait."}</div>`:""}
     <div class="acts">
-      ${playable?`<button class="pri" id="playAll" type="button">${state.track>=0?"Pause":"▶ Écouter"}</button>`:""}
-      ${info?`<button id="fullBtn" type="button">Lecteur Deezer complet</button><a href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener">Ouvrir dans Deezer</a>`:""}
-      ${d.discogsId?`<a href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener">Fiche Discogs</a>`:""}
-      ${isWish(d)?`<button class="pri" id="gotBtn" type="button">Je l'ai !</button>${d.discogsId?`<a href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener">Voir les offres Discogs</a>`:""}`:""}
-      ${mine.some(x=>x.id===d.id)?`<button id="edBtn" type="button">Modifier</button><button id="rmBtn" type="button">Retirer de ma discothèque</button>`:""}
+      ${playable?`<button class="ico big" id="playAll" type="button" aria-label="${state.track>=0?"Pause":"Écouter les extraits"}" title="${state.track>=0?"Pause":"Écouter les extraits"}">${state.track>=0?ICON.pause:ICON.play}</button>`:""}
+      ${isWish(d)?`<button class="ico big" id="gotBtn" type="button" aria-label="Je l'ai : passer dans ma collection" title="Je l'ai : passer dans ma collection">${ICON.check}</button>`:""}
+      <span class="grp">
+      ${info?`<a class="ico" href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener" aria-label="Ouvrir dans Deezer" title="Ouvrir dans Deezer">${ICON.deezer}</a>`:""}
+      ${d.discogsId?`<a class="ico" href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Fiche Discogs" title="Fiche Discogs">${ICON.disc}</a>`:""}
+      ${isWish(d)&&d.discogsId?`<a class="ico" href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Offres de vente sur Discogs" title="Offres de vente sur Discogs">${ICON.tag}</a>`:""}
+      </span>
+      ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Clique encore pour supprimer</span></span>`:""}
     </div>
-    <div class="widget" id="widget"></div>`;
+    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="https://widget.deezer.com/widget/light/album/${info.albumId}?tracklist=false&radius=true" allow="encrypted-media; clipboard-write"></iframe></div>`:""}`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   $("#playAll")&&$("#playAll").addEventListener("click",()=>{state.track<0?playTrack(firstPlayable(d)):stopAudio()});
   const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{delete d.statut;d.ajoute=new Date().toISOString().slice(0,10);saveMine();closeDetail();setShelf("collection");rebuild(d.id)});
   const eb=$("#edBtn"); if(eb) eb.addEventListener("click",()=>openEditor(d));
   const rm=$("#rmBtn");
-  if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.textContent="Confirmer le retrait"}});
-  const fb=$("#fullBtn");
-  if(fb) fb.addEventListener("click",()=>{stopAudio();$("#widget").innerHTML=`<iframe title="Lecteur Deezer" src="https://widget.deezer.com/widget/dark/album/${info.albumId}?tracklist=true" allow="encrypted-media; clipboard-write"></iframe>`;fb.remove()});
+  if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.classList.add("danger");$("#rmConf").hidden=false}});
 }
 
 /* ---------- Lecture ---------- */
@@ -753,14 +767,14 @@ function playTrack(i){
   const t=d.tracks[i], pv=previewFor(d,i); if(!pv||!pv.preview) return;
   const a=$("#audio"); a.pause();
   state.track=i; $("#pack").classList.add("out","playing"); highlight();
-  const now=$("#now"), pa=$("#playAll"); if(pa) pa.textContent="Pause";
+  const now=$("#now"), pa=$("#playAll"); if(pa){pa.innerHTML=ICON.pause;pa.setAttribute("aria-label","Pause");pa.title="Pause"}
   a.src=pv.preview;
-  a.play().then(()=>{now&&(now.innerHTML=`Extrait 30 s · <b>${esc(t.title)}</b> · Face ${esc(t.side)}`)}).catch(()=>{now&&(now.innerHTML=`Clique encore pour lancer le son · <b>${esc(t.title)}</b>`)});
+  a.play().then(()=>{now&&(now.innerHTML=`Extrait 30 s · <b>${esc(t.title)}</b> · ${sideName(t.side)}`)}).catch(()=>{now&&(now.innerHTML=`Clique encore pour lancer le son · <b>${esc(t.title)}</b>`)});
 }
 function stopAudio(){
   const a=$("#audio"); a.pause(); a.removeAttribute("src");
   $("#pack").classList.remove("playing"); state.track=-1; highlight();
-  const pa=$("#playAll"); if(pa) pa.textContent="▶ Écouter";
+  const pa=$("#playAll"); if(pa){pa.innerHTML=ICON.play;pa.setAttribute("aria-label","Écouter les extraits");pa.title="Écouter les extraits"}
   const now=$("#now"); if(now) now.textContent="En pause.";
 }
 $("#audio").addEventListener("ended",()=>{const d=state.cur;if(!d)return stopAudio();for(let n=state.track+1;n<d.tracks.length;n++){const pv=previewFor(d,n);if(pv&&pv.preview)return playTrack(n)}stopAudio()});
