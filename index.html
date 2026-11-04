@@ -57,7 +57,7 @@
 [hidden]{display:none!important}
 .lock.mOnly,.viewtog svg{display:none}
 .msheet{display:none}
-body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.readonly #bulkDel,body.readonly .coll tr:not(.gh) td:first-child,body.readonly .coll th:first-child,body.readonly .coll .acts2,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
+body.readonly #addBtn,body.readonly #backupBtn,body.readonly #bulkDel,body.readonly .reg .rck,body.readonly .reg .racts,body.readonly .reg .rswipe,body.readonly .reg .got,body.readonly .rshare,body.partage .rshare,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
@@ -90,8 +90,6 @@ body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .gcard .gc em{position:absolute;left:9%;right:9%;bottom:9%;font-style:normal;font-family:var(--f-display);font-weight:var(--dw);font-size:15px;line-height:1.05}
 .gcard b{font-weight:600;font-size:15px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gcard i{font-style:normal;font-size:13.5px;color:var(--muted);margin-top:-5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.coll tr.gh td{background:var(--field);font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:17px;letter-spacing:-.01em;padding:12px}
-.coll tr.gh small{font-family:var(--f-mono);font-size:11.5px;font-weight:400;color:var(--muted);margin-left:8px}
 .subbar{position:relative;z-index:30}
 .sortmenu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:180px;margin:0;padding:6px;list-style:none;background:var(--menu,#fbfaf7);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(40,30,20,.16);text-transform:none;letter-spacing:.02em}
 .sortmenu li{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--fg);padding:8px 12px;border-radius:9px;display:flex;justify-content:space-between;gap:12px}
@@ -222,27 +220,92 @@ h1 span{color:var(--amber)}
 #listView{display:grid;gap:14px}
 .listbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .listbar .count{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:auto}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
-table.coll{width:100%;border-collapse:collapse;font-size:15px;min-width:760px}
-.coll th{text-align:left;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-.coll th button{all:unset;cursor:pointer}
-.coll th button:focus-visible{outline:2px solid var(--amber)}
-.coll th[aria-sort="ascending"] button::after{content:" ↑"}
-.coll th[aria-sort="descending"] button::after{content:" ↓"}
-.coll td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
-.coll tr:last-child td{border-bottom:0}
-.coll tbody tr:hover{background:var(--hover)}
-.coll tr.sel{background:var(--hover)}
-.coll .thumb{width:46px;height:46px;border-radius:2px;background:#ccc center/cover;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.coll .tt{font-weight:600;cursor:pointer}
-.coll .tt:hover{color:var(--amber)}
-.coll .mono{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);white-space:nowrap}
-.coll .acts2{white-space:nowrap;text-align:right}
+.listbar .btn{padding:6px 12px;font-size:11px}
+.tablewrap{min-width:0}
+/* Liste « Registre » : lignes épurées, actions au survol (PC) ou au balayage (mobile) */
+.regwrap{display:grid;gap:28px;align-items:start}
+.regwrap.side{grid-template-columns:minmax(0,1fr) 300px}
+.reg{--cols:var(--ck,) 56px minmax(0,2fr) minmax(0,1.4fr) 70px minmax(0,1fr) minmax(0,1fr) 170px;min-width:0}
+.reg.sel{--ck:28px}
+.reg.wish{--cols:var(--ck,) 56px minmax(0,2fr) minmax(0,1.4fr) 70px minmax(0,1fr) minmax(0,1fr) 260px}
+.reg .rhead,.reg .rin{display:grid;grid-template-columns:var(--cols);gap:16px;align-items:center;padding:8px 12px}
+.reg .rhead{padding-block:0 10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:6px}
+.reg .rhead button{all:unset;cursor:pointer}
+.reg .rhead button:focus-visible{outline:2px solid var(--amber)}
+.reg .rhead [aria-sort="ascending"],.reg .rhead [aria-sort="descending"]{color:var(--fg)}
+.reg .rhead [aria-sort="ascending"] button::after{content:" ↑"}
+.reg .rhead [aria-sort="descending"] button::after{content:" ↓"}
+.reg .rhead .rn{text-align:right}
+.reg .rgh{display:flex;align-items:baseline;gap:8px;padding:16px 12px 6px;font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:17px;letter-spacing:-.02em}
+.reg .rgh small{font-family:var(--f-mono);font-size:11px;font-weight:400;color:var(--muted)}
+.reg .rrow{position:relative;border-radius:10px;overflow:hidden}
+.reg .rin{position:relative;z-index:1;border-radius:10px;transition:background .15s,transform .25s cubic-bezier(.2,.8,.2,1)}
+.reg .rrow:hover .rin,.reg .rrow:focus-within .rin,.reg .rrow.on .rin{background:var(--hover)}
+:root[data-look="galerie"] .reg .rrow:hover .rin,:root[data-look="galerie"] .reg .rrow:focus-within .rin,:root[data-look="galerie"] .reg .rrow.on .rin{background:color-mix(in srgb,var(--fg) 7%,var(--night))}
+.reg .thumb{width:48px;height:48px;border-radius:3px;background:#ccc center/cover;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.reg .rt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.reg .rt b{font-family:var(--f-display);font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.reg .rt b:hover{color:var(--amber)}
+.reg .rt span,.reg .ra{font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .rt span{display:none;font-size:14px}
+.reg .ry{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.reg .rl{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .racts{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.reg .racts .mini{opacity:0;transition:opacity .15s}
+.reg .rrow:hover .racts .mini,.reg .rrow:focus-within .racts .mini,.reg .racts .mini.danger{opacity:1}
+.reg .got{all:unset;cursor:pointer;padding:7px 14px;border-radius:999px;border:1px solid var(--line);font-size:13px;white-space:nowrap}
+.reg .got:hover{border-color:var(--fg)}
+.reg .got:focus-visible{outline:2px solid var(--amber)}
+.reg .rswipe{display:none}
+.reg .rck input{width:16px;height:16px;accent-color:var(--amber)}
+.reg:not(.sel) .rck{display:none}
+.rsort{display:none}
+.regwrap.side .rshare{order:2}
+.rshare{position:sticky;top:20px;padding:20px;border-radius:16px;background:var(--field);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.rshare b{font-family:var(--f-display);font-size:18px;font-weight:800;letter-spacing:-.01em}
+.rshare span{font-size:14px;color:var(--muted);line-height:1.45}
+.rshare button{all:unset;cursor:pointer;margin-top:6px;text-align:center;height:46px;border-radius:999px;background:var(--amber);color:var(--on-accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.rshare button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (max-width:640px){
+  .regwrap,.regwrap.side{grid-template-columns:minmax(0,1fr);gap:10px}
+  .regwrap.side .rshare{order:0}
+  .rshare{position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px;gap:4px 12px;border-radius:14px}
+  .rshare b{font-size:15px;flex:1 1 60%}
+  .rshare span{font-size:13px;order:3;flex-basis:100%}
+  .rshare button{margin:0;height:auto;padding:10px 14px;font-family:var(--f-body);font-size:13px;font-weight:700;letter-spacing:0;text-transform:none}
+  .reg,.reg.wish{--cols:var(--ck,) 52px minmax(0,1fr) auto}
+  .reg{margin-inline:-16px}
+  .reg.sel{--ck:24px}
+  .reg .rhead{display:none}
+  .rsort{display:flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:12px;margin-bottom:4px}
+  .rsort>span{color:var(--muted)}
+  .rsort button{all:unset;cursor:pointer;padding:6px 11px;border-radius:999px;border:1px solid var(--line)}
+  .rsort button[aria-pressed="true"]{background:var(--fg);color:var(--night);border-color:var(--fg)}
+  .rsort .rpick{margin-left:auto;border:0;color:var(--muted);padding-inline:4px}
+  .reg .rrow{border-radius:0;border-bottom:1px solid var(--line)}
+  .reg .rin{padding:9px 16px;gap:12px;border-radius:0;touch-action:pan-y}
+  .reg .rrow:hover .rin,.reg .rrow:focus-within .rin{background:none}
+  :root[data-look="galerie"] .reg .rrow:hover .rin,:root[data-look="galerie"] .reg .rrow:focus-within .rin{background:none}
+  .reg .thumb{width:52px;height:52px}
+  .reg .rt span{display:block}
+  .reg .ra,.reg .rl,.reg .racts .mini{display:none}
+  .reg .rgh{padding:16px 16px 6px}
+  .reg .rrow.swiped .rin{transform:translateX(-164px)}
+  .reg .rrow.swiped .rin,.reg .rrow.swiping .rin{background:var(--night)}
+  .reg .rrow.swiped .rswipe,.reg .rrow.swiping .rswipe{visibility:visible}
+  .reg .racts{display:none}
+  .reg .wishy .racts{display:flex}
+  .reg .rswipe{display:grid;grid-template-columns:82px 82px;position:absolute;right:0;top:0;bottom:0;visibility:hidden}
+  .reg .rswipe button{all:unset;cursor:pointer;display:grid;place-items:center;font-size:13px;font-weight:600;background:#3a3a3a;color:#fff}
+  .reg .rswipe button+button{background:#e2231a}
+  .reg .rswipe button:focus-visible{outline:2px solid var(--fg);outline-offset:-3px}
+  .reg .got{padding:8px 12px}
+  .reg .wishy .ry{display:none}
+}
 .mini{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
 .mini:hover{border-color:var(--amber);color:var(--amber)}
 .mini:focus-visible{outline:2px solid var(--amber)}
 .mini.danger{color:var(--amber);border-color:var(--amber)}
-.coll input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber)}
 .goOnline{margin:14px auto 0;display:flex}
 .laneEmpty{position:absolute;left:50%;top:210px;transform:translate(-50%,-50%);width:min(560px,90vw);display:grid;justify-items:center;gap:6px;text-align:center;color:var(--muted);font-size:17px;padding:0 16px}
 .laneEmpty p{margin:0}
@@ -558,7 +621,6 @@ dd{margin:0}
     <div class="listbar">
       <span class="count" id="lCount"></span>
       <button class="btn" type="button" id="bulkDel" hidden>Supprimer la sélection</button>
-      <button class="btn" type="button" id="newBlank">+ Disque vierge</button>
       <button class="btn" type="button" id="backupBtn" title="Télécharger une copie de toute la discothèque">Sauvegarde</button>
     </div>
     <div class="tablewrap" id="tableWrap"></div>
@@ -1100,7 +1162,7 @@ function renderInfo(d){
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   bindGift(d);
-  const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{if(resa[d.id]||cloud.key)api("/reservations/"+encodeURIComponent(d.id),{method:"DELETE"}).catch(()=>{});delete d.statut;d.ajoute=new Date().toISOString().slice(0,10);saveMine();closeDetail();setShelf("collection");rebuild(d.id)});
+  const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{closeDetail();gotIt(d);setShelf("collection");rebuild(d.id)});
   const eb=$("#edBtn"); if(eb) eb.addEventListener("click",()=>openEditor(d));
   const rm=$("#rmBtn");
   if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.classList.add("danger");$("#rmConf").hidden=false}});
@@ -1661,8 +1723,8 @@ async function burstLoop(){
 }
 
 /* ---------- Mode liste ---------- */
-const lst={sort:"artiste",dir:1,sel:new Set(),confirm:null};
-const COLS=[["titre","Titre"],["artiste","Artiste"],["annee","Année"],["label","Label"],["cat","Réf."],["genres","Genre"]];
+const lst={sort:"artiste",dir:1,sel:new Set(),confirm:null,pick:false,open:null};
+const COLS=[["titre","Titre"],["artiste","Artiste"],["annee","Année"],["label","Label"],["genres","Genre"]];
 function setView(v){
   const list=v==="list", stats=v==="stats", grid=v==="grid", flow=!list&&!stats&&!grid;
   $("#flowView").hidden=!flow; $("#gridView").hidden=!grid; $("#listView").hidden=!list; $("#statsView").hidden=!stats;
@@ -1739,7 +1801,7 @@ function renderGrid(){
 }
 for(const ev of ["mouseover","focusin"]){
   $("#gridView").addEventListener(ev,e=>hoverAmb(e,"[data-open]","open"));
-  $("#tableWrap").addEventListener(ev,e=>hoverAmb(e,"tr[data-id]","id"));
+  $("#tableWrap").addEventListener(ev,e=>hoverAmb(e,".rrow[data-id]","id"));
 }
 $("#gridView").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openDetail(state.list.find(d=>d.id===c.dataset.open),c)});
 function renderList(){
@@ -1753,27 +1815,51 @@ function renderList(){
   $("#bulkDel").textContent=lst.confirm==="bulk"?`Confirmer : supprimer ${lst.sel.size} disque${lst.sel.size>1?"s":""}`:`Supprimer la sélection (${lst.sel.size})`;
   if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
   if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à la recherche.</p>${state.q?onlineOffer():""}</div>`;return}
-  const all=rows.every(d=>lst.sel.has(d.id));
-  $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
-    <th><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></th><th></th>
-    ${COLS.map(([k,l])=>`<th aria-sort="${lst.sort===k?(lst.dir>0?"ascending":"descending"):"none"}"><button type="button" data-sort="${k}">${l}</button></th>`).join("")}<th></th></tr></thead>
-    <tbody>${groupRows(rows,cmp).map(([l,items])=>(l===null?"":`<tr class="gh"><td colspan="${COLS.length+3}">${esc(l)}<small>${items.length}</small></td></tr>`)+items.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
-      <td><input type="checkbox" data-sel="${esc(d.id)}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></td>
-      <td><div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div></td>
-      <td><span class="tt" data-open="${esc(d.id)}">${esc(d.titre)}</span></td><td>${esc(d.artiste)}</td>
-      <td class="mono">${esc(d.annee||"")}</td><td>${esc(d.label)}</td><td class="mono">${esc(d.cat)}</td><td>${esc((d.genres||"").split(", ").slice(0,2).join(", "))}</td>
-      <td class="acts2"><button class="mini" type="button" data-edit="${esc(d.id)}">Modifier</button>
-        <button class="mini${lst.confirm===d.id?" danger":""}" type="button" data-del="${esc(d.id)}">${lst.confirm===d.id?"Confirmer":"Supprimer"}</button></td></tr>`).join("")).join("")}</tbody></table>`;
+  const all=rows.every(d=>lst.sel.has(d.id)), wish=shelf==="souhaits", ro=document.body.classList.contains("readonly");
+  const sortBtn=([k,l])=>`<button type="button" data-sort="${k}" aria-pressed="${lst.sort===k}">${l}${lst.sort===k?(lst.dir>0?" ↑":" ↓"):""}</button>`;
+  const row=d=>{const id=esc(d.id), sure=lst.confirm===id;
+    return `<div class="rrow${lst.sel.has(d.id)?" on":""}${lst.open===d.id?" swiped":""}${wish?" wishy":""}" data-id="${id}">
+    <div class="rin"><label class="rck"><input type="checkbox" data-sel="${id}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></label>
+      <div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div>
+      <div class="rt"><b data-open="${id}" role="button" tabindex="0">${esc(d.titre)}</b><span>${esc(d.artiste)}${wish&&d.annee?" · "+esc(d.annee):""}</span></div>
+      <span class="ra">${esc(d.artiste)}</span><span class="ry">${esc(d.annee||"")}</span><span class="rl">${esc(d.label)}</span><span class="rl">${esc((d.genres||"").split(", ").slice(0,2).join(", "))}</span>
+      <div class="racts">${wish?`<button class="got" type="button" data-got="${id}">Je l'ai</button>`:""}<button class="mini" type="button" data-edit="${id}">Modifier</button><button class="mini${sure?" danger":""}" type="button" data-del="${id}">${sure?"Confirmer":"Supprimer"}</button></div></div>
+    <div class="rswipe"${lst.open===d.id?"":" inert"}><button type="button" data-edit="${id}">Modifier</button><button type="button" data-del="${id}">${sure?"Confirmer":"Supprimer"}</button></div></div>`};
+  $("#tableWrap").innerHTML=`<div class="regwrap${wish?" side":""}">${wish?`<aside class="rshare"><b>Liste à partager</b><span>La famille voit ces souhaits et peut réserver un disque. Les réservations restent cachées ici, pour garder la surprise.</span><button type="button" data-share>Copier le lien</button></aside>`:""}
+    <div class="reg${lst.pick?" sel":""}${wish?" wish":""}">
+    <div class="rsort">${[["artiste","Artiste"],["titre","Titre"],["annee","Année"]].map(sortBtn).join("")}${ro?"":`<button type="button" class="rpick" data-pick>${lst.pick?"Terminer":"Choisir"}</button>`}</div>
+    <div class="rhead"><label class="rck"><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></label><span></span>
+    ${COLS.map(([k,l])=>`<span aria-sort="${lst.sort===k?(lst.dir>0?"ascending":"descending"):"none"}"><button type="button" data-sort="${k}">${l}</button></span>`).join("")}<span class="rn">${ro?"":`<button type="button" data-pick>${lst.pick?"Terminer":"Choisir"}</button>`}</span></div>
+    ${groupRows(rows,cmp).map(([l,items])=>(l===null?"":`<div class="rgh">${esc(l)}<small>${items.length}</small></div>`)+items.map(row).join("")).join("")}</div></div>`;
+}
+function gotIt(d){
+  if(resa[d.id]||cloud.key) api("/reservations/"+encodeURIComponent(d.id),{method:"DELETE"}).catch(()=>{});
+  delete d.statut; d.ajoute=new Date().toISOString().slice(0,10); saveMine(); rebuild(); toast(`« ${d.titre} » passe dans la collection.`);
 }
 $("#tableWrap").addEventListener("click",e=>{
   const t=e.target, byId=id=>mine.find(d=>d.id===id);
+  if(t.closest("[data-share]")){$("#shareBtn").click();return}
+  if(t.closest("[data-pick]")){lst.pick=!lst.pick; if(!lst.pick) lst.sel.clear(); lst.confirm=null; renderList(); return}
   const so=t.closest("[data-sort]"); if(so){const k=so.dataset.sort; lst.dir=lst.sort===k?-lst.dir:1; lst.sort=k; renderList(); return}
   if(t.id==="selAll"){const rows=mine.filter(d=>state.list.includes(d)); rows.forEach(d=>t.checked?lst.sel.add(d.id):lst.sel.delete(d.id)); lst.confirm=null; renderList(); return}
   if(t.dataset.sel){t.checked?lst.sel.add(t.dataset.sel):lst.sel.delete(t.dataset.sel); lst.confirm=null; renderList(); return}
-  const ed=t.closest("[data-edit]"); if(ed){openEditor(byId(ed.dataset.edit)); return}
-  const del=t.closest("[data-del]"); if(del){const id=del.dataset.del; if(lst.confirm===id){lst.confirm=null; lst.sel.delete(id); removeRecord(byId(id)); renderList()} else {lst.confirm=id; renderList()} return}
+  const got=t.closest("[data-got]"); if(got){gotIt(byId(got.dataset.got)); renderList(); return}
+  const ed=t.closest("[data-edit]"); if(ed){lst.open=null; openEditor(byId(ed.dataset.edit)); renderList(); return}
+  const del=t.closest("[data-del]"); if(del){const id=del.dataset.del; if(lst.confirm===id){lst.confirm=null; lst.open=null; lst.sel.delete(id); removeRecord(byId(id)); renderList()} else {lst.confirm=id; renderList()} return}
+  if(lst.open){lst.open=null; lst.confirm=null; renderList(); return}
+  if(lst.pick){const r=t.closest(".rrow[data-id]"); if(r&&!t.closest("[data-open]")){const id=r.dataset.id; lst.sel.has(id)?lst.sel.delete(id):lst.sel.add(id); renderList(); return}}
   const op=t.closest("[data-open]"); if(op){openDetail(byId(op.dataset.open))}
 });
+$("#tableWrap").addEventListener("keydown",e=>{const op=e.target.closest("[data-open]"); if(op&&(e.key==="Enter"||e.key===" ")){e.preventDefault(); op.click()}});
+/* balayage vers la gauche sur mobile : Modifier / Supprimer */
+{let sw=null;
+ $("#tableWrap").addEventListener("touchstart",e=>{const r=e.target.closest(".rrow[data-id]"); if(!r||document.body.classList.contains("readonly")||lst.pick||!matchMedia("(max-width:640px)").matches) return; const p=e.touches[0]; sw={r,x:p.clientX,y:p.clientY,dx:0,on:null,base:r.classList.contains("open")?-164:0}},{passive:true});
+ $("#tableWrap").addEventListener("touchmove",e=>{if(!sw)return; const p=e.touches[0], dx=p.clientX-sw.x, dy=p.clientY-sw.y;
+   if(sw.on===null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return; sw.on=Math.abs(dx)>Math.abs(dy); if(!sw.on){sw=null;return}}
+   sw.dx=dx; const v=Math.max(-190,Math.min(0,sw.base+dx)), rin=sw.r.querySelector(".rin"); sw.r.classList.add("swiping"); rin.style.transition="none"; rin.style.transform=`translateX(${v}px)`},{passive:true});
+ $("#tableWrap").addEventListener("touchend",()=>{if(!sw)return; const {r,dx,base,on}=sw; sw=null; if(!on)return; const rin=r.querySelector(".rin"); rin.style.transition=""; rin.style.transform="";
+   const open=base+dx<-70; lst.confirm=null; lst.open=open?r.dataset.id:null; renderList()});
+}
 $("#bulkDel").addEventListener("click",()=>{
   if(lst.confirm!=="bulk"){lst.confirm="bulk";renderList();return}
   mine=mine.filter(d=>!lst.sel.has(d.id)); lst.sel.clear(); lst.confirm=null; saveMine(); rebuild(); renderList();
@@ -1843,7 +1929,7 @@ $("#edForm").addEventListener("submit",async ev=>{
   delete dz[e.id]; saveMine(); closeEditor(); rebuild(e.id);
   if(state.cur&&state.cur.id===e.id&&!$("#detail").hidden){paintPack(e);renderInfo(e)}
 });
-$("#newBlank").addEventListener("click",()=>{openEditor(null);if(shelf==="souhaits")document.querySelector("input[name=edStat][value=souhait]").checked=true});
+
 
 /* ---------- Traduction des notes Discogs (souvent en anglais) ---------- */
 const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing)\b/gi;
