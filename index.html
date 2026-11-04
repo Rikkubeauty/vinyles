@@ -526,11 +526,25 @@ const deezerSearch=d=>`https://www.deezer.com/search/${encodeURIComponent(d.arti
 /* ---------- Discogs ---------- */
 const DG="https://api.discogs.com";
 const cleanName=s=>String(s||"").replace(/\s\(\d+\)$/,"").replace(/\*$/,"");
+let dgTok=null;
+async function dgToken(){
+  if(dgTok) return dgTok;
+  if(!cloud.key) return null;
+  try{const r=await api("/discogs-jeton"); if(r.ok){dgTok=(await r.json()).jeton||null}}catch(e){}
+  return dgTok;
+}
 async function dgFetch(path,token){
-  const url=(viaRelais||cloud.on)?"/api/discogs"+path:DG+path+(token?(path.includes("?")?"&":"?")+"token="+encodeURIComponent(token):"");
-  const r=await fetch(url,{headers:{Accept:"application/vnd.discogs.v2.discogs+json"}});
+  // d'abord depuis le navigateur (Discogs bloque souvent les serveurs Cloudflare), sinon par le relais
+  let r=null;
+  const tk=(viaRelais||cloud.on)?await dgToken():(token&&token!=="cloud"?token:null);
+  if(tk){
+    try{r=await fetch(DG+path+(path.includes("?")?"&":"?")+"token="+encodeURIComponent(tk))}catch(e){r=null}
+    if(r&&r.status===429){await new Promise(x=>setTimeout(x,1500));try{r=await fetch(DG+path+(path.includes("?")?"&":"?")+"token="+encodeURIComponent(tk))}catch(e){}}
+  }
+  if(!r&&(viaRelais||cloud.on)) r=await fetch("/api/discogs"+path,{headers:{Accept:"application/vnd.discogs.v2.discogs+json"}});
+  if(!r) throw new Error("Failed to fetch");
   if(!r.ok){
-    let info="";try{info=(await r.json()).erreur||""}catch(e){}
+    let info="";try{const j=await r.json();info=j.erreur||j.message||""}catch(e){}
     if(r.status===401||r.status===403) throw new Error("Discogs refuse le jeton"+(cloud.on?" configuré sur Cloudflare":"")+(info?" ("+info+")":"")+".");
     if(r.status===404) throw new Error("Introuvable sur Discogs"+(info?" ("+info+")":"")+".");
     if(r.status===429) throw new Error("Discogs est saturé pour l'instant, réessaie dans quelques secondes."+(info?" ("+info+")":""));
@@ -750,7 +764,7 @@ $("#pack").addEventListener("mouseleave",e=>{const t=e.currentTarget.querySelect
 $("#pack").addEventListener("click",()=>{const d=state.cur;if(!d)return;if(state.track>=0)stopAudio();else{const i=firstPlayable(d);if(i>=0)playTrack(i)}});
 function firstPlayable(d){return d.tracks.findIndex((t,i)=>{const pv=previewFor(d,i);return pv&&pv.preview})}
 
-const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',mb:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7.5l8-4.5 8 4.5v9l-8 4.5-8-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 15V9.5l4 3 4-3V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const sideName=s=>/^[A-H]$/.test(s)?`Face ${s}`:"Autres";
 function renderInfo(d){
   const info=dz[d.id], sides=[...new Set(d.tracks.map(t=>t.side))];
@@ -766,7 +780,7 @@ function renderInfo(d){
     <p class="by">${esc(d.artiste)}</p>
     ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
     ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
-    <dl>${row("Sortie",d.sortie)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
+    <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now">${state.track>=0?"":"Clique la pochette ou un morceau pour écouter un extrait."}</div>`:""}
@@ -776,6 +790,7 @@ function renderInfo(d){
       <span class="grp">
       ${info?`<a class="ico" href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener" aria-label="Ouvrir dans Deezer" title="Ouvrir dans Deezer">${ICON.deezer}</a>`:""}
       ${d.discogsId?`<a class="ico" href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Fiche Discogs" title="Fiche Discogs">${ICON.disc}</a>`:""}
+      ${d.mbid?`<a class="ico" href="https://musicbrainz.org/release/${esc(d.mbid)}" target="_blank" rel="noopener" aria-label="Fiche MusicBrainz" title="Fiche MusicBrainz">${ICON.mb}</a>`:""}
       ${isWish(d)&&d.discogsId?`<a class="ico" href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Offres de vente sur Discogs" title="Offres de vente sur Discogs">${ICON.tag}</a>`:""}
       </span>
       ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Clique encore pour supprimer</span></span>`:""}
@@ -881,7 +896,7 @@ function askKey(){
 }
 function setEditable(on){document.body.classList.toggle("readonly",cloud.on&&!on)}
 $("#lockBtn").addEventListener("click",async()=>{
-  if(cloud.key){cloud.key=null;store.del("cle");setEditable(false);toast("Mode édition fermé sur cet appareil.")}
+  if(cloud.key){cloud.key=null;dgTok=null;store.del("cle");setEditable(false);toast("Mode édition fermé sur cet appareil.")}
   else if(await askKey()) toast("Mode édition activé ✓");
 });
 function setShelf(v){shelf=v;store.set("etagere",v);const r=document.querySelector(`input[name=dest][value="${v==="souhaits"?"souhait":"collection"}"]`);if(r)r.checked=true;rebuild();if(!$("#listView").hidden)renderList()}
@@ -909,6 +924,7 @@ async function addRelease(id,btn){
   try{
     const r=await dgFetch(`/releases/${id}`,token);
     const d=recordFromRelease(r); await loadDetails(d);
+    $("#aMsg").textContent="Compléments MusicBrainz…"; await mbEnrich(d);
     $("#aMsg").textContent="Traduction des notes en français…"; await translateRecord(d);
     if(dest==="souhait") d.statut="souhait";
     mine.unshift(d); saveMine();
@@ -933,12 +949,121 @@ async function searchDiscogs(q,page){
     :`/database/search?q=${encodeURIComponent(q)}&type=release&format=Vinyl&per_page=30&page=${page}`;
   return dgFetch(path,token);
 }
+
+/* ---------- MusicBrainz + Cover Art Archive (complément de Discogs) ---------- */
+const CAA="https://coverartarchive.org";
+let mbLast=0;
+async function mbFetch(path){
+  const wait=mbLast+1100-Date.now(); if(wait>0) await new Promise(r=>setTimeout(r,wait)); mbLast=Date.now();
+  let r=null;
+  try{r=await fetch("https://musicbrainz.org/ws/2/"+path+(path.includes("?")?"&":"?")+"fmt=json",{headers:{Accept:"application/json"}});if(r.status===503)r=null}catch(e){r=null}
+  if(!r) r=await fetch("/api/mb/"+path);
+  if(!r.ok){let info="";try{info=(await r.json()).erreur||""}catch(e){} throw new Error("MusicBrainz : "+(info||r.status))}
+  return r.json();
+}
+const mbQ=s=>'"'+String(s||"").replace(/["\\]/g," ").trim()+'"';
+const mbArtist=ac=>(ac||[]).map(a=>(a.name||a.artist&&a.artist.name||"")+(a.joinphrase||"")).join("").trim();
+const MB_INC="artist-credits+labels+recordings+release-groups+media+recording-level-rels+work-rels+work-level-rels+artist-rels+place-rels+area-rels";
+function mbDates(rel){const b=(rel.begin||"").slice(0,10),e=(rel.end||"").slice(0,10);if(!b&&!e)return"";const f=x=>fmtDate(x)||x;return b&&e&&b!==e?`${f(b)} – ${f(e)}`:f(b||e)}
+function mbDetails(rel){
+  const recs=(rel.media||[]).flatMap(m=>(m.tracks||[]).map(t=>t.recording).filter(Boolean));
+  const allRels=[...(rel.relations||[]),...recs.flatMap(r=>r.relations||[])];
+  const lieux=new Map();
+  for(const x of allRels){
+    if(!/recorded (at|in)|mixed (at|in)/i.test(x.type)) continue;
+    const pl=x.place||x.area; if(!pl||!pl.name) continue;
+    const where=[pl.name,pl.area&&pl.area.name!==pl.name?pl.area.name:""].filter(Boolean).join(", ");
+    if(!lieux.has(where)) lieux.set(where,new Set());
+    const dt=mbDates(x); if(dt) lieux.get(where).add(dt);
+  }
+  const lieu=[...lieux].slice(0,3).map(([w,d])=>d.size?`${w} (${[...d].slice(0,2).join(", ")})`:w).join(" ; ");
+  const comp=new Set();
+  for(const r of recs) for(const x of r.relations||[]){
+    if(!x.work) continue;
+    for(const w of x.work.relations||[]) if(/composer|writer|lyricist|librettist/i.test(w.type)&&w.artist) comp.add(w.artist.name);
+  }
+  const credits=new Map();
+  for(const x of allRels){
+    if(!x.artist) continue;
+    const l=/^producer$/i.test(x.type)?"Production":/engineer|recording/i.test(x.type)?"Ingénieur du son":/^mix/i.test(x.type)?"Mixage":/arranger|orchestrator/i.test(x.type)?"Arrangements":null;
+    if(!l) continue; if(!credits.has(l)) credits.set(l,new Set()); credits.get(l).add(x.artist.name);
+  }
+  const caa=rel["cover-art-archive"]||{}, rg=rel["release-group"]||{};
+  return {mbid:rel.id,lieu,compositeurs:[...comp].slice(0,8).join(", "),
+    credits:[...credits].map(([l,n])=>`${l} : ${[...n].slice(0,4).join(", ")}`).join(" · "),
+    cover:caa.front?`${CAA}/release/${rel.id}/front-500`:(rg.id?`${CAA}/release-group/${rg.id}/front-500`:null),
+    premiere:rg["first-release-date"]||""};
+}
+async function mbFind(d){
+  const tries=[];
+  if(d.ean) tries.push(`barcode:${String(d.ean).replace(/\D/g,"")}`);
+  if(d.titre&&d.artiste) tries.push(`release:${mbQ(cleanT(d.titre))} AND artist:${mbQ(d.artiste.split(/,| & /)[0])}`);
+  for(const q of tries){
+    const j=await mbFetch(`release?query=${encodeURIComponent(q)}&limit=8`);
+    const ok=(j.releases||[]).filter(r=>q.startsWith("barcode:")||(titleOk(d,r.title)&&artistOk(d,mbArtist(r["artist-credit"]))));
+    if(ok.length){const vin=ok.find(r=>(r.media||[]).some(m=>/vinyl/i.test(m.format||"")));return (vin||ok[0]).id}
+  }
+  return null;
+}
+// complète une fiche : on ne remplace jamais ce que Discogs ou Hugo ont déjà rempli
+async function mbEnrich(d){
+  try{
+    const id=d.mbid||await mbFind(d); if(!id) return;
+    const x=mbDetails(await mbFetch(`release/${id}?inc=${MB_INC}`));
+    d.mbid=x.mbid;
+    if(!d.lieu&&x.lieu) d.lieu=x.lieu;
+    if(!d.compositeurs&&x.compositeurs) d.compositeurs=x.compositeurs;
+    if(!d.credits&&x.credits) d.credits=x.credits;
+    if(!d.cover&&x.cover) d.cover=x.cover;
+    if(x.premiere&&d.annee&&+x.premiere.slice(0,4)<d.annee) d.premiere=fmtDate(x.premiere)||x.premiere;
+  }catch(e){}
+}
+function recordFromMb(rel){
+  const lab=(rel["label-info"]||[])[0]||{}, [lc,li]=LABELS[hash(rel.id)%LABELS.length], date=rel.date||"";
+  const d={id:"mb"+rel.id,mbid:rel.id,source:"musicbrainz",titre:rel.title,artiste:mbArtist(rel["artist-credit"]),
+    annee:date?+date.slice(0,4):null,sortie:fmtDate(date)||"Date inconnue",label:lab.label?lab.label.name:"",cat:lab["catalog-number"]||"",
+    cover:null,genres:"",pays:rel.country||"",ean:rel.barcode||"",
+    sleeve:{bg:`linear-gradient(135deg,hsl(${hash(rel.title)%360} 35% 28%),hsl(${(hash(rel.title)+40)%360} 30% 14%))`,ink:"#f3eadb"},
+    labelColor:lc,labelInk:li,anecdotes:[],anecdotesFr:true,details:true,ajoute:new Date().toISOString().slice(0,10)};
+  const multi=(rel.media||[]).length>1;
+  d.tracks=(rel.media||[]).flatMap((m,mi)=>(m.tracks||[]).map((t,ti)=>{
+    const num=String(t.number||""), sd=/^[A-Z]/i.test(num)?num[0].toUpperCase():(multi?String.fromCharCode(65+mi*2+(ti>=(m.tracks.length/2)?1:0)):(ti<(m.tracks.length/2)?"A":"B"));
+    return {title:t.title,side:sd,pos:num,duration:t.length?Math.round(t.length/1000):0}}));
+  const x=mbDetails(rel); d.lieu=x.lieu; d.compositeurs=x.compositeurs; d.credits=x.credits; d.cover=x.cover;
+  if(x.premiere&&d.annee&&+x.premiere.slice(0,4)<d.annee) d.premiere=fmtDate(x.premiere)||x.premiere;
+  return d;
+}
+async function addMbRelease(id,btn){
+  const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
+  const ex=mine.find(d=>d.mbid===id);
+  if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans tes souhaits.":"Ce disque est déjà dans ta collection.";return}
+  btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche MusicBrainz…";
+  try{
+    const d=recordFromMb(await mbFetch(`release/${id}?inc=${MB_INC}`));
+    if(dest==="souhait") d.statut="souhait";
+    mine.unshift(d); saveMine();
+    if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
+    rebuild(d.id); btn&&btn.classList.add("added");
+    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"à tes souhaits":"à ta collection"}.`;
+    resolveDeezer(d).then(()=>applyCover(d));
+  }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=err.message}
+  finally{btn&&(btn.disabled=false)}
+}
+async function searchMb(q){
+  const digits=q.replace(/[\s-]/g,"");
+  const query=/^\d{8,14}$/.test(digits)?`barcode:${digits}`:q;
+  const j=await mbFetch(`release?query=${encodeURIComponent(query)}&limit=30`);
+  return (j.releases||[]).map(r=>({mb:r.id,title:`${mbArtist(r["artist-credit"])} - ${r.title}`,year:(r.date||"").slice(0,4),country:r.country,
+    label:((r["label-info"]||[]).map(l=>l.label&&l.label.name).filter(Boolean)),catno:((r["label-info"]||[])[0]||{})["catalog-number"],
+    format:[...new Set((r.media||[]).map(m=>m.format).filter(Boolean))],cover_image:`${CAA}/release/${r.id}/front-250`}));
+}
 function renderResults(list){
   $("#results").innerHTML=list.map(r=>{
     const [art,...rest]=String(r.title).split(" - "), tit=rest.join(" - ")||art;
     const meta=[r.year,r.country,(r.label||[])[0],r.catno].filter(Boolean).map(esc).join(" · ");
     const cov=r.cover_image&&!/spacer\.gif/.test(r.cover_image)?r.cover_image:r.thumb;
-    return `<button class="res${mine.some(d=>d.discogsId===r.id)?" added":""}" type="button" data-id="${r.id}">
+    const added=r.mb?mine.some(d=>d.mbid===r.mb):mine.some(d=>d.discogsId===r.id);
+    return `<button class="res${added?" added":""}" type="button" ${r.mb?`data-mb="${esc(r.mb)}"`:`data-id="${r.id}"`}>
       <span class="rc" style="${cov?`background-image:url('${esc(cov)}')`:""}"></span>
       <span><b>${esc(tit)}</b><br>${esc(rest.length?art:"")}</span><small>${meta}${(r.format||[]).length?"<br>"+esc(r.format.slice(0,3).join(", ")):""}</small></button>`}).join("");
 }
@@ -946,13 +1071,28 @@ async function runSearch(q,more){
   const my=++srch.seq;
   if(!more){srch.q=q;srch.page=1;srch.items=[]}else srch.page++;
   $("#aMsg").className="imsg"; $("#aMsg").textContent=more?"Chargement…":"Recherche sur Discogs…";
+  let dgErr=null;
   try{
     const j=await searchDiscogs(srch.q,srch.page); if(my!==srch.seq) return;
     srch.pages=(j.pagination&&j.pagination.pages)||1;
-    srch.items=srch.items.concat(j.results||[]); renderResults(rank(srch.q,srch.items));
-    $("#aMsg").textContent=srch.items.length?`Les plus proches de « ${srch.q} » en premier. Clique sur ton pressage pour l'ajouter.`:"Aucun résultat. Essaie avec moins de mots, ou le numéro de catalogue.";
-    $("#moreBtn").hidden=srch.page>=srch.pages;
-  }catch(err){if(my!==srch.seq)return;$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err);$("#moreBtn").hidden=true}
+    srch.items=srch.items.concat(j.results||[]);
+  }catch(err){if(my!==srch.seq)return;dgErr=err}
+  if(srch.items.length){
+    renderResults(rank(srch.q,srch.items));
+    $("#aMsg").textContent=`Les plus proches de « ${srch.q} » en premier. Clique sur ton pressage pour l'ajouter.`;
+    $("#moreBtn").hidden=srch.page>=srch.pages; return;
+  }
+  $("#moreBtn").hidden=true;
+  if(more) return;
+  // rien sur Discogs : on tente MusicBrainz
+  $("#aMsg").textContent="Rien sur Discogs, recherche sur MusicBrainz…";
+  try{
+    const list=await searchMb(srch.q); if(my!==srch.seq) return;
+    if(list.length){renderResults(rank(srch.q,list));$("#aMsg").textContent=`Trouvé sur MusicBrainz (pas sur Discogs). Clique sur ton disque pour l'ajouter.`;return}
+    $("#results").innerHTML="";
+    $("#aMsg").className=dgErr?"imsg err":"imsg";
+    $("#aMsg").textContent=dgErr?niceErr(dgErr):"Aucun résultat sur Discogs ni sur MusicBrainz. Essaie avec moins de mots, ou le numéro de catalogue.";
+  }catch(err){if(my!==srch.seq)return;$("#results").innerHTML="";$("#aMsg").className="imsg err";$("#aMsg").textContent=dgErr?niceErr(dgErr):"Aucun résultat sur Discogs. "+err.message}
 }
 /* Discogs cherche aussi dans les crédits et les morceaux : on garde d'abord ce qui correspond au titre ou à l'artiste */
 const fold=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\(\d+\)/g," ").replace(/[^a-z0-9]+/g," ").trim();
@@ -973,7 +1113,7 @@ function rank(q,items){
 }
 function lev(a,b){if(Math.abs(a.length-b.length)>1)return 2;const m=[...Array(a.length+1)].map((_,i)=>[i]);for(let j=1;j<=b.length;j++)m[0][j]=j;
   for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
-$("#results").addEventListener("click",e=>{const b=e.target.closest(".res");if(b)addRelease(+b.dataset.id,b)});
+$("#results").addEventListener("click",e=>{const b=e.target.closest(".res");if(!b)return;if(b.dataset.mb)addMbRelease(b.dataset.mb,b);else addRelease(+b.dataset.id,b)});
 $("#moreBtn").addEventListener("click",()=>runSearch(srch.q,true));
 $("#addForm").addEventListener("submit",e=>{e.preventDefault();const q=cleanQ($("#aq").value);$("#aq").value=q;if(q)runSearch(q)});
 let typeT=null;
@@ -1033,7 +1173,7 @@ function renderList(){
   $("#lCount").textContent=tot?`${rows.length} disque${rows.length>1?"s":""}${rows.length!==tot?` sur ${tot}`:""}${shelf==="souhaits"?" souhaités":""}`:"";
   $("#bulkDel").hidden=!lst.sel.size;
   $("#bulkDel").textContent=lst.confirm==="bulk"?`Confirmer : supprimer ${lst.sel.size} disque${lst.sel.size>1?"s":""}`:`Supprimer la sélection (${lst.sel.size})`;
-  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide. Les pochettes de l'autre vue sont des exemples."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
+  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
   if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à ta recherche.</p>${state.q?onlineOffer():""}</div>`;return}
   const all=rows.every(d=>lst.sel.has(d.id));
   $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
