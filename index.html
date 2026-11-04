@@ -44,7 +44,7 @@
 :root[data-look="galerie"] .info .by,:root[data-look="galerie"] .caption .ca{font-style:normal;font-weight:500}
 :root[data-look="galerie"] .sleeve{border-radius:0}
 
-@media (max-width:640px){:root{--S:200px}}
+@media (max-width:640px){:root{--S:min(64vw,250px)}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.readonly #bulkDel,body.readonly .coll td:first-child,body.readonly .coll th:first-child,body.readonly .coll .acts2,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
@@ -350,13 +350,15 @@ dd{margin:0}
 .foot{font-size:14.5px;color:var(--muted);margin:0;max-width:75ch}
 @media (prefers-reduced-motion:reduce){.cv,.cv .tilt,.vinyl,.pack .tilt,.ambient div{transition:none!important}.pack.playing .disc{animation:none}}
 @media (max-width:640px){
-  .wrap{padding-block:14px 76px;gap:12px}
+  .wrap{padding-block:12px 76px;gap:10px}
   header{gap:10px}
-  :root[data-look="galerie"] h1{font-size:27px;width:100%}
+  :root[data-look="galerie"] h1{font-size:clamp(18px,5.7vw,27px);width:100%;white-space:nowrap}
+  .tools .lock{width:36px;height:36px}
+  .tools .search{height:36px;box-sizing:border-box;padding-block:0}
   .tools{width:100%;flex-wrap:nowrap;gap:8px}
   .tools .search{flex:1 1 0;min-width:0;width:0}
   .wrap>*{min-width:0}
-  .viewtog button{padding:6px 7px;font-size:10.5px;letter-spacing:0}
+  .viewtog button{padding:6px 6px;font-size:10.5px;letter-spacing:0}
   .subright{flex-wrap:wrap!important;row-gap:8px}
   #grpBtn{padding:6px 10px;font-size:11.5px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
@@ -365,14 +367,18 @@ dd{margin:0}
   #addBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
   #addBtn::before{content:"+";font-size:24px;line-height:1}
   .subbar{gap:8px}
-  .subleft{width:100%;gap:8px}
+  .subleft{width:100%;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;width:calc(100% + 32px)}
+  .subleft::-webkit-scrollbar{display:none}
+  .shelftog{flex:none}
+  .viewtog{order:-1}
   .shelftog button{font-size:15px;padding:4px 6px}
-  .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%;padding-bottom:2px}
+  .chips{flex-wrap:nowrap;flex:none;padding-bottom:2px}
   .chips::-webkit-scrollbar{display:none}
   .chips button{flex:none}
-  .subright{width:100%;justify-content:space-between;flex-wrap:nowrap}
+  .subright{width:100%;justify-content:space-between;gap:8px}
   .sortsel span{display:none}
-  #sortBtn b{max-width:30vw;overflow:hidden;text-overflow:ellipsis}
+  #sortBtn b{max-width:16vw;overflow:hidden;text-overflow:ellipsis}
+  #sortBtn{gap:5px}
   #dbStat{padding:8px}
   #dbStat span{display:none}
   .detail .close{top:10px;left:10px}
@@ -399,8 +405,8 @@ dd{margin:0}
   <div class="subbar">
     <div class="subleft"><div class="shelftog" role="group" aria-label="Étagère"><button type="button" id="sCol" aria-pressed="true">Ma collection<small id="nCol"></small></button><button type="button" id="sWish" aria-pressed="false">Mes souhaits<small id="nWish"></small></button></div>
     <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div></div>
-    <div class="subright"><div class="sortsel"><span>Tri</span><button type="button" id="sortBtn" aria-haspopup="listbox" aria-expanded="false"><b id="sortLbl">Derniers ajouts</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Derniers ajouts</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
+    <div class="subright"><div class="sortsel"><span>Tri</span><button type="button" id="sortBtn" aria-haspopup="listbox" aria-expanded="false"><b id="sortLbl">Récents</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Récents</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
     <div class="sortsel" id="grpSel" hidden><span>Par</span><button type="button" id="grpBtn" aria-haspopup="listbox" aria-expanded="false"><b id="grpLbl">Artiste</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <ul class="sortmenu" id="grpMenu" role="listbox" aria-label="Regrouper" hidden><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="style">Style</li><li role="option" data-v="decennie">Décennie</li><li role="option" data-v="aucun">Sans regroupement</li></ul></div>
     <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Flow</button><button type="button" id="vGrid" aria-pressed="false">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button><button type="button" id="vStats" aria-pressed="false">Stats</button></div></div>
