@@ -219,7 +219,8 @@ table.coll{width:100%;border-collapse:collapse;font-size:15px;min-width:760px}
   padding-block:max(28px,env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .detail .in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start;min-height:100%}
 @media (max-width:880px){.detail .in{grid-template-columns:minmax(0,1fr)}}
-.close{all:unset;cursor:pointer;position:fixed;z-index:60;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:50%;background:var(--field);border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
+.close{all:unset;cursor:pointer;position:fixed;z-index:60;top:max(14px,env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));height:40px;padding:0 16px;border-radius:999px;background:var(--field);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.close:hover{background:var(--fg);color:var(--night)}
 .close:focus-visible{outline:2px solid var(--amber)}
 .pack{position:relative;width:min(380px,34vw);aspect-ratio:1;max-width:100%;margin:clamp(10px,4vw,40px) 0 0;perspective:1200px}
 @media (max-width:880px){.pack{width:min(340px,52vw);margin-left:max(0px,calc(50% - min(340px,52vw) * .7))}}
@@ -336,7 +337,7 @@ dd{margin:0}
   .sortsel select{max-width:36vw}
   #dbStat{padding:8px}
   #dbStat span{display:none}
-  .detail .close{top:10px;right:10px}
+  .detail .close{top:10px;left:10px}
 }
 </style>
 </head>
@@ -408,7 +409,7 @@ dd{margin:0}
 </div>
 
 <div class="detail" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
-  <button class="close" id="close" aria-label="Fermer">✕</button>
+  <button class="close" id="close" aria-label="Retour à la discothèque">← Retour</button>
   <div class="in">
     <div class="pack" id="pack"><div class="tilt">
       <div class="vinyl"><div class="disc"><div class="lab" id="dLab"></div></div></div>
@@ -426,7 +427,6 @@ dd{margin:0}
     <div class="keyacts"><button class="btn pri" type="submit">Valider</button><button class="btn" type="button" id="keyCancel">Annuler</button></div>
   </form>
 </div>
-<audio id="audio" preload="none"></audio>
 
 <script>
 const DISQUES = [
@@ -547,7 +547,7 @@ function titleOk(d,title){const a=normA(cleanT(d.titre)),b=normA(cleanT(title));
 async function albumData(id){
   const a=await jsonp(`https://api.deezer.com/album/${id}`);
   return {albumId:a.id,cover:a.cover_xl,artist:a.artist&&a.artist.name,title:a.title,
-    tracks:(a.tracks&&a.tracks.data||[]).map(t=>({title:t.title,preview:t.preview,duration:t.duration}))};
+    tracks:(a.tracks&&a.tracks.data||[]).map(t=>({id:t.id,title:t.title,preview:t.preview,duration:t.duration}))};
 }
 async function resolveDeezer(d){
   if(dz[d.id]!==undefined) return dz[d.id];
@@ -713,7 +713,7 @@ function cvEl(d,i){
   el.innerHTML=`<div class="tilt">
       <div class="vinyl"><div class="disc"><div class="lab" style="${labOf(d)}"></div></div></div>
       <div class="refl" style="${bgOf(d)}"></div><div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}</div>
-      <div class="shade"></div><button class="open" type="button" tabindex="-1" aria-label="Ouvrir ${esc(d.titre)}">Ouvrir</button></div>`;
+      <div class="shade"></div></div>`;
   return el;
 }
 function place(el,k){
@@ -726,7 +726,6 @@ function place(el,k){
   el.classList.toggle("center",k===0);
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
-  el.querySelector(".open").tabIndex=k===0?0:-1;
 }
 let ambFlip=0;
 function setFocus(i,instant){
@@ -833,8 +832,7 @@ $("#pack").addEventListener("mousemove",e=>{const r=e.currentTarget.getBoundingC
   const t=e.currentTarget.querySelector(".tilt");t.style.setProperty("--ry",((x-.5)*18).toFixed(1)+"deg");t.style.setProperty("--rx",((.5-y)*14).toFixed(1)+"deg");
   $("#dSleeve").style.setProperty("--gx",(x*100)+"%");$("#dSleeve").style.setProperty("--gy",(y*100)+"%")});
 $("#pack").addEventListener("mouseleave",e=>{const t=e.currentTarget.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")});
-$("#pack").addEventListener("click",()=>{const d=state.cur;if(!d)return;if(state.track>=0)stopAudio();else{const i=firstPlayable(d);if(i>=0)playTrack(i)}});
-function firstPlayable(d){return d.tracks.findIndex((t,i)=>{const pv=previewFor(d,i);return pv&&pv.preview})}
+$("#pack").addEventListener("click",()=>{const d=state.cur;if(!d||!dz[d.id])return;if($("#pack").classList.contains("playing"))stopAudio();else playAlbum()});
 
 const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',mb:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7.5l8-4.5 8 4.5v9l-8 4.5-8-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 15V9.5l4 3 4-3V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const sideName=s=>/^[A-H]$/.test(s)?`Face ${s}`:"Autres";
@@ -842,9 +840,9 @@ function renderInfo(d){
   const info=dz[d.id], sides=[...new Set(d.tracks.map(t=>t.side))];
   const row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
   let n=0;
-  const li=(t,i)=>{const pv=previewFor(d,i), ok=pv&&pv.preview, inner=`<span class="n">${esc(t.pos||t.side+(++n))}</span><span class="t">${esc(t.title)}</span><span class="d">${fmt(t.duration||(pv||{}).duration)}</span>`;
-    return ok?`<li><button class="tr" data-i="${i}" title="Écouter l'extrait">${inner}<span class="pv" aria-hidden="true">▶</span></button></li>`:`<li><div class="tr off">${inner}<span class="pv" aria-hidden="true"></span></div></li>`};
-  const playable=d.tracks.some((t,i)=>{const pv=previewFor(d,i);return pv&&pv.preview});
+  const li=(t,i)=>{const pv=previewFor(d,i), ok=pv&&pv.id, inner=`<span class="n">${esc(t.pos||t.side+(++n))}</span><span class="t">${esc(t.title)}</span><span class="d">${fmt(t.duration||(pv||{}).duration)}</span>`;
+    return ok?`<li><button class="tr" data-i="${i}" title="Écouter">${inner}<span class="pv" aria-hidden="true">▶</span></button></li>`:`<li><div class="tr off">${inner}<span class="pv" aria-hidden="true"></span></div></li>`};
+  const playable=!!info;
   const loading=!d.details&&!d.detailErr;
   $("#info").innerHTML=`
     <div class="eyebrow">${[d.label,d.cat,"LP 33⅓"].filter(Boolean).map(esc).join(" · ")}</div>
@@ -857,9 +855,9 @@ function renderInfo(d){
     ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
     ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
-    ${playable?`<div class="now" id="now">${state.track>=0?"":"Clique la pochette ou un morceau pour écouter un extrait."}</div>`:""}
+    ${playable?`<div class="now" id="now"></div>`:""}
     <div class="acts">
-      ${playable?`<button class="ico big" id="playAll" type="button" aria-label="${state.track>=0?"Pause":"Écouter les extraits"}" title="${state.track>=0?"Pause":"Écouter les extraits"}">${state.track>=0?ICON.pause:ICON.play}</button>`:""}
+      ${playable?`<button class="ico big" id="playAll" type="button" aria-label="Écouter l'album" title="Écouter l'album">${ICON.play}</button>`:""}
       ${isWish(d)?`<button class="ico big" id="gotBtn" type="button" aria-label="Je l'ai : passer dans ma collection" title="Je l'ai : passer dans ma collection">${ICON.check}</button>`:""}
       <span class="grp">
       ${info?`<a class="ico" href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener" aria-label="Ouvrir dans Deezer" title="Ouvrir dans Deezer">${ICON.deezer}</a>`:""}
@@ -869,10 +867,10 @@ function renderInfo(d){
       </span>
       ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Clique encore pour supprimer</span></span>`:""}
     </div>
-    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="https://widget.deezer.com/widget/light/album/${info.albumId}?tracklist=false&radius=true" allow="encrypted-media; clipboard-write"></iframe></div>`:""}`;
+    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc("album",info.albumId,false)}" allow="encrypted-media; clipboard-write"></iframe></div>`:""}`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
-  $("#playAll")&&$("#playAll").addEventListener("click",()=>{state.track<0?playTrack(firstPlayable(d)):stopAudio()});
+  $("#playAll")&&$("#playAll").addEventListener("click",playAlbum);
   bindGift(d);
   const gb=$("#gotBtn"); if(gb) gb.addEventListener("click",()=>{if(resa[d.id]||cloud.key)api("/reservations/"+encodeURIComponent(d.id),{method:"DELETE"}).catch(()=>{});delete d.statut;d.ajoute=new Date().toISOString().slice(0,10);saveMine();closeDetail();setShelf("collection");rebuild(d.id)});
   const eb=$("#edBtn"); if(eb) eb.addEventListener("click",()=>openEditor(d));
@@ -880,32 +878,27 @@ function renderInfo(d){
   if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.classList.add("danger");$("#rmConf").hidden=false}});
 }
 
-/* ---------- Lecture ---------- */
+/* ---------- Lecture : uniquement le lecteur Deezer intégré (morceaux entiers si tu es connecté à Deezer) ---------- */
+const widgetSrc=(kind,id,auto)=>`https://widget.deezer.com/widget/light/${kind}/${id}?tracklist=false&radius=true${auto?"&autoplay=true":""}`;
+function setWidget(kind,id,auto){const f=document.querySelector("#widget iframe");if(f)f.src=widgetSrc(kind,id,auto)}
 function playTrack(i){
-  const d=state.cur; if(!d||i<0||i>=d.tracks.length) return;
-  const t=d.tracks[i], pv=previewFor(d,i); if(!pv||!pv.preview) return;
-  const a=$("#audio"); a.pause(); silenceWidget();
+  const d=state.cur, info=d&&dz[d.id]; if(!info||i<0||i>=d.tracks.length) return;
+  const t=d.tracks[i], pv=previewFor(d,i); if(!pv||!pv.id) return;
+  setWidget("track",pv.id,true);
   state.track=i; $("#pack").classList.add("out","playing"); highlight();
-  const now=$("#now"), pa=$("#playAll"); if(pa){pa.innerHTML=ICON.pause;pa.setAttribute("aria-label","Pause");pa.title="Pause"}
-  a.src=pv.preview;
-  a.play().then(()=>{now&&(now.innerHTML=`Extrait 30 s · <b>${esc(t.title)}</b> · ${sideName(t.side)}`)}).catch(()=>{now&&(now.innerHTML=`Clique encore pour lancer le son · <b>${esc(t.title)}</b>`)});
+  const now=$("#now"); if(now) now.innerHTML=`<b>${esc(t.title)}</b> · ${sideName(t.side)}`;
 }
-/* un seul lecteur à la fois : nos extraits ou le lecteur Deezer intégré */
-function silenceWidget(){
-  const f=document.querySelector("#widget iframe"); if(!f||!f.dataset.used) return;
-  delete f.dataset.used; const src=f.src; f.src="about:blank"; f.src=src; // recharge = coupe le son du lecteur Deezer
+function playAlbum(){
+  const d=state.cur, info=d&&dz[d.id]; if(!info) return;
+  setWidget("album",info.albumId,true); state.track=-1; highlight();
+  $("#pack").classList.add("out","playing"); const now=$("#now"); if(now) now.textContent="";
 }
-addEventListener("blur",()=>{setTimeout(()=>{
-  const f=document.activeElement;
-  if(f&&f.tagName==="IFRAME"&&f.closest("#widget")){f.dataset.used="1";if(state.track>=0)stopAudio()}
-},0)});
 function stopAudio(){
-  const a=$("#audio"); a.pause(); a.removeAttribute("src");
+  const d=state.cur, info=d&&dz[d.id];
+  if(info&&$("#pack").classList.contains("playing")) setWidget("album",info.albumId,false);
   $("#pack").classList.remove("playing"); state.track=-1; highlight();
-  const pa=$("#playAll"); if(pa){pa.innerHTML=ICON.play;pa.setAttribute("aria-label","Écouter les extraits");pa.title="Écouter les extraits"}
-  const now=$("#now"); if(now) now.textContent="En pause.";
+  const now=$("#now"); if(now) now.textContent="";
 }
-$("#audio").addEventListener("ended",()=>{const d=state.cur;if(!d)return stopAudio();for(let n=state.track+1;n<d.tracks.length;n++){const pv=previewFor(d,n);if(pv&&pv.preview)return playTrack(n)}stopAudio()});
 function highlight(){document.querySelectorAll(".tr").forEach(b=>b.classList.toggle("cur",+b.dataset.i===state.track))}
 
 /* ---------- Ma collection ---------- */
