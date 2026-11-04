@@ -884,12 +884,21 @@ function renderInfo(d){
 function playTrack(i){
   const d=state.cur; if(!d||i<0||i>=d.tracks.length) return;
   const t=d.tracks[i], pv=previewFor(d,i); if(!pv||!pv.preview) return;
-  const a=$("#audio"); a.pause();
+  const a=$("#audio"); a.pause(); silenceWidget();
   state.track=i; $("#pack").classList.add("out","playing"); highlight();
   const now=$("#now"), pa=$("#playAll"); if(pa){pa.innerHTML=ICON.pause;pa.setAttribute("aria-label","Pause");pa.title="Pause"}
   a.src=pv.preview;
   a.play().then(()=>{now&&(now.innerHTML=`Extrait 30 s · <b>${esc(t.title)}</b> · ${sideName(t.side)}`)}).catch(()=>{now&&(now.innerHTML=`Clique encore pour lancer le son · <b>${esc(t.title)}</b>`)});
 }
+/* un seul lecteur à la fois : nos extraits ou le lecteur Deezer intégré */
+function silenceWidget(){
+  const f=document.querySelector("#widget iframe"); if(!f||!f.dataset.used) return;
+  delete f.dataset.used; const src=f.src; f.src="about:blank"; f.src=src; // recharge = coupe le son du lecteur Deezer
+}
+addEventListener("blur",()=>{setTimeout(()=>{
+  const f=document.activeElement;
+  if(f&&f.tagName==="IFRAME"&&f.closest("#widget")){f.dataset.used="1";if(state.track>=0)stopAudio()}
+},0)});
 function stopAudio(){
   const a=$("#audio"); a.pause(); a.removeAttribute("src");
   $("#pack").classList.remove("playing"); state.track=-1; highlight();
