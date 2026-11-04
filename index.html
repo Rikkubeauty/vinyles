@@ -452,15 +452,32 @@ function jsonp(url){
     document.head.appendChild(s);
   });
 }
+/* Deezer : on ne garde un album que si l'artiste ET le titre correspondent vraiment au disque */
+const normA=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\b(the|les|le|la)\b/g,"").replace(/[^a-z0-9]/g,"");
+const cleanT=x=>String(x||"").replace(/\s*[\(\[][^\)\]]*(remaster|deluxe|edition|édition|version|anniversary|mono|stereo|expanded|bonus)[^\)\]]*[\)\]]/gi,"").trim();
+function artistOk(d,name){const a=normA(d.artiste.split(/,| & | et | feat/i)[0]),b=normA(name);return !!a&&!!b&&(a===b||a.includes(b)||b.includes(a))}
+function titleOk(d,title){const a=normA(cleanT(d.titre)),b=normA(cleanT(title));return !!a&&!!b&&(a===b||(Math.min(a.length,b.length)/Math.max(a.length,b.length)>=.6&&(a.includes(b)||b.includes(a))))}
+async function albumData(id){
+  const a=await jsonp(`https://api.deezer.com/album/${id}`);
+  return {albumId:a.id,cover:a.cover_xl,artist:a.artist&&a.artist.name,title:a.title,
+    tracks:(a.tracks&&a.tracks.data||[]).map(t=>({title:t.title,preview:t.preview,duration:t.duration}))};
+}
 async function resolveDeezer(d){
   if(dz[d.id]!==undefined) return dz[d.id];
   try{
-    const q=encodeURIComponent(`artist:"${d.artiste}" album:"${d.titre}"`);
-    const s=await jsonp(`https://api.deezer.com/search/album?q=${q}&limit=5`);
-    const hit=(s.data||[])[0]; if(!hit){dz[d.id]=null;setStatus(true);return null}
-    const a=await jsonp(`https://api.deezer.com/album/${hit.id}`);
-    dz[d.id]={albumId:hit.id,cover:a.cover_xl||hit.cover_xl,tracks:(a.tracks&&a.tracks.data||[]).map(t=>({title:t.title,preview:t.preview,duration:t.duration}))};
-    setStatus(true); return dz[d.id];
+    let info=null;
+    // 1. par code-barres (le plus fiable)
+    const upc=String(d.ean||"").replace(/\D/g,"");
+    if(upc.length>=8){ try{ const a=await albumData("upc:"+upc); if(a.albumId&&artistOk(d,a.artist)) info=a }catch(e){} }
+    // 2. par artiste + titre, en vérifiant chaque résultat
+    if(!info){
+      const q=encodeURIComponent(`artist:"${d.artiste.split(/,| & /)[0]}" album:"${cleanT(d.titre)}"`);
+      const s=await jsonp(`https://api.deezer.com/search/album?q=${q}&limit=15`);
+      const hit=(s.data||[]).find(x=>artistOk(d,x.artist&&x.artist.name)&&normA(cleanT(x.title))===normA(cleanT(d.titre)))
+             ||(s.data||[]).find(x=>artistOk(d,x.artist&&x.artist.name)&&titleOk(d,x.title));
+      if(hit) info=await albumData(hit.id);
+    }
+    dz[d.id]=info; setStatus(true); return info;
   }catch(e){dz[d.id]=null;if(state.deezer===null)setStatus(false);return null}
 }
 function setStatus(ok){
@@ -471,9 +488,11 @@ function setStatus(ok){
 const norm=s=>String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\(.*?\)|\[.*?\]/g,"").replace(/[^a-z0-9]/g,"");
 function previewFor(d,i){
   const info=dz[d.id]; if(!info) return null;
-  const t=d.tracks[i], n=norm(t.title);
-  const m=info.tracks.find(x=>norm(x.title)===n)||info.tracks.find(x=>{const k=norm(x.title);return n&&k&&(k.startsWith(n)||n.startsWith(k))});
-  return m||(info.tracks.length===d.tracks.length?info.tracks[i]:null);
+  const t=d.tracks[i], n=normA(cleanT(t.title)); if(!n) return null;
+  const close=x=>!t.duration||!x.duration||Math.abs(t.duration-x.duration)<=20;
+  return info.tracks.find(x=>normA(cleanT(x.title))===n&&close(x))
+    ||info.tracks.find(x=>{const k=normA(cleanT(x.title));return k&&Math.min(k.length,n.length)/Math.max(k.length,n.length)>=.75&&(k.startsWith(n)||n.startsWith(k))&&close(x)})
+    ||null;
 }
 const fmt=s=>s?`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`:"";
 const deezerSearch=d=>`https://www.deezer.com/search/${encodeURIComponent(d.artiste+" "+d.titre)}`;
