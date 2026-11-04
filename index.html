@@ -893,7 +893,13 @@ function renderInfo(d){
 
 /* ---------- Lecture : uniquement le lecteur Deezer intégré (morceaux entiers si tu es connecté à Deezer) ---------- */
 const widgetSrc=(kind,id,auto)=>`https://widget.deezer.com/widget/light/${kind}/${id}?tracklist=false&radius=true${auto?"&autoplay=true":""}`;
-function setWidget(kind,id,auto){const f=document.querySelector("#widget iframe");if(f)f.src=widgetSrc(kind,id,auto)}
+// une iframe neuve à chaque lecture : Chrome n'accepte la lecture auto que dans un cadre créé après le clic
+function setWidget(kind,id,auto){
+  const old=document.querySelector("#widget iframe"); if(!old) return;
+  const f=document.createElement("iframe");
+  f.title=old.title; f.setAttribute("allow","autoplay; encrypted-media; clipboard-write"); f.src=widgetSrc(kind,id,auto);
+  old.replaceWith(f);
+}
 function playTrack(i){
   const d=state.cur, info=d&&dz[d.id]; if(!info||i<0||i>=d.tracks.length) return;
   const t=d.tracks[i], pv=previewFor(d,i); if(!pv||!pv.id) return;
