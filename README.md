@@ -8,10 +8,21 @@ Une discothèque de vinyles en Cover Flow 3D : les pochettes défilent, le vinyl
 - **Mode liste** : bascule « Pochettes / Liste » pour voir la collection en tableau triable, modifier toutes les infos d'un disque (pochette, morceaux, notes…), supprimer un ou plusieurs disques, ou créer un disque à la main.
 - **Liste de souhaits** : « Ma collection / Mes souhaits » en haut ; choisis l'étagère au moment d'ajouter, puis « Je l'ai ! » pour passer un souhait dans la collection.
 
-## Utilisation
+## En ligne sur Cloudflare
 
-Ouvre `index.html` dans ton navigateur, ou active GitHub Pages (Settings → Pages → branche `main`, dossier racine) pour l'avoir en ligne.
+Le site tourne sur **Cloudflare Pages** :
 
-## Sauvegarder la collection
+- `index.html` : la page
+- `functions/api/` : l'API (collection et souhaits dans la base D1 `vinyles`, photos de pochettes dans le bucket R2 `vinyles-pochettes`, relais Discogs)
+- `wrangler.toml` : les liaisons vers la base et le bucket
 
-Les disques ajoutés sont gardés dans ton navigateur. Pour les retrouver partout, clique « Télécharger collection.json » dans le panneau d'ajout et dépose ce fichier à la racine du dépôt, à côté de `index.html` : la page le charge au démarrage.
+Deux secrets à régler dans Cloudflare (Workers & Pages → vinyles → Settings → Variables and Secrets) :
+
+- `DISCOGS_TOKEN` : ton jeton personnel Discogs, jamais visible dans la page
+- `ADMIN_KEY` : la clé d'édition. Les visiteurs voient la discothèque ; avec la clé (cadenas en haut), tu ajoutes, modifies et supprimes.
+
+Ouverte en fichier local, la page marche aussi, mais garde tout dans le navigateur et demande ton jeton Discogs.
+
+## Sauvegarde
+
+« Télécharger collection.json » dans le panneau d'ajout exporte toute la collection.
