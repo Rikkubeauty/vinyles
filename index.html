@@ -336,7 +336,7 @@ dd{margin:0}
     <div class="dest" role="radiogroup" aria-label="Ajouter à">Ajouter à <label><input type="radio" name="dest" value="collection" checked>Ma collection</label><label><input type="radio" name="dest" value="souhait">Mes souhaits</label></div>
     <form class="addform" id="addForm">
       <label for="aq">Titre, artiste, EAN ou code-barres<input id="aq" type="search" autocomplete="off" placeholder="ex. Melody Nelson Gainsbourg, ou 042281204721" required></label>
-      <button class="btn pri" type="submit" id="aGo">Chercher sur Discogs</button>
+      <button class="btn pri" type="submit" id="aGo">Chercher</button>
       <button class="btn" type="button" id="scanBtn" hidden>Scanner le code-barres</button>
     </form>
     <video id="scanVideo" playsinline muted hidden></video>
@@ -616,7 +616,7 @@ function renderChips(){
   $("#chips").innerHTML=opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${v===state.decade?"on":""}" aria-pressed="${v===state.decade}">${l}</button>`).join("");
 }
 $("#chips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.decade=b.dataset.v;renderChips();refilter()});
-const onlineOffer=()=>`<button class="btn pri goOnline" type="button" data-go-online>Chercher sur Discogs pour l'ajouter</button>`;
+const onlineOffer=()=>`<button class="btn pri goOnline" type="button" data-go-online>Chercher en ligne pour l'ajouter</button>`;
 document.addEventListener("click",async e=>{
   if(!e.target.closest("[data-go-online]")) return;
   const q=cleanQ($("#q").value); if(!q) return;
