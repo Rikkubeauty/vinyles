@@ -334,22 +334,7 @@ dd{margin:0}
 .adhead h2{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:26px;letter-spacing:-.02em;margin:0}
 .close2{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
 .close2:focus-visible{outline:2px solid var(--amber)}
-.results{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important}
-.addform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-.addform label{display:grid;gap:5px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:1 1 260px;min-width:0}
-.addform input{font-family:var(--f-mono);font-size:15px;letter-spacing:0;text-transform:none;background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
-.addform input:focus{outline:2px solid var(--amber);border-color:transparent}
 #scanVideo{width:100%;max-width:420px;border-radius:10px;background:#000}
-.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
-.res{all:unset;cursor:pointer;display:grid;gap:8px;align-content:start;font-size:14.5px;line-height:1.3;border-radius:8px;padding:6px;transition:background .2s}
-.res:hover{background:var(--hover)}
-.res:focus-visible{outline:2px solid var(--amber)}
-.res .rc{aspect-ratio:1;max-width:100%;border-radius:4px;background:#222 center/cover;box-shadow:0 8px 18px rgba(0,0,0,.5);position:relative}
-.res .rc::after{content:"+ Ajouter";position:absolute;right:8px;bottom:8px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--amber);color:var(--on-accent);padding:4px 7px;border-radius:999px;opacity:0;transition:.2s}
-.res:hover .rc::after,.res:focus-visible .rc::after{opacity:1}
-.res b{font-weight:500}
-.res small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.03em}
-.res.added .rc::after{content:"Ajouté ✓";opacity:1;background:#7bd389}
 .btn.pri{background:var(--amber);border-color:var(--amber);color:var(--on-accent)}
 .btn.pri:hover{color:var(--on-accent);filter:brightness(1.08)}
 .btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:var(--field);color:var(--fg);padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-block}
@@ -472,6 +457,60 @@ dd{margin:0}
   #addBtn{right:28px;bottom:24px;width:60px;height:60px;font-size:0;letter-spacing:0;padding:0;display:grid;place-items:center}
   .caption{margin-top:10px}
 }
+/* ===== Ajouter un disque : palette ===== */
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.adder.palette{position:fixed;inset:0;top:0;right:0;bottom:0;width:auto;overflow:visible;border:0;box-shadow:none;animation:none;z-index:70;background:rgba(10,10,10,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px 16px}
+.adbox{width:min(720px,100%);max-height:84vh;display:flex;flex-direction:column;background:var(--menu,var(--panel));border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px rgba(0,0,0,.5);overflow:hidden;animation:palin .25s cubic-bezier(.2,.8,.2,1)}
+@keyframes palin{from{transform:translateY(-10px) scale(.985);opacity:0}}
+.adtop{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-bottom:1px solid var(--line)}
+.addform{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;color:var(--muted)}
+.addform input{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--fg);font-family:var(--f-body,inherit);font-size:20px;font-weight:500;padding:12px 0;outline:none;-webkit-appearance:none;appearance:none}
+.addform input::placeholder{color:var(--muted);font-weight:400}
+.addform input::-webkit-search-cancel-button{-webkit-appearance:none}
+.adico{all:unset;cursor:pointer;flex:none;width:42px;height:42px;border-radius:11px;background:var(--hover);color:var(--fg);display:grid;place-items:center}
+.adico.on{background:var(--amber);color:var(--on-accent)}
+.adico:focus-visible,.adx:focus-visible,.adfoot button:focus-visible{outline:2px solid var(--amber)}
+.adx{all:unset;cursor:pointer;flex:none;padding:10px 6px;font-size:15px;color:var(--muted)}
+.adx:hover{color:var(--fg)}
+.adder.palette .dest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:12px 18px 4px;font-family:var(--f-body);text-transform:none;letter-spacing:0;padding:3px;border-radius:11px;background:var(--hover);width:auto;max-width:320px}
+.adder.palette .dest label{all:unset;cursor:pointer;text-align:center;padding:8px 0;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
+.dest input{position:absolute;opacity:0;pointer-events:none}
+.adder.palette .dest label:has(input:checked){background:var(--fg);color:var(--night)}
+.adder.palette .dest label:focus-within{outline:2px solid var(--amber)}
+.adbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 8px 10px;display:grid;gap:8px;align-content:start}
+.adbody .imsg{padding:4px 10px;color:var(--muted);font-size:12px}
+.adbody .imsg.err{color:#f39a7d}
+.adbody #moreBtn{justify-self:center;margin:6px}
+.adbody #scanVideo{justify-self:center;margin:4px 10px}
+.results{display:flex;flex-direction:column}
+.res{all:unset;cursor:pointer;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:14px;align-items:center;padding:9px 10px;border-radius:12px}
+.res:hover,.res:focus-visible{background:var(--hover)}
+.res:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+.res .rc{width:64px;height:64px;border-radius:5px;background:#2a2a2a center/cover;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.res .rt{display:grid;gap:2px;min-width:0}
+.res .rt b{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .rt span{font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .rt small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .ra{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--fg)}
+.res .ra svg{width:18px;height:18px}
+.res:hover .ra,.res:focus-visible .ra{background:var(--amber);border-color:var(--amber);color:#fff}
+.res.added .ra{display:none}
+.res.added::after{content:"Déjà là";font-family:var(--f-mono);font-size:11px;color:#1fa64a}
+.adfoot{display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.adfoot .adkeys{margin-right:auto}
+.adfoot button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;background:var(--hover);color:var(--fg);font-family:var(--f-mono);font-size:12px}
+.adfoot button.on{background:var(--amber);color:var(--on-accent)}
+@media (max-width:640px){
+  .adder.palette{padding:0;background:var(--night)}
+  .adbox{width:100%;height:100%;max-height:none;border-radius:0;border:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
+  .adtop{padding:10px 12px 10px 14px;border-bottom:0}
+  .addform{background:var(--hover);border-radius:14px;padding:0 4px 0 14px}
+  .addform input{font-size:17px;padding:13px 0}
+  .adder.palette .dest{margin:0 12px 6px;max-width:none}
+  .adfoot{padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px))}
+  .adfoot .adkeys{display:none}
+  .adfoot button{flex:1 1 0;text-align:center;padding:14px 0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600}
+}
 </style>
 </head>
 <body>
@@ -531,20 +570,27 @@ dd{margin:0}
     <div class="adhead"><h2 id="edTitle">Modifier le disque</h2><button class="close2" id="edClose" type="button" aria-label="Fermer">✕</button></div>
     <form class="edform" id="edForm"></form>
   </section>
-  <section class="adder" id="adder" hidden role="dialog" aria-label="Ajouter un disque">
-    <div class="adhead"><h2>Ajouter un disque</h2><button class="close2" id="adClose" type="button" aria-label="Fermer">✕</button></div>
-    <div class="dest" role="radiogroup" aria-label="Ajouter à">Ajouter à <label><input type="radio" name="dest" value="collection" checked>Ma collection</label><label><input type="radio" name="dest" value="souhait">Mes souhaits</label></div>
-    <form class="addform" id="addForm">
-      <label for="aq">Titre, artiste, EAN ou code-barres<input id="aq" type="search" autocomplete="off" placeholder="ex. Melody Nelson Gainsbourg, ou 042281204721" required></label>
-      <button class="btn pri" type="submit" id="aGo">Chercher</button>
-      <button class="btn" type="button" id="scanBtn" hidden>Scanner le code-barres</button>
-      <button class="btn" type="button" id="burstBtn" hidden>Scan en rafale</button>
-    </form>
-    <ol class="burst" id="burstLog" hidden></ol>
-    <video id="scanVideo" playsinline muted hidden></video>
-    <div class="imsg" id="aMsg" role="status"></div>
-    <div class="results" id="results"></div>
-    <button class="btn" type="button" id="moreBtn" hidden>Voir plus de résultats</button>
+  <section class="adder palette" id="adder" hidden role="dialog" aria-modal="true" aria-label="Ajouter un disque">
+   <div class="adbox">
+    <div class="adtop">
+      <form class="addform" id="addForm" role="search">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input id="aq" type="search" autocomplete="off" enterkeyhint="search" placeholder="Titre, artiste, EAN ou code-barres" aria-label="Titre, artiste, EAN ou code-barres" required>
+        <button class="adico" type="button" id="scanBtn" hidden aria-label="Scanner le code-barres" title="Scanner le code-barres"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <button class="vh" type="submit" id="aGo">Chercher</button>
+      </form>
+      <button class="adx" id="adClose" type="button">Fermer</button>
+    </div>
+    <div class="dest" role="radiogroup" aria-label="Ajouter à"><label><input type="radio" name="dest" value="collection" checked>Collection</label><label><input type="radio" name="dest" value="souhait">Souhaits</label></div>
+    <div class="adbody">
+      <ol class="burst" id="burstLog" hidden></ol>
+      <video id="scanVideo" playsinline muted hidden></video>
+      <div class="imsg" id="aMsg" role="status"></div>
+      <div class="results" id="results"></div>
+      <button class="btn" type="button" id="moreBtn" hidden>Plus de résultats</button>
+    </div>
+    <div class="adfoot"><span class="adkeys" aria-hidden="true">↑ ↓ choisir · ↵ ajouter · Échap fermer</span><button type="button" id="burstBtn" hidden>Scan en rafale</button><button type="button" id="adBlank">Disque vierge</button></div>
+   </div>
   </section>
 </div>
 
@@ -1348,9 +1394,9 @@ function renderResults(list){
     const meta=[r.year,r.country,(r.label||[])[0],r.catno].filter(Boolean).map(esc).join(" · ");
     const cov=r.cover_image&&!/spacer\.gif/.test(r.cover_image)?r.cover_image:r.thumb;
     const added=r.mb?mine.some(d=>d.mbid===r.mb):mine.some(d=>d.discogsId===r.id);
-    return `<button class="res${added?" added":""}" type="button" ${r.mb?`data-mb="${esc(r.mb)}"`:`data-id="${r.id}"`}>
+    return `<button class="res${added?" added":""}" type="button" ${r.mb?`data-mb="${esc(r.mb)}"`:`data-id="${r.id}"`} aria-label="Ajouter ${esc(tit)}${rest.length?" de "+esc(art):""}">
       <span class="rc" style="${cov?`background-image:url('${esc(cov)}')`:""}"></span>
-      <span><b>${esc(tit)}</b><br>${esc(rest.length?art:"")}</span><small>${meta}${(r.format||[]).length?"<br>"+esc(r.format.slice(0,3).join(", ")):""}</small></button>`}).join("");
+      <span class="rt"><b>${esc(tit)}</b>${rest.length?`<span>${esc(art)}</span>`:""}<small>${[meta,(r.format||[]).slice(0,3).map(esc).join(", ")].filter(Boolean).join(" · ")}</small></span><span class="ra" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></button>`}).join("");
 }
 async function runSearch(q,more){
   const my=++srch.seq;
@@ -1414,6 +1460,13 @@ function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").set
   if(open){$("#aq").focus()}else{stopBurst();stopScan();$("#addBtn").focus()}}
 $("#addBtn").addEventListener("click",async()=>{if($("#adder").hidden&&document.body.classList.contains("readonly")&&!(await askKey()))return;toggleAdder($("#adder").hidden)});
 $("#adClose").addEventListener("click",()=>toggleAdder(false));
+$("#adder").addEventListener("click",e=>{if(e.target===e.currentTarget)toggleAdder(false)});
+$("#adBlank").addEventListener("click",()=>{const w=document.querySelector("input[name=dest]:checked").value==="souhait";toggleAdder(false);openEditor(null);if(w||shelf==="souhaits")document.querySelector("input[name=edStat][value=souhait]").checked=true});
+// clavier : ↓ depuis la recherche vers les résultats, ↑ ↓ entre les résultats
+$("#adder").addEventListener("keydown",e=>{if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;const rs=[...document.querySelectorAll("#results .res")];if(!rs.length)return;
+  const i=rs.indexOf(document.activeElement);
+  if(e.target.id==="aq"){if(e.key==="ArrowDown"){e.preventDefault();rs[0].focus()}return}
+  if(i<0)return;e.preventDefault();if(e.key==="ArrowDown")rs[Math.min(rs.length-1,i+1)].focus();else if(i===0)$("#aq").focus();else rs[i-1].focus()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
 
 /* scanner de code-barres (Chrome, Edge, Android) */
@@ -1423,7 +1476,7 @@ $("#scanBtn").addEventListener("click",async()=>{
   if(scanStream){stopBurst();stopScan();return}
   try{
     const det=await getDetector(); const v=await startCamera();
-    $("#scanBtn").textContent="Arrêter le scan"; $("#aMsg").className="imsg"; $("#aMsg").textContent="Montre le code-barres au dos de la pochette.";
+    $("#scanBtn").classList.add("on");$("#scanBtn").setAttribute("aria-label","Arrêter le scan"); $("#aMsg").className="imsg"; $("#aMsg").textContent="Code-barres au dos de la pochette, face à la caméra.";
     const tick=async()=>{ if(!scanStream) return;
       try{const c=await det.detect(v); if(c.length){$("#aq").value=c[0].rawValue;stopScan();$("#addForm").requestSubmit();return}}catch(e){}
       setTimeout(tick,120)};
@@ -1434,10 +1487,10 @@ $("#burstBtn").addEventListener("click",()=>{
   if(burst){stopBurst();return}
   if(scanStream) stopScan();
   burst={on:true,seen:new Set(mine.map(d=>String(d.ean||"").replace(/\D/g,"")).filter(Boolean))};
-  $("#burstBtn").textContent="Arrêter la rafale"; $("#burstLog").hidden=false; $("#results").innerHTML="";
+  $("#burstBtn").textContent="Arrêter la rafale";$("#burstBtn").classList.add("on"); $("#burstLog").hidden=false; $("#results").innerHTML="";
   burstLoop();
 });
-function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").textContent="Scanner le code-barres"}
+function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").classList.remove("on");$("#scanBtn").setAttribute("aria-label","Scanner le code-barres")}
 
 function removeRecord(d){
   mine=mine.filter(x=>x.id!==d.id); saveMine(); if(!$("#detail").hidden) closeDetail(); rebuild();
@@ -1552,7 +1605,7 @@ async function startCamera(){
   const v=$("#scanVideo"); v.srcObject=scanStream; v.hidden=false; await v.play(); return v;
 }
 let burst=null;
-function stopBurst(){if(!burst)return;burst.on=false;burst=null;$("#burstBtn").textContent="Scan en rafale";stopScan()}
+function stopBurst(){if(!burst)return;burst.on=false;burst=null;$("#burstBtn").textContent="Scan en rafale";$("#burstBtn").classList.remove("on");stopScan()}
 async function buildFromCode(code){
   // 1. Discogs par code-barres, 2. MusicBrainz sinon
   let list=[];
