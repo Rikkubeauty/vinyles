@@ -239,7 +239,7 @@ dd{margin:0}
     <div class="imsg" id="aMsg" role="status"></div>
     <div class="results" id="results"></div>
     <button class="btn" type="button" id="moreBtn" hidden>Voir plus de résultats</button>
-    <details class="tokenbox" id="tokenBox">
+    <details class="tokenbox" id="tokenBox" hidden>
       <summary>Jeton Discogs</summary>
       <div class="body">
         <p>La recherche Discogs demande ton jeton personnel (« Personal access token » sur <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>). Il reste dans ce navigateur.</p>
@@ -352,9 +352,13 @@ const DISQUES = [
 ];
 </script>
 <script>
+/* Jeton personnel Discogs, mis ici à la demande d'Eduardo. Le dépôt est public : si le jeton fuit,
+   régénère-le sur https://www.discogs.com/settings/developers et remplace-le ici. */
+const DISCOGS_TOKEN="JfqfdvsJozfEedSGrfHJcCzKAbGIZkCpddqaDSEW";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const discogsToken=()=>store.get("dg-token")||DISCOGS_TOKEN;
 const LABELS=[["#b0201c","#fff"],["#1f4e8c","#fff"],["#e9b84a","#222"],["#d9d2c2","#222"],["#2f6b4f","#fff"],["#6a2b6e","#fff"],["#1b1b1b","#eee"]];
 const hash=s=>[...String(s)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7)>>>0;
 const demo=DISQUES.map(d=>({...d,source:"demo",tracks:d.pistes.map((t,i)=>({title:t,side:i<d.faceA?"A":"B"})),details:true}));
@@ -441,7 +445,7 @@ const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.t
 async function loadDetails(d){
   if(d.details) return;
   const cached=store.get("dg-rel-"+d.discogsId);
-  const r=cached||await dgFetch(`/releases/${d.discogsId}`,store.get("dg-token"));
+  const r=cached||await dgFetch(`/releases/${d.discogsId}`,discogsToken());
   if(!cached) store.set("dg-rel-"+d.discogsId,{released:r.released,tracklist:r.tracklist,extraartists:r.extraartists,companies:r.companies,notes:r.notes,images:(r.images||[]).slice(0,1)});
   const all=[...(r.extraartists||[]),...(r.tracklist||[]).flatMap(t=>t.extraartists||[])];
   const who=re=>[...new Set(all.filter(a=>re.test(a.role)).map(a=>cleanName(a.anv||a.name)))];
@@ -685,7 +689,7 @@ function recordFromRelease(r){
   return d;
 }
 async function addRelease(id,btn){
-  const token=store.get("dg-token");
+  const token=discogsToken();
   if(mine.some(d=>d.discogsId===id)){setFocus(state.list.findIndex(d=>d.discogsId===id));$("#aMsg").textContent="Ce disque est déjà dans ta discothèque.";return}
   btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche Discogs…";
   try{
@@ -704,7 +708,7 @@ const niceErr=err=>err.message==="Failed to fetch"?"Discogs est injoignable depu
 /* recherche : titre / artiste, ou EAN / code-barres. Les suggestions arrivent pendant la frappe. */
 const srch={q:"",page:1,pages:1,items:[],seq:0};
 async function searchDiscogs(q,page){
-  const token=store.get("dg-token");
+  const token=discogsToken();
   if(!token){$("#tokenBox").open=true;throw new Error("Ajoute d'abord ton jeton Discogs (ci-dessous).")}
   const digits=q.replace(/[\s-]/g,"");
   const path=/^\d{8,14}$/.test(digits)
@@ -761,7 +765,7 @@ $("#aq").addEventListener("input",()=>{clearTimeout(typeT);const q=$("#aq").valu
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
 $("#tokForm").addEventListener("submit",e=>{e.preventDefault();const t=$("#tok").value.trim();if(t){store.set("dg-token",t);$("#tok").value="";$("#tokenBox").open=false;$("#aMsg").className="imsg";$("#aMsg").textContent="Jeton enregistré dans ce navigateur."}});
 function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
-  if(open){if(!store.get("dg-token"))$("#tokenBox").open=true;$("#aq").focus()}else{stopScan();$("#addBtn").focus()}}
+  if(open){if(!discogsToken())$("#tokenBox").open=true;$("#aq").focus()}else{stopScan();$("#addBtn").focus()}}
 $("#addBtn").addEventListener("click",()=>toggleAdder($("#adder").hidden));
 $("#adClose").addEventListener("click",()=>toggleAdder(false));
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
