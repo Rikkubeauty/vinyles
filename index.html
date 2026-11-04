@@ -884,7 +884,16 @@ function place(el,k){
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
 }
-let ambFlip=0, ambT=0;
+let ambFlip=0, ambT=0, ambD=null, hovT=0;
+// fond ambiant : fondu entre deux calques, couleur tirée de la pochette
+function setAmbient(d){
+  if(!d||d===ambD) return; ambD=d;
+  const next=$("#amb"+(ambFlip^1)), cur=$("#amb"+ambFlip);
+  next.style.cssText=d.cover?`background-image:url('${d.cover}')`:`background:${d.sleeve.bg}`;
+  next.classList.add("on"); cur.classList.remove("on"); ambFlip^=1;
+}
+// en Liste et en Pochettes, le fond suit la ligne ou la pochette survolée
+function hoverAmb(e,sel,attr){const el=e.target.closest(sel); if(!el) return; const d=state.list.find(x=>x.id===el.dataset[attr])||records.find(x=>x.id===el.dataset[attr]); clearTimeout(hovT); if(d) hovT=setTimeout(()=>setAmbient(d),120)}
 // la discothèque tourne en boucle : state.v est la position "virtuelle" (sans fin), state.focus l'index réel
 const modn=(a,n)=>((a%n)+n)%n;
 const step=dir=>setFocus((state.v??state.focus)+dir,false,true);
@@ -913,9 +922,7 @@ function setFocus(i,instant,virt){
   // fond ambiant et Deezer : seulement quand le défilement se pose (évite de tout repeindre à chaque cran)
   clearTimeout(ambT); ambT=setTimeout(()=>{
     if(state.list[state.focus]!==d) return;
-    const next=$("#amb"+(ambFlip^1)), cur=$("#amb"+ambFlip);
-    next.style.cssText=d.cover?`background-image:url('${d.cover}')`:`background:${d.sleeve.bg}`;
-    next.classList.add("on"); cur.classList.remove("on"); ambFlip^=1;
+    setAmbient(d);
     resolveDeezer(d).then(()=>applyCover(d));
   },instant?0:180);
 }
@@ -1675,6 +1682,10 @@ function renderGrid(){
   if(!rows.length){$("#gridView").innerHTML=`<div class="listempty"><p>${!records.length?(shelf==="souhaits"?"Ta liste de souhaits est vide.":"Ta collection est vide."):"Aucun disque ne correspond."}</p>${state.q?onlineOffer():""}</div>`;return}
   const card=d=>`<button type="button" class="gcard" data-open="${esc(d.id)}"><span class="gc" style="${bgOf(d)}">${d.cover?"":`<em style="color:${d.sleeve.ink}">${esc(d.titre)}</em>`}</span><b>${esc(d.titre)}</b><i>${esc(d.artiste)}${d.annee?" · "+d.annee:""}</i></button>`;
   $("#gridView").innerHTML=groupRows(rows).map(([l,items])=>`<section class="grp">${l===null?"":`<h3>${esc(l)}<small>${items.length}</small></h3>`}<div class="grid">${items.map(card).join("")}</div></section>`).join("");
+}
+for(const ev of ["mouseover","focusin"]){
+  $("#gridView").addEventListener(ev,e=>hoverAmb(e,"[data-open]","open"));
+  $("#tableWrap").addEventListener(ev,e=>hoverAmb(e,"tr[data-id]","id"));
 }
 $("#gridView").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openDetail(state.list.find(d=>d.id===c.dataset.open),c)});
 function renderList(){
