@@ -354,7 +354,6 @@ dd{margin:0}
       <label class="btn" for="importFile">Charger un fichier<input id="importFile" type="file" accept="application/json,.json" hidden></label>
     </div>
   </section>
-  <p class="foot" id="foot"></p>
 </div>
 
 <div class="detail" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
@@ -817,7 +816,6 @@ function rebuild(focusId){
   $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
   $("#colCount").textContent=mine.length?`${mine.length} disque${mine.length>1?"s":""} dans ta discothèque`:"Ta discothèque est vide : les 5 disques affichés sont des exemples.";
-  $("#foot").textContent=mine.length?"":"Ajoute ton premier vinyle avec « + Ajouter un disque » : les exemples disparaîtront.";
 }
 function saveMine(){store.set(KEY,mine);if(cloud.on)scheduleSync()}
 
