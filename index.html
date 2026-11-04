@@ -52,6 +52,7 @@ body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
 .keydlg{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:16px}
+#dupDlg{z-index:200}
 .keybox{background:var(--night);color:var(--fg);border-radius:14px;padding:22px;width:min(400px,100%);display:grid;gap:12px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
 .keybox h2{margin:0;font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:24px;letter-spacing:-.03em}
 .keybox p{margin:0;color:var(--muted);font-size:15px}
@@ -459,6 +460,13 @@ dd{margin:0}
       <div class="sleeve" id="dSleeve"></div>
     </div></div>
     <div class="info" id="info"></div>
+  </div>
+</div>
+<div class="keydlg" id="dupDlg" hidden role="alertdialog" aria-modal="true" aria-labelledby="dupTitle" aria-describedby="dupTxt">
+  <div class="keybox">
+    <h2 id="dupTitle">Déjà dans ta discothèque</h2>
+    <p id="dupTxt"></p>
+    <div class="keyacts"><button class="btn pri" type="button" id="dupAdd">Ajouter quand même</button><button class="btn" type="button" id="dupNo">Annuler</button></div>
   </div>
 </div>
 <div class="keydlg" id="keyDlg" hidden role="dialog" aria-modal="true" aria-labelledby="keyTitle">
@@ -1011,6 +1019,22 @@ function toast(msg,err){
   t.textContent=msg; t.className=err?"err on":"on"; clearTimeout(t._h); t._h=setTimeout(()=>t.className="",3500);
 }
 /* clé d'édition : demandée une fois par appareil, gardée dans le navigateur */
+/* doublons : même titre (sans tenir compte des majuscules, accents, ponctuation) */
+const normT=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\(.*?\)|\[.*?\]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+const sameTitle=d=>{const t=normT(d.titre);return t?mine.find(x=>x!==d&&x.id!==d.id&&normT(x.titre)===t):null};
+let dupBusy=Promise.resolve();
+function confirmDup(d){
+  const ex=sameTitle(d); if(!ex) return Promise.resolve(true);
+  const ask=()=>new Promise(res=>{
+    const where=isWish(ex)?"dans tes souhaits":"dans ta collection";
+    $("#dupTxt").textContent=`Tu as déjà « ${ex.titre} »${ex.artiste?` de ${ex.artiste}`:""}${ex.annee?` (${ex.annee})`:""} ${where}. Ajouter « ${d.titre} »${d.artiste?` de ${d.artiste}`:""}${d.annee?` (${d.annee})`:""} quand même ?`;
+    const dlg=$("#dupDlg"); dlg.hidden=false; $("#dupNo").focus();
+    const done=v=>{dlg.hidden=true;$("#dupAdd").onclick=$("#dupNo").onclick=dlg.onkeydown=null;res(v)};
+    $("#dupAdd").onclick=()=>done(true); $("#dupNo").onclick=()=>done(false);
+    dlg.onkeydown=e=>{if(e.key==="Escape"){e.stopPropagation();done(false)}};
+  });
+  const p=dupBusy.then(ask); dupBusy=p.catch(()=>{}); return p;
+}
 function askKey(){
   return new Promise(res=>{
     const dlg=$("#keyDlg"); dlg.hidden=false; $("#keyIn").value=""; $("#keyMsg").textContent=""; $("#keyIn").focus();
@@ -1054,6 +1078,7 @@ async function addRelease(id,btn){
     $("#aMsg").textContent="Compléments MusicBrainz…"; await mbEnrich(d);
     $("#aMsg").textContent="Traduction des notes en français…"; await translateRecord(d);
     $("#aMsg").textContent="Histoire de l'album sur Wikipédia…"; await wikiFor(d);
+    if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
     mine.unshift(d); saveMine();
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
@@ -1169,6 +1194,7 @@ async function addMbRelease(id,btn){
   try{
     const d=recordFromMb(await mbFetch(`release/${id}?inc=${MB_INC}`));
     $("#aMsg").textContent="Histoire de l'album sur Wikipédia…"; await wikiFor(d);
+    if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
     mine.unshift(d); saveMine();
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
@@ -1428,6 +1454,7 @@ async function burstLoop(){
     try{
       const {d,deja,doute}=await buildFromCode(code);
       if(deja){li.className="warn";li.children[1].textContent=`${deja.artiste} – ${deja.titre}`;li.children[2].textContent="déjà là"}
+      else if(d&&!(await confirmDup(d))){li.className="warn";li.children[1].textContent=`${d.artiste} – ${d.titre}`;li.children[2].textContent="annulé"}
       else if(d){
         const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
         if(dest==="souhait") d.statut="souhait";
@@ -1600,7 +1627,7 @@ function shrink(file){return new Promise((res,rej)=>{const img=new Image();img.o
 function closeEditor(){$("#editor").hidden=true;editing=null}
 $("#edClose").addEventListener("click",closeEditor);
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#editor").hidden)closeEditor()});
-$("#edForm").addEventListener("submit",ev=>{
+$("#edForm").addEventListener("submit",async ev=>{
   ev.preventDefault(); const e=editing, v=id=>$("#"+id).value.trim();
   e.titre=v("edT"); e.artiste=v("edA"); e.annee=v("edY")?+v("edY"):null; e.sortie=v("edS")||(e.annee?String(e.annee):"");
   e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
@@ -1608,7 +1635,9 @@ $("#edForm").addEventListener("submit",ev=>{
   e.tracks=textToTracks($("#edTr").value);
   if((document.querySelector("input[name=edStat]:checked")||{}).value==="souhait") e.statut="souhait"; else delete e.statut;
   if(e._cover!==undefined){e.cover=e._cover||null;delete e._cover}
-  const i=mine.findIndex(x=>x.id===e.id); if(i>=0) mine[i]=e; else mine.unshift(e);
+  const i=mine.findIndex(x=>x.id===e.id);
+  if(i<0&&!(await confirmDup(e))) return;
+  if(i>=0) mine[i]=e; else mine.unshift(e);
   delete dz[e.id]; saveMine(); closeEditor(); rebuild(e.id);
   if(state.cur&&state.cur.id===e.id&&!$("#detail").hidden){paintPack(e);renderInfo(e)}
 });
