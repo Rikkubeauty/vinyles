@@ -1,1 +1,641 @@
-.
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Discothèque de Hugo</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: une salle d'écoute plongée dans le noir. Les pochettes défilent en Cover Flow au centre, le fond prend la couleur de la pochette choisie. Ouvrir une pochette fait glisser le vinyle hors du carton. */
+:root{
+  --night:#0d0b0a;
+  --fg:#f3ece0;
+  --muted:#a69c8d;
+  --line:rgba(243,236,224,.16);
+  --amber:#f0a83a;
+  --groove:#121111;
+  --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --S:300px;
+  color-scheme:dark;
+}
+@media (max-width:640px){:root{--S:200px}}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--night);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.5;overflow-x:hidden}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+/* fond ambiant : la pochette au centre, floutée en grand */
+.ambient{position:fixed;inset:-10%;z-index:0;pointer-events:none}
+.ambient div{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(70px) saturate(1.4) brightness(.55);opacity:0;transition:opacity 1.1s ease;transform:scale(1.2)}
+.ambient div.on{opacity:1}
+.ambient::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 40%,transparent,var(--night) 85%)}
+
+.wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,3.4vw,36px);letter-spacing:-.02em;line-height:1;margin:0}
+h1 span{color:var(--amber)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{font-family:var(--f-mono);font-size:13px;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:8px 14px;width:220px;max-width:100%}
+.search:focus{outline:2px solid var(--amber);border-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;letter-spacing:.05em;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chips button:hover{color:var(--fg)}
+.chips button.on{background:var(--fg);color:var(--night);border-color:var(--fg)}
+.chips button:focus-visible{outline:2px solid var(--amber)}
+.status{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.status i{width:7px;height:7px;border-radius:50%;background:#5e554b;display:inline-block}
+.status.on i{background:#7bd389;box-shadow:0 0 8px #7bd389}
+
+/* ---------- Cover Flow ---------- */
+.flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.lane{position:absolute;left:50%;top:calc(var(--S) * .12);width:0;height:0;transform-style:preserve-3d}
+.cv{position:absolute;left:calc(var(--S) / -2);top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;cursor:pointer;
+  transition:transform .75s cubic-bezier(.2,.8,.2,1),filter .75s;will-change:transform}
+.cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.sleeve{position:absolute;inset:0;border-radius:3px;background-size:cover;background-position:center;overflow:hidden;
+  box-shadow:0 30px 60px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.07);
+  -webkit-box-reflect:below 6px linear-gradient(transparent 62%,rgba(255,255,255,.22))}
+.sleeve img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sleeve .tt{position:absolute;left:8%;right:8%;bottom:8%;font-family:var(--f-display);font-weight:800;font-size:calc(var(--S) * .085);line-height:1.02;text-wrap:balance}
+.sleeve .tt small{display:block;font-family:var(--f-mono);font-weight:400;font-size:calc(var(--S) * .037);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5em;opacity:.85}
+.sleeve::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 60% at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.28),transparent 60%),linear-gradient(90deg,rgba(0,0,0,.25),transparent 6%,transparent 94%,rgba(0,0,0,.2));
+  mix-blend-mode:soft-light}
+.vinyl{position:absolute;top:2%;left:2%;width:96%;height:96%;transform:translateZ(-2px);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.disc{position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,transparent 0 17%,rgba(255,255,255,.06) 17.3%,transparent 18%),repeating-radial-gradient(circle,var(--groove) 0 1.2px,#1f1e1e 1.2px 1.9px);
+  box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 30deg,transparent 0 25deg,rgba(255,255,255,.16) 40deg,transparent 58deg 205deg,rgba(255,255,255,.1) 222deg,transparent 240deg)}
+.disc .lab{position:absolute;left:33%;top:33%;width:34%;height:34%;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+.disc .lab::after{content:"";position:absolute;left:50%;top:50%;width:8%;height:8%;margin:-4%;border-radius:50%;background:var(--night)}
+.cv.center .tilt{transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg))}
+.cv.center:hover .vinyl{transform:translateZ(-2px) translateX(34%) rotate(40deg)}
+.cv:not(.center):hover .tilt{transform:rotateY(var(--hov,0deg)) translateZ(30px)}
+.open{position:absolute;right:6%;top:6%;width:calc(var(--S) * .22);height:calc(var(--S) * .22);border-radius:50%;border:0;background:var(--amber);color:#1b1206;cursor:pointer;
+  display:grid;place-items:center;font-family:var(--f-mono);font-size:calc(var(--S) * .036);letter-spacing:.06em;text-transform:uppercase;line-height:1.2;
+  box-shadow:0 8px 20px rgba(0,0,0,.45);opacity:0;transform:translateZ(1px) scale(.6);transition:.35s;pointer-events:none}
+.cv.center .open{opacity:1;transform:translateZ(1px) scale(1);pointer-events:auto}
+.caption{text-align:center;display:grid;gap:3px;min-height:86px}
+.caption .ct{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,3.4vw,38px);letter-spacing:-.02em;line-height:1.05;text-wrap:balance}
+.caption .ca{font-style:italic;font-size:19px;color:var(--muted)}
+.caption .cy{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--amber);text-transform:uppercase}
+.capline{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px}
+.nav{all:unset;cursor:pointer;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:18px;background:rgba(0,0,0,.25)}
+.nav:hover{border-color:var(--amber);color:var(--amber)}
+.nav:focus-visible{outline:2px solid var(--amber)}
+.scrub{width:100%;max-width:520px;margin:0 auto;display:block;accent-color:var(--amber)}
+.empty{text-align:center;color:var(--muted);padding:80px 0}
+
+/* ---------- Vue détail ---------- */
+.detail{position:fixed;inset:0;z-index:50;overflow-y:auto;background:rgba(10,8,7,.55);backdrop-filter:blur(30px) saturate(1.2);-webkit-backdrop-filter:blur(30px) saturate(1.2);
+  padding-block:max(28px,env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.detail .in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start;min-height:100%}
+@media (max-width:880px){.detail .in{grid-template-columns:minmax(0,1fr)}}
+.close{all:unset;cursor:pointer;position:fixed;z-index:60;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.5);border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
+.close:focus-visible{outline:2px solid var(--amber)}
+.pack{position:relative;width:min(380px,34vw);aspect-ratio:1;max-width:100%;margin:clamp(10px,4vw,40px) 0 0;perspective:1200px}
+@media (max-width:880px){.pack{width:min(340px,52vw);margin-left:max(0px,calc(50% - min(340px,52vw) * .7))}}
+.pack .tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg));transition:transform .3s ease-out}
+.pack .sleeve{-webkit-box-reflect:unset;box-shadow:0 40px 80px rgba(0,0,0,.65)}
+.pack .sleeve .tt{font-size:clamp(18px,2.8vw,32px)}
+.pack .vinyl{transform:translateZ(-2px);transition:transform 1.1s cubic-bezier(.2,.8,.2,1)}
+.pack.out .vinyl{transform:translateZ(-2px) translateX(40%)}
+.pack.playing .disc{animation:rot 1.8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.info{min-width:0;padding-top:clamp(0px,3vw,30px)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+.info h2{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,5vw,60px);line-height:.98;letter-spacing:-.03em;margin:10px 0 6px;text-wrap:balance}
+.info .by{font-size:clamp(20px,2.4vw,26px);font-style:italic;margin:0 0 22px;color:var(--fg)}
+dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px;margin:0 0 22px;font-size:16px}
+dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:4px;white-space:nowrap}
+dd{margin:0}
+.info h3{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:24px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+.anec{margin:0;padding:0;list-style:none;display:grid;gap:10px;font-size:17px}
+.anec li{padding-left:16px;position:relative}
+.anec li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 24px}
+.side h4{font-family:var(--f-display);font-size:14px;margin:0 0 6px;font-weight:800;letter-spacing:.02em}
+.side ol{margin:0;padding:0;list-style:none}
+.tr{all:unset;box-sizing:border-box;display:flex;align-items:baseline;gap:10px;width:100%;padding:6px 8px;margin-left:-8px;border-radius:4px;cursor:pointer;font-size:16px;line-height:1.3}
+.tr .n{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);min-width:2em}
+.tr .t{flex:1;min-width:0}
+.tr .d{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tr:hover{background:rgba(255,255,255,.07)}
+.tr.cur{background:var(--fg);color:var(--night)}
+.tr.cur .n,.tr.cur .d{color:var(--night)}
+.tr:focus-visible{outline:2px solid var(--amber)}
+.now{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-top:14px;min-height:1.4em}
+.now b{color:var(--amber);font-weight:500}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.acts a,.acts button{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg);border:1px solid var(--line);background:rgba(0,0,0,.25);padding:9px 13px;border-radius:999px;text-decoration:none;cursor:pointer}
+.acts a:hover,.acts button:hover{border-color:var(--amber);color:var(--amber)}
+.acts .pri{background:var(--amber);border-color:var(--amber);color:#1b1206}
+.acts .pri:hover{color:#1b1206;filter:brightness(1.08)}
+.hint{font-size:14.5px;font-style:italic;color:var(--muted);margin:10px 0 0}
+.widget{margin-top:14px;border-radius:8px;overflow:hidden}
+.widget iframe{display:block;width:100%;height:320px;border:0}
+
+/* ---------- Import Discogs ---------- */
+.importer{border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.25)}
+.importer summary{cursor:pointer;padding:13px 18px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.importer .body{padding:2px 18px 18px;display:grid;gap:12px;max-width:780px}
+.importer form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.importer label{display:grid;gap:4px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:1 1 200px;min-width:0}
+.importer input{font-family:var(--f-mono);font-size:14px;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:9px 11px;width:100%}
+.importer input:focus{outline:2px solid var(--amber);border-color:transparent}
+.importer p{margin:0;font-size:15.5px;color:var(--muted)}
+.importer a{color:var(--amber)}
+.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:rgba(0,0,0,.3);padding:10px 14px;border-radius:999px;cursor:pointer}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.imsg{font-family:var(--f-mono);font-size:13px}
+.imsg.err{color:#f39a7d}
+.foot{font-size:14.5px;color:var(--muted);margin:0;max-width:75ch}
+@media (prefers-reduced-motion:reduce){.cv,.cv .tilt,.vinyl,.pack .tilt,.ambient div{transition:none!important}.pack.playing .disc{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="ambient" aria-hidden="true"><div id="amb0"></div><div id="amb1"></div></div>
+
+<div class="wrap">
+  <header>
+    <h1>La discothèque <span>de Hugo</span></h1>
+    <div class="tools">
+      <input class="search" id="q" type="search" placeholder="Chercher un disque, un artiste…" aria-label="Chercher">
+      <div class="status" id="status"><i></i><span>Recherche de Deezer…</span></div>
+    </div>
+  </header>
+  <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div>
+
+  <section class="flow" id="flow" tabindex="0" aria-label="Pochettes, flèches gauche et droite pour parcourir, Entrée pour ouvrir">
+    <div class="lane" id="lane"></div>
+  </section>
+  <div class="capline">
+    <button class="nav" id="prev" aria-label="Pochette précédente">←</button>
+    <div class="caption" id="caption"></div>
+    <button class="nav" id="next" aria-label="Pochette suivante">→</button>
+  </div>
+  <input class="scrub" id="scrub" type="range" min="0" max="0" value="0" aria-label="Parcourir la collection">
+
+  <details class="importer" id="importer">
+    <summary>Importer ma collection Discogs</summary>
+    <div class="body">
+      <p>Entre ton nom d'utilisateur Discogs et ton jeton personnel (sans jeton, Discogs ne donne pas les pochettes). Crée-le sur <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>, bouton « Generate new token ». Il reste dans ce navigateur.</p>
+      <form id="imForm">
+        <label for="imUser">Utilisateur Discogs<input id="imUser" autocomplete="username" placeholder="ex. hugo_vinyles" required></label>
+        <label for="imToken">Jeton personnel<input id="imToken" type="password" autocomplete="off" placeholder="recommandé"></label>
+        <button class="btn" type="submit" id="imBtn">Importer</button>
+        <button class="btn" type="button" id="imReset" hidden>Revenir aux exemples</button>
+      </form>
+      <div class="imsg" id="imMsg" role="status"></div>
+    </div>
+  </details>
+  <p class="foot" id="foot">Cinq disques d'exemple en attendant ta collection. L'import Discogs et le son Deezer marchent quand tu ouvres le fichier dans ton navigateur ; l'aperçu en ligne les bloque.</p>
+</div>
+
+<div class="detail" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
+  <button class="close" id="close" aria-label="Fermer">✕</button>
+  <div class="in">
+    <div class="pack" id="pack"><div class="tilt">
+      <div class="vinyl"><div class="disc"><div class="lab" id="dLab"></div></div></div>
+      <div class="sleeve" id="dSleeve"></div>
+    </div></div>
+    <div class="info" id="info"></div>
+  </div>
+</div>
+<audio id="audio" preload="none"></audio>
+
+<script>
+const DISQUES = [
+  {
+    id:"dsotm", titre:"The Dark Side of the Moon", artiste:"Pink Floyd",
+    sortie:"1er mars 1973", annee:1973, label:"Harvest", cat:"SHVL 804",
+    lieu:"Abbey Road Studios, Londres (juin 1972 – janvier 1973)",
+    compositeurs:"Roger Waters, David Gilmour, Richard Wright, Nick Mason",
+    credits:"Ingénieur du son : Alan Parsons · Voix sur « The Great Gig in the Sky » : Clare Torry",
+    anecdotes:[
+      "Les voix parlées viennent de questions posées par Waters au personnel d'Abbey Road, dont le portier Gerry O'Driscoll : « There is no dark side of the moon really… ».",
+      "Clare Torry a improvisé sa partie vocale en quelques prises, payée au tarif d'une séance de studio.",
+      "L'album est resté plus de 900 semaines dans le classement Billboard 200."
+    ],
+    faceA:5,
+    pistes:["Speak to Me","Breathe","On the Run","Time","The Great Gig in the Sky","Money","Us and Them","Any Colour You Like","Brain Damage","Eclipse"],
+    sleeve:{bg:"linear-gradient(180deg,#050505 0 46%,#e33 46% 49%,#f90 49% 52%,#fe3 52% 55%,#3c3 55% 58%,#39f 58% 61%,#93f 61% 64%,#050505 64%)",ink:"#eee"},
+    labelColor:"#1b1b1b", labelInk:"#eee"
+  },
+  {
+    id:"kob", titre:"Kind of Blue", artiste:"Miles Davis",
+    sortie:"17 août 1959", annee:1959, label:"Columbia", cat:"CL 1355",
+    lieu:"Columbia 30th Street Studio, New York (2 mars et 22 avril 1959)",
+    compositeurs:"Miles Davis, Bill Evans (« Blue in Green »)",
+    credits:"John Coltrane, Cannonball Adderley, Bill Evans, Wynton Kelly, Paul Chambers, Jimmy Cobb · Prod. Teo Macero, Irving Townsend",
+    anecdotes:[
+      "Les musiciens ont découvert les esquisses modales le jour même. Presque tout a été gardé dès la première prise complète.",
+      "Le magnétophone de la face A tournait un peu trop vite : pendant plus de trente ans, ces morceaux ont été entendus légèrement trop aigus.",
+      "C'est l'album de jazz le plus vendu de l'histoire."
+    ],
+    faceA:3,
+    pistes:["So What","Freddie Freeloader","Blue in Green","All Blues","Flamenco Sketches"],
+    sleeve:{bg:"linear-gradient(135deg,#e8e2d0 0 22%,#0c2a55 22% 70%,#123a73 70%)",ink:"#f3eedf"},
+    labelColor:"#b0201c", labelInk:"#fff"
+  },
+  {
+    id:"melody", titre:"Histoire de Melody Nelson", artiste:"Serge Gainsbourg",
+    sortie:"24 mars 1971", annee:1971, label:"Philips", cat:"6397 019",
+    lieu:"Marble Arch Studios, Londres, et Studio des Dames, Paris (1970 – 1971)",
+    compositeurs:"Serge Gainsbourg (paroles et musique), arrangements de Jean-Claude Vannier",
+    credits:"Jane Birkin (voix, pochette) · Orchestre et chœurs dirigés par Jean-Claude Vannier",
+    anecdotes:[
+      "Jane Birkin pose sur la pochette, enceinte de Charlotte, coiffée d'une perruque rousse.",
+      "À sa sortie, l'album se vend très peu. Il est devenu culte des années plus tard et a influencé Air, Beck et Portishead.",
+      "Le grand final de « Cargo culte » mêle orchestre symphonique et chœur."
+    ],
+    faceA:5,
+    pistes:["Melody","Ballade de Melody Nelson","Valse de Melody","Ah ! Melody","L'Hôtel particulier","En Melody","Cargo culte"],
+    sleeve:{bg:"radial-gradient(circle at 70% 35%,#d4562a 0 22%,#a5371a 23% 40%,#2a1a14 41%)",ink:"#fbe9d8"},
+    labelColor:"#d9d2c2", labelInk:"#222"
+  },
+  {
+    id:"rumours", titre:"Rumours", artiste:"Fleetwood Mac",
+    sortie:"4 février 1977", annee:1977, label:"Warner Bros.", cat:"BSK 3010",
+    lieu:"Record Plant, Sausalito, Californie (1976), puis plusieurs studios de Los Angeles",
+    compositeurs:"Lindsey Buckingham, Stevie Nicks, Christine McVie ; « The Chain » signé par les cinq",
+    credits:"Prod. Fleetwood Mac, Ken Caillat, Richard Dashut",
+    anecdotes:[
+      "Les deux couples du groupe se séparaient pendant l'enregistrement, et beaucoup de chansons parlent de ces ruptures.",
+      "« The Chain » a été assemblée à partir de chutes de plusieurs morceaux.",
+      "Plus de 40 millions d'exemplaires vendus dans le monde."
+    ],
+    faceA:6,
+    pistes:["Second Hand News","Dreams","Never Going Back Again","Don't Stop","Go Your Own Way","Songbird","The Chain","You Make Loving Fun","I Don't Want to Know","Oh Daddy","Gold Dust Woman"],
+    sleeve:{bg:"linear-gradient(180deg,#1a1a1a 0 30%,#e9e4da 30%)",ink:"#1a1a1a"},
+    labelColor:"#e9b84a", labelInk:"#222"
+  },
+  {
+    id:"thriller", titre:"Thriller", artiste:"Michael Jackson",
+    sortie:"30 novembre 1982", annee:1982, label:"Epic", cat:"QE 38112",
+    lieu:"Westlake Recording Studios, Los Angeles (avril – novembre 1982)",
+    compositeurs:"Michael Jackson, Rod Temperton, James Ingram, Steve Porcaro, John Bettis",
+    credits:"Prod. Quincy Jones · Ingénieur Bruce Swedien · Solo de « Beat It » : Eddie Van Halen",
+    anecdotes:[
+      "Eddie Van Halen a enregistré le solo de « Beat It » gratuitement, en une demi-heure.",
+      "La voix inquiétante de la fin de « Thriller » est celle de l'acteur Vincent Price.",
+      "C'est l'album le plus vendu de tous les temps."
+    ],
+    faceA:4,
+    pistes:["Wanna Be Startin' Somethin'","Baby Be Mine","The Girl Is Mine","Thriller","Beat It","Billie Jean","Human Nature","P.Y.T. (Pretty Young Thing)","The Lady in My Life"],
+    sleeve:{bg:"linear-gradient(160deg,#f6f3ee 0 60%,#d9cdbb 60%)",ink:"#1d1712"},
+    labelColor:"#c8102e", labelInk:"#fff"
+  }
+];
+</script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const LABELS=[["#b0201c","#fff"],["#1f4e8c","#fff"],["#e9b84a","#222"],["#d9d2c2","#222"],["#2f6b4f","#fff"],["#6a2b6e","#fff"],["#1b1b1b","#eee"]];
+const hash=s=>[...String(s)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7)>>>0;
+const demo=DISQUES.map(d=>({...d,source:"demo",tracks:d.pistes.map((t,i)=>({title:t,side:i<d.faceA?"A":"B"})),details:true}));
+let records=demo;
+const state={cur:null,track:-1,deezer:null,focus:0,decade:"all",q:"",list:[]};
+const dz={};
+/* ---------- Deezer (JSONP) ---------- */
+function jsonp(url){
+  return new Promise((res,rej)=>{
+    const cb="dz_"+Math.random().toString(36).slice(2), s=document.createElement("script");
+    const done=()=>{delete window[cb];s.remove();clearTimeout(t)};
+    const t=setTimeout(()=>{done();rej(new Error("timeout"))},5000);
+    window[cb]=d=>{done();d&&d.error?rej(d.error):res(d)};
+    s.onerror=()=>{done();rej(new Error("blocked"))};
+    s.src=url+(url.includes("?")?"&":"?")+"output=jsonp&callback="+cb;
+    document.head.appendChild(s);
+  });
+}
+async function resolveDeezer(d){
+  if(dz[d.id]!==undefined) return dz[d.id];
+  try{
+    const q=encodeURIComponent(`artist:"${d.artiste}" album:"${d.titre}"`);
+    const s=await jsonp(`https://api.deezer.com/search/album?q=${q}&limit=5`);
+    const hit=(s.data||[])[0]; if(!hit){dz[d.id]=null;setStatus(true);return null}
+    const a=await jsonp(`https://api.deezer.com/album/${hit.id}`);
+    dz[d.id]={albumId:hit.id,cover:a.cover_xl||hit.cover_xl,tracks:(a.tracks&&a.tracks.data||[]).map(t=>({title:t.title,preview:t.preview,duration:t.duration}))};
+    setStatus(true); return dz[d.id];
+  }catch(e){dz[d.id]=null;if(state.deezer===null)setStatus(false);return null}
+}
+function setStatus(ok){
+  if(state.deezer===true) return; state.deezer=ok;
+  $("#status").classList.toggle("on",ok);
+  $("#status span").textContent=ok?"Deezer connecté":"Deezer injoignable ici, mode démo";
+}
+const norm=s=>String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\(.*?\)|\[.*?\]/g,"").replace(/[^a-z0-9]/g,"");
+function previewFor(d,i){
+  const info=dz[d.id]; if(!info) return null;
+  const t=d.tracks[i], n=norm(t.title);
+  const m=info.tracks.find(x=>norm(x.title)===n)||info.tracks.find(x=>{const k=norm(x.title);return n&&k&&(k.startsWith(n)||n.startsWith(k))});
+  return m||(info.tracks.length===d.tracks.length?info.tracks[i]:null);
+}
+const fmt=s=>s?`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`:"";
+const deezerSearch=d=>`https://www.deezer.com/search/${encodeURIComponent(d.artiste+" "+d.titre)}`;
+
+/* ---------- Discogs ---------- */
+const DG="https://api.discogs.com";
+const cleanName=s=>String(s||"").replace(/\s\(\d+\)$/,"").replace(/\*$/,"");
+async function dgFetch(path,token){
+  const url=DG+path+(token?(path.includes("?")?"&":"?")+"token="+encodeURIComponent(token):"");
+  const r=await fetch(url,{headers:{Accept:"application/vnd.discogs.v2.discogs+json"}});
+  if(r.status===401||r.status===403) throw new Error("Collection privée ou jeton invalide.");
+  if(r.status===404) throw new Error("Utilisateur Discogs introuvable.");
+  if(r.status===429) throw new Error("Discogs limite à 60 requêtes par minute. Réessaie dans une minute.");
+  if(!r.ok) throw new Error("Discogs a répondu "+r.status+".");
+  return r.json();
+}
+function fromBasic(b,i){
+  const bi=b.basic_information, lab=(bi.labels||[])[0]||{}, [lc,li]=LABELS[hash(bi.id)%LABELS.length];
+  return {id:"dg"+bi.id,discogsId:bi.id,source:"discogs",titre:bi.title,artiste:(bi.artists||[]).map(a=>cleanName(a.name)).join(", "),
+    annee:bi.year||null,sortie:bi.year?String(bi.year):"Date inconnue",label:cleanName(lab.name)||"",cat:lab.catno||"",
+    cover:(bi.cover_image&&!/spacer\.gif/.test(bi.cover_image))?bi.cover_image:null,
+    genres:[...(bi.genres||[]),...(bi.styles||[])].join(", "),
+    sleeve:{bg:`linear-gradient(135deg,hsl(${hash(bi.title)%360} 35% 28%),hsl(${(hash(bi.title)+40)%360} 30% 14%))`,ink:"#f3eadb"},
+    labelColor:lc,labelInk:li,tracks:[],details:false};
+}
+async function importDiscogs(user,token){
+  const out=[]; let page=1,pages=1;
+  do{
+    $("#imMsg").textContent=`Lecture de la page ${page} sur ${pages}…`;
+    const j=await dgFetch(`/users/${encodeURIComponent(user)}/collection/folders/0/releases?per_page=100&page=${page}&sort=artist`,token);
+    pages=j.pagination?j.pagination.pages:1;
+    (j.releases||[]).forEach(b=>out.push(fromBasic(b)));
+    page++;
+  }while(page<=pages&&page<=20);
+  return out;
+}
+const fmtDate=s=>{
+  if(!s) return null; const m=/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?/.exec(s); if(!m) return s;
+  const mois=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  if(m[3]&&m[3]!=="00") return `${+m[3]===1?"1er":+m[3]} ${mois[+m[2]-1]} ${m[1]}`;
+  if(m[2]&&m[2]!=="00") return `${mois[+m[2]-1]} ${m[1]}`; return m[1];
+};
+const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
+async function loadDetails(d){
+  if(d.details) return;
+  const cached=store.get("dg-rel-"+d.discogsId);
+  const r=cached||await dgFetch(`/releases/${d.discogsId}`,store.get("dg-token"));
+  if(!cached) store.set("dg-rel-"+d.discogsId,{released:r.released,tracklist:r.tracklist,extraartists:r.extraartists,companies:r.companies,notes:r.notes,images:(r.images||[]).slice(0,1)});
+  const all=[...(r.extraartists||[]),...(r.tracklist||[]).flatMap(t=>t.extraartists||[])];
+  const who=re=>[...new Set(all.filter(a=>re.test(a.role)).map(a=>cleanName(a.anv||a.name)))];
+  const comp=who(/written|compos|music by|lyrics|songwriter/i);
+  const credits=[["Production",/^produc/i],["Ingénieur du son",/engineer|recorded by/i],["Mixage",/mixed by/i],["Arrangements",/arrang/i]]
+    .map(([l,re])=>{const n=who(re);return n.length?`${l} : ${n.slice(0,4).join(", ")}`:null}).filter(Boolean);
+  const places=[...new Set((r.companies||[]).filter(c=>/recorded at|mixed at|produced at|recorded/i.test(c.entity_type_name)).map(c=>cleanName(c.name)))];
+  d.sortie=fmtDate(r.released)||d.sortie;
+  d.compositeurs=comp.length?comp.join(", "):"Non renseigné sur Discogs";
+  d.credits=credits.length?credits.join(" · "):"Non renseignés sur Discogs";
+  d.lieu=places.length?places.join(", "):"Non renseigné sur Discogs";
+  d.anecdotes=r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
+  d.tracks=(r.tracklist||[]).filter(t=>!t.type_||t.type_==="track").map(t=>{
+    const m=/^([A-Z])/i.exec(t.position||""); const [mm,ss]=(t.duration||"").split(":");
+    return {title:t.title,side:m?m[1].toUpperCase():"A",pos:t.position,duration:t.duration?(+mm*60+ +ss):0};
+  });
+  if(!d.cover&&r.images&&r.images[0]) d.cover=r.images[0].uri;
+  d.details=true;
+}
+
+/* ---------- Cover Flow ---------- */
+const S=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--S"))||300;
+const decadeOf=d=>d.annee?Math.floor(d.annee/10)*10:null;
+const bgOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`;
+const labOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.labelColor}`;
+const WINDOW=9; // pochettes dessinées de chaque côté
+function renderChips(){
+  const ds=[...new Set(records.map(decadeOf).filter(Boolean))].sort();
+  const opts=[["all","Tous"],...ds.map(x=>[String(x),"Années "+String(x).slice(2)])];
+  if(!opts.some(o=>o[0]===state.decade)) state.decade="all";
+  $("#chips").innerHTML=opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${v===state.decade?"on":""}" aria-pressed="${v===state.decade}">${l}</button>`).join("");
+}
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.decade=b.dataset.v;renderChips();refilter()});
+$("#q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();refilter()});
+function refilter(focusId){
+  state.list=records.filter(d=>(state.decade==="all"||String(decadeOf(d))===state.decade)&&(!state.q||(d.titre+" "+d.artiste).toLowerCase().includes(state.q)));
+  $("#lane").innerHTML="";
+  const fi=focusId?Math.max(0,state.list.findIndex(d=>d.id===focusId)):Math.min(2,state.list.length-1);
+  $("#scrub").max=Math.max(0,state.list.length-1);
+  if(!state.list.length){$("#caption").innerHTML=`<div class="empty">Aucun disque ne correspond.</div>`;return}
+  setFocus(fi,true);
+}
+function cvEl(d,i){
+  const el=document.createElement("div"); el.className="cv"; el.dataset.i=i; el.dataset.id=d.id;
+  el.innerHTML=`<div class="tilt">
+      <div class="vinyl"><div class="disc"><div class="lab" style="${labOf(d)}"></div></div></div>
+      <div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}</div>
+      <button class="open" type="button" tabindex="-1" aria-label="Ouvrir ${esc(d.titre)}">Ouvrir</button></div>`;
+  return el;
+}
+function place(el,k){
+  const s=S(), a=Math.abs(k), sg=Math.sign(k);
+  let tf;
+  if(k===0) tf=`translate3d(0,0,${s*.35}px)`;
+  else tf=`translate3d(${sg*(s*.62+(a-1)*s*.26)}px,0,${-a*s*.06}px) rotateY(${-sg*62}deg)`;
+  el.style.transform=tf; el.style.zIndex=100-a;
+  el.style.filter=k===0?"none":`brightness(${Math.max(.35,1-a*.12)})`;
+  el.classList.toggle("center",k===0);
+  el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
+  if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
+  el.querySelector(".open").tabIndex=k===0?0:-1;
+}
+let ambFlip=0;
+function setFocus(i,instant){
+  if(!state.list.length) return;
+  i=Math.max(0,Math.min(state.list.length-1,i)); state.focus=i; $("#scrub").value=i;
+  const lane=$("#lane"), have=new Map([...lane.children].map(el=>[+el.dataset.i,el]));
+  for(const [k,el] of have) if(Math.abs(k-i)>WINDOW) el.remove();
+  for(let k=Math.max(0,i-WINDOW);k<=Math.min(state.list.length-1,i+WINDOW);k++){
+    let el=have.get(k);
+    if(!el){el=cvEl(state.list[k],k); // entre depuis le bord
+      const s=S(),sg=Math.sign(k-i)||1; el.style.transition="none";
+      el.style.transform=`translate3d(${sg*(s*.62+(WINDOW)*s*.26)}px,0,${-WINDOW*s*.06}px) rotateY(${-sg*62}deg)`;
+      lane.appendChild(el); el.getBoundingClientRect(); el.style.transition="";}
+    if(instant) el.style.transition="none";
+    place(el,k-i);
+    if(instant){el.getBoundingClientRect();el.style.transition=""}
+  }
+  const d=state.list[i];
+  $("#caption").innerHTML=`<div class="ct">${esc(d.titre)}</div><div class="ca">${esc(d.artiste)}</div><div class="cy">${[d.annee,d.label].filter(Boolean).map(esc).join(" · ")}</div>`;
+  // fond ambiant
+  const next=$("#amb"+(ambFlip^1)), cur=$("#amb"+ambFlip);
+  next.style.cssText=d.cover?`background-image:url('${d.cover}')`:`background:${d.sleeve.bg}`;
+  next.classList.add("on"); cur.classList.remove("on"); ambFlip^=1;
+  resolveDeezer(d).then(()=>applyCover(d));
+}
+$("#lane").addEventListener("click",e=>{
+  const el=e.target.closest(".cv"); if(!el) return;
+  const i=+el.dataset.i; if(i===state.focus) openDetail(state.list[i],el); else setFocus(i);
+});
+$("#lane").addEventListener("mousemove",e=>{
+  const el=e.target.closest(".cv.center"); if(!el) return;
+  const r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+  const t=el.querySelector(".tilt"); t.style.setProperty("--ry",((x-.5)*30).toFixed(1)+"deg"); t.style.setProperty("--rx",((.5-y)*22).toFixed(1)+"deg");
+  const sl=el.querySelector(".sleeve"); sl.style.setProperty("--gx",(x*100).toFixed(0)+"%"); sl.style.setProperty("--gy",(y*100).toFixed(0)+"%");
+});
+$("#lane").addEventListener("mouseout",e=>{const el=e.target.closest(".cv.center");if(el&&!el.contains(e.relatedTarget)){const t=el.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")}});
+$("#prev").addEventListener("click",()=>setFocus(state.focus-1));
+$("#next").addEventListener("click",()=>setFocus(state.focus+1));
+$("#scrub").addEventListener("input",e=>setFocus(+e.target.value));
+$("#flow").addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft"){setFocus(state.focus-1);e.preventDefault()}
+  else if(e.key==="ArrowRight"){setFocus(state.focus+1);e.preventDefault()}
+  else if(e.key==="Enter"||e.key===" "){openDetail(state.list[state.focus]);e.preventDefault()}
+});
+let wl=0;
+$("#flow").addEventListener("wheel",e=>{const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(Math.abs(v)<4)return;e.preventDefault();const n=Date.now();if(n-wl<110)return;wl=n;setFocus(state.focus+(v>0?1:-1))},{passive:false});
+let drag=null;
+$("#flow").addEventListener("pointerdown",e=>{drag={x:e.clientX,f:state.focus,moved:false}});
+addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>8)drag.moved=true;if(drag.moved)setFocus(drag.f-Math.round(dx/(S()*.3)))});
+addEventListener("pointerup",()=>{if(drag&&drag.moved){const stop=ev=>{ev.stopPropagation();ev.preventDefault()};addEventListener("click",stop,{capture:true,once:true});setTimeout(()=>removeEventListener("click",stop,{capture:true}),50)}drag=null});
+addEventListener("resize",()=>setFocus(state.focus,true));
+function applyCover(d){
+  const info=dz[d.id]; if(d.cover||!info||!info.cover) return;
+  d.cover=info.cover;
+  document.querySelectorAll(`.cv[data-id="${d.id}"]`).forEach(el=>{
+    const sl=el.querySelector(".sleeve"); sl.style.background=""; sl.style.backgroundImage=`url('${d.cover}')`; sl.innerHTML="";
+    const lb=el.querySelector(".lab"); lb.style.background=""; lb.style.backgroundImage=`url('${d.cover}')`;
+  });
+  if(state.list[state.focus]===d){const a=$("#amb"+ambFlip);a.style.cssText=`background-image:url('${d.cover}')`}
+  if(state.cur===d) paintPack(d);
+}
+
+/* ---------- Vue détail ---------- */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function paintPack(d){
+  const sl=$("#dSleeve"); sl.style.cssText=bgOf(d);
+  sl.innerHTML=d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`;
+  $("#dLab").style.cssText=labOf(d);
+}
+let lastFocusEl=null;
+async function openDetail(d,fromEl){
+  if(!d) return;
+  lastFocusEl=document.activeElement;
+  if(state.cur!==d){stopAudio();state.cur=d;state.track=-1}
+  paintPack(d); renderInfo(d);
+  const det=$("#detail"), pack=$("#pack");
+  pack.classList.remove("out");
+  det.hidden=false; det.scrollTop=0; document.body.style.overflow="hidden";
+  if(!reduce){
+    det.animate([{opacity:0},{opacity:1}],{duration:350,easing:"ease-out"});
+    const src=(fromEl||document.querySelector(".cv.center"))?.querySelector(".sleeve");
+    if(src){const a=src.getBoundingClientRect(),b=pack.getBoundingClientRect();
+      pack.animate([{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width})`,transformOrigin:"0 0"},{transform:"none",transformOrigin:"0 0"}],{duration:650,easing:"cubic-bezier(.2,.8,.2,1)"});}
+  }
+  $("#close").focus();
+  await wait(reduce?0:550); pack.classList.add("out");
+  if(!d.details){ try{await loadDetails(d)}catch(err){d.detailErr=err.message} if(state.cur===d){renderInfo(d);paintPack(d)} }
+  resolveDeezer(d).then(()=>{applyCover(d);if(state.cur===d&&!$("#detail").hidden)renderInfo(d)});
+}
+function closeDetail(){
+  $("#detail").hidden=true; document.body.style.overflow=""; stopAudio(); $("#widget")&&($("#widget").innerHTML="");
+  if(lastFocusEl&&lastFocusEl.focus) lastFocusEl.focus(); else $("#flow").focus();
+}
+$("#close").addEventListener("click",closeDetail);
+$("#detail").addEventListener("click",e=>{if(e.target===e.currentTarget||e.target.classList.contains("in"))closeDetail()});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#detail").hidden)closeDetail()});
+$("#pack").addEventListener("mousemove",e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+  const t=e.currentTarget.querySelector(".tilt");t.style.setProperty("--ry",((x-.5)*18).toFixed(1)+"deg");t.style.setProperty("--rx",((.5-y)*14).toFixed(1)+"deg");
+  $("#dSleeve").style.setProperty("--gx",(x*100)+"%");$("#dSleeve").style.setProperty("--gy",(y*100)+"%")});
+$("#pack").addEventListener("mouseleave",e=>{const t=e.currentTarget.querySelector(".tilt");t.style.removeProperty("--ry");t.style.removeProperty("--rx")});
+$("#pack").addEventListener("click",()=>{state.track<0?playTrack(0):stopAudio()});
+
+function renderInfo(d){
+  const info=dz[d.id], sides=[...new Set(d.tracks.map(t=>t.side))];
+  const row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
+  let n=0;
+  const li=(t,i)=>`<li><button class="tr" data-i="${i}"><span class="n">${esc(t.pos||t.side+(++n))}</span><span class="t">${esc(t.title)}</span><span class="d">${fmt(t.duration||(previewFor(d,i)||{}).duration)}</span></button></li>`;
+  const loading=!d.details&&!d.detailErr;
+  $("#info").innerHTML=`
+    <div class="eyebrow">${[d.label,d.cat,"LP 33⅓"].filter(Boolean).map(esc).join(" · ")}</div>
+    <h2 id="dTitle">${esc(d.titre)}</h2>
+    <p class="by">${esc(d.artiste)}</p>
+    ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
+    ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
+    <dl>${row("Sortie",d.sortie)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}</dl>
+    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes Discogs":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
+    ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>Face ${esc(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
+    <div class="now" id="now">${state.track>=0?"":"Clique la pochette ou un morceau pour écouter."}</div>
+    <div class="acts">
+      <button class="pri" id="playAll" type="button">${state.track>=0?"Pause":"▶ Écouter"}</button>
+      ${info?`<button id="fullBtn" type="button">Lecteur Deezer complet</button><a href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener">Ouvrir dans Deezer</a>`
+            :`<a href="${deezerSearch(d)}" target="_blank" rel="noopener">Écouter sur Deezer</a>`}
+      ${d.discogsId?`<a href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener">Fiche Discogs</a>`:""}
+    </div>
+    ${state.deezer===false?`<p class="hint">Les extraits Deezer ne passent pas dans cet aperçu. Ouvre le fichier dans ton navigateur pour les entendre.</p>`:""}
+    <div class="widget" id="widget"></div>`;
+  highlight();
+  $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
+  $("#playAll").addEventListener("click",()=>{state.track<0?playTrack(0):stopAudio()});
+  const fb=$("#fullBtn");
+  if(fb) fb.addEventListener("click",()=>{stopAudio();$("#widget").innerHTML=`<iframe title="Lecteur Deezer" src="https://widget.deezer.com/widget/dark/album/${info.albumId}?tracklist=true" allow="encrypted-media; clipboard-write"></iframe>`;fb.remove()});
+}
+
+/* ---------- Lecture ---------- */
+let crackle=null;
+function startCrackle(){try{const ctx=crackle?.ctx||new (window.AudioContext||window.webkitAudioContext)();const buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<ch.length;i++){ch[i]=(Math.random()*2-1)*.004+(Math.random()<.0007?(Math.random()*2-1)*.5:0)}const src=ctx.createBufferSource();src.buffer=buf;src.loop=true;const g=ctx.createGain();g.gain.value=.5;src.connect(g).connect(ctx.destination);src.start();crackle={ctx,src}}catch(e){}}
+function stopCrackle(){try{crackle&&crackle.src&&crackle.src.stop()}catch(e){} if(crackle) crackle.src=null}
+function playTrack(i){
+  const d=state.cur; if(!d||!d.tracks.length||i<0||i>=d.tracks.length) return;
+  const a=$("#audio"); a.pause(); stopCrackle();
+  state.track=i; $("#pack").classList.add("out","playing"); highlight();
+  const t=d.tracks[i], pv=previewFor(d,i), now=$("#now"), pa=$("#playAll"); if(pa) pa.textContent="Pause";
+  if(pv&&pv.preview){
+    a.src=pv.preview;
+    a.play().then(()=>{now&&(now.innerHTML=`Extrait 30 s · <b>${esc(t.title)}</b> · Face ${esc(t.side)}`)}).catch(()=>{now&&(now.innerHTML=`Clique encore pour lancer le son · <b>${esc(t.title)}</b>`)});
+  }else{
+    startCrackle();
+    now&&(now.innerHTML=`<b>${esc(t.title)}</b> · Face ${esc(t.side)} <span style="opacity:.7">(${state.deezer?"pas d'extrait Deezer pour ce titre":"son Deezer indisponible ici"}, juste le craquement du vinyle)</span>`);
+  }
+}
+function stopAudio(){
+  const a=$("#audio"); a.pause(); a.removeAttribute("src"); stopCrackle();
+  $("#pack").classList.remove("playing"); state.track=-1; highlight();
+  const pa=$("#playAll"); if(pa) pa.textContent="▶ Écouter";
+  const now=$("#now"); if(now) now.textContent="En pause.";
+}
+$("#audio").addEventListener("ended",()=>{const n=state.track+1;state.cur&&state.cur.tracks.length>n?playTrack(n):stopAudio()});
+function highlight(){document.querySelectorAll(".tr").forEach(b=>b.classList.toggle("cur",+b.dataset.i===state.track))}
+
+/* ---------- Import Discogs ---------- */
+function useCollection(list,user){
+  records=list; renderChips(); refilter(); $("#imReset").hidden=false;
+  $("#foot").textContent=`Collection Discogs de ${user} : ${list.length} disques. La fiche complète se charge quand tu ouvres une pochette.`;
+}
+$("#imForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const user=$("#imUser").value.trim(), token=$("#imToken").value.trim(); if(!user) return;
+  $("#imBtn").disabled=true; $("#imMsg").className="imsg";
+  try{
+    if(token) store.set("dg-token",token); else store.del("dg-token");
+    const list=await importDiscogs(user,token||null);
+    if(!list.length) throw new Error("La collection est vide.");
+    store.set("dg-collection",{user,list,at:Date.now()});
+    useCollection(list,user);
+    $("#imMsg").textContent=`${list.length} disques importés.${list.some(d=>!d.cover)?" Certaines pochettes manquent : j'essaie celles de Deezer.":""}`;
+  }catch(err){
+    $("#imMsg").className="imsg err";
+    $("#imMsg").textContent=err.message==="Failed to fetch"?"Discogs est injoignable depuis cet aperçu. Ouvre le fichier dans ton navigateur et réessaie.":err.message;
+  }finally{$("#imBtn").disabled=false}
+});
+$("#imReset").addEventListener("click",()=>{store.del("dg-collection");records=demo;renderChips();refilter();$("#imReset").hidden=true;$("#imMsg").textContent="Retour aux disques d'exemple.";$("#foot").textContent="Cinq disques d'exemple en attendant ta collection."});
+
+/* ---------- Démarrage ---------- */
+const saved=store.get("dg-collection");
+if(saved&&saved.list&&saved.list.length){$("#imUser").value=saved.user;useCollection(saved.list.map(d=>({...d,details:false,tracks:[]})),saved.user)}
+else{renderChips();refilter()}
+(async()=>{for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)} if(state.deezer===null)setStatus(false)})();
+</script>
+
+</body>
+</html>
