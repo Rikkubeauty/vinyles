@@ -153,11 +153,13 @@ h1 span{color:var(--amber)}
 .flow{position:relative;height:calc(var(--S) * 1.75);perspective:1100px;perspective-origin:50% 38%;overflow:hidden;outline:none;touch-action:pan-y;}
 .lane{position:absolute;left:50%;top:calc(var(--S) * .12);width:0;height:0;transform-style:preserve-3d}
 .cv{position:absolute;left:calc(var(--S) / -2);top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;cursor:pointer;
-  transition:transform .75s cubic-bezier(.2,.8,.2,1);will-change:transform;backface-visibility:hidden}
-.cv .shade{position:absolute;left:0;right:0;top:0;height:calc(200% + 6px);background:var(--night);opacity:0;transition:opacity .75s;pointer-events:none;transform:translateZ(1px)}
+  transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform;backface-visibility:hidden;contain:layout style}
+.cv .shade{position:absolute;left:0;right:0;top:0;height:calc(200% + 6px);background:var(--night);opacity:0;transition:opacity .55s;pointer-events:none;transform:translateZ(1px)}
 .cv .refl{position:absolute;left:0;right:0;top:calc(100% + 6px);height:100%;background-size:cover;background-position:center;transform:scaleY(-1);opacity:.22;border-radius:3px;pointer-events:none;
   -webkit-mask-image:linear-gradient(to top,#000,transparent 40%);mask-image:linear-gradient(to top,#000,transparent 40%)}
-.cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.cv .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.cv.center .tilt{will-change:transform}
+.cv:not(.center) .vinyl{display:none}
 .cv.center .tilt{transition:transform .18s ease-out}
 .sleeve{position:absolute;inset:0;border-radius:3px;background-size:cover;background-position:center;overflow:hidden;
   box-shadow:var(--shadow),inset 0 0 0 1px var(--hover);}
@@ -167,7 +169,7 @@ h1 span{color:var(--amber)}
 .sleeve::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(60% 60% at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.16),transparent 60%),linear-gradient(90deg,rgba(0,0,0,.14),transparent 6%,transparent 94%,rgba(0,0,0,.12))}
 .vinyl{position:absolute;top:2%;left:2%;width:96%;height:96%;transform:translateZ(-2px);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
-.disc{position:absolute;inset:0;border-radius:50%;will-change:transform;
+.disc{position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,transparent 0 17%,var(--hover) 17.3%,transparent 18%),repeating-radial-gradient(circle,var(--groove) 0 1.2px,#1f1e1e 1.2px 1.9px);
   box-shadow:0 12px 30px rgba(0,0,0,.6)}
 .vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 30deg,transparent 0 25deg,rgba(255,255,255,.16) 40deg,transparent 58deg 205deg,rgba(255,255,255,.1) 222deg,transparent 240deg)}
@@ -717,7 +719,7 @@ const S=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyVal
 const decadeOf=d=>d.annee?Math.floor(d.annee/10)*10:null;
 const bgOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`;
 const labOf=d=>d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.labelColor}`;
-const WINDOW=6; // pochettes dessinées de chaque côté
+const WINDOW=5; // pochettes dessinées de chaque côté
 function renderChips(){
   const ds=[...new Set(records.map(decadeOf).filter(Boolean))].sort();
   const opts=[["all","Tous"],...ds.map(x=>[String(x),"Années "+String(x).slice(2)])];
@@ -776,29 +778,34 @@ function place(el,k){
   el.querySelector(".tilt").style.setProperty("--hov",(-sg*30)+"deg");
   if(k!==0){el.querySelector(".tilt").style.removeProperty("--ry");el.querySelector(".tilt").style.removeProperty("--rx")}
 }
-let ambFlip=0;
+let ambFlip=0, ambT=0;
 function setFocus(i,instant){
   if(!state.list.length) return;
   i=Math.max(0,Math.min(state.list.length-1,i)); state.focus=i; $("#scrub").value=i;
   const lane=$("#lane"), have=new Map([...lane.children].map(el=>[+el.dataset.i,el]));
   for(const [k,el] of have) if(Math.abs(k-i)>WINDOW) el.remove();
-  for(let k=Math.max(0,i-WINDOW);k<=Math.min(state.list.length-1,i+WINDOW);k++){
-    let el=have.get(k);
-    if(!el){el=cvEl(state.list[k],k); // entre depuis le bord
-      const s=S(),sg=Math.sign(k-i)||1; el.style.transition="none";
-      el.style.transform=`translate3d(${sg*(s*1.08+WINDOW*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`;
-      lane.appendChild(el); el.getBoundingClientRect(); el.style.transition="";}
-    if(instant) el.style.transition="none";
-    place(el,k-i);
-    if(instant){el.getBoundingClientRect();el.style.transition=""}
+  // nouvelles pochettes : posées au bord d'un coup, puis un seul recalcul de mise en page pour tout le lot
+  const s=S(), fresh=[], lo=Math.max(0,i-WINDOW), hi=Math.min(state.list.length-1,i+WINDOW);
+  for(let k=lo;k<=hi;k++) if(!have.has(k)){
+    const el=cvEl(state.list[k],k), sg=Math.sign(k-i)||1; el.style.transition="none";
+    el.style.transform=`translate3d(${sg*(s*1.08+WINDOW*s*.81)}px,${s*.14}px,${-s*.3}px) scale(.72)`;
+    lane.appendChild(el); have.set(k,el); fresh.push(el);
   }
+  if(instant) for(const el of have.values()) el.style.transition="none";
+  if(fresh.length||instant) lane.offsetWidth;
+  for(const el of fresh) el.style.transition="";
+  for(let k=lo;k<=hi;k++) place(have.get(k),k-i);
+  if(instant){lane.offsetWidth; for(let k=lo;k<=hi;k++) have.get(k).style.transition=""}
   const d=state.list[i];
   $("#caption").innerHTML=`<div class="ct">${esc(d.titre)}</div><div class="ca">${esc(d.artiste)}</div><div class="cy">${[d.annee,d.label].filter(Boolean).map(esc).join(" · ")}${resaOf(d)?`<span class="restag">Réservé</span>`:""}</div>`;
-  // fond ambiant
-  const next=$("#amb"+(ambFlip^1)), cur=$("#amb"+ambFlip);
-  next.style.cssText=d.cover?`background-image:url('${d.cover}')`:`background:${d.sleeve.bg}`;
-  next.classList.add("on"); cur.classList.remove("on"); ambFlip^=1;
-  resolveDeezer(d).then(()=>applyCover(d));
+  // fond ambiant et Deezer : seulement quand le défilement se pose (évite de tout repeindre à chaque cran)
+  clearTimeout(ambT); ambT=setTimeout(()=>{
+    if(state.list[state.focus]!==d) return;
+    const next=$("#amb"+(ambFlip^1)), cur=$("#amb"+ambFlip);
+    next.style.cssText=d.cover?`background-image:url('${d.cover}')`:`background:${d.sleeve.bg}`;
+    next.classList.add("on"); cur.classList.remove("on"); ambFlip^=1;
+    resolveDeezer(d).then(()=>applyCover(d));
+  },instant?0:180);
 }
 $("#lane").addEventListener("click",e=>{
   const el=e.target.closest(".cv"); if(!el) return;
