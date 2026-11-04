@@ -880,7 +880,7 @@ function renderInfo(d){
       </span>
       ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Clique encore pour supprimer</span></span>`:""}
     </div>
-    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc("album",info.albumId,false)}" allow="encrypted-media; clipboard-write"></iframe></div>`:""}`;
+    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc("album",info.albumId,false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   $("#playAll")&&$("#playAll").addEventListener("click",playAlbum);
@@ -1490,6 +1490,8 @@ function textToTracks(txt){
     return {pos,title,side:m?m[1].toUpperCase():"A",duration:dur&&ss!==undefined?(+mm*60+ +ss)||0:0};
   });
 }
+// les panneaux latéraux doivent passer au-dessus de la fiche ouverte (.wrap crée son propre empilement)
+document.body.append($("#editor"),$("#adder"));
 function openEditor(d){
   const blank=!d;
   editing=d||{id:"m"+Date.now().toString(36),source:"manuel",titre:"",artiste:"",annee:null,sortie:"",label:"",cat:"",cover:null,genres:"",pays:"",ean:"",lieu:"",compositeurs:"",credits:"",anecdotes:[],tracks:[],details:true,anecdotesFr:true,
