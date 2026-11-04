@@ -52,7 +52,19 @@ body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .subright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .sortsel{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.sortsel select{font:inherit;font-size:12px;letter-spacing:.03em;text-transform:none;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+.sortsel{position:relative}
+#sortBtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.03em;text-transform:none;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 13px;white-space:nowrap}
+#sortBtn b{font-weight:400}
+#sortBtn svg{transition:transform .2s;color:var(--muted)}
+#sortBtn[aria-expanded="true"]{border-color:var(--fg)}
+#sortBtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+#sortBtn:focus-visible{outline:2px solid var(--amber)}
+.subbar{position:relative;z-index:30}
+.sortmenu{position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:180px;margin:0;padding:6px;list-style:none;background:#fbfaf7;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(40,30,20,.16);text-transform:none;letter-spacing:.02em}
+.sortmenu li{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--fg);padding:8px 12px;border-radius:9px;display:flex;justify-content:space-between;gap:12px}
+.sortmenu li:hover,.sortmenu li.kb{background:var(--hover)}
+.sortmenu li[aria-selected="true"]{background:var(--fg);color:var(--night)}
+.sortmenu li[aria-selected="true"]::after{content:"●";color:var(--amber);font-size:9px;align-self:center}
 .burst{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:42vh;overflow:auto}
 .burst li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:14px;padding:6px 8px;border-radius:8px;background:var(--field);border:1px solid var(--line)}
 .burst li code{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
@@ -323,7 +335,7 @@ dd{margin:0}
   .wrap>*{min-width:0}
   .viewtog button{padding:6px 8px;font-size:11px;letter-spacing:.02em}
   .capline .nav{display:none}
-  .sortsel select{padding:6px 8px;font-size:11.5px}
+  #sortBtn{padding:6px 10px;font-size:11.5px}
   #addBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
   #addBtn::before{content:"+";font-size:24px;line-height:1}
   .subbar{gap:8px}
@@ -334,7 +346,7 @@ dd{margin:0}
   .chips button{flex:none}
   .subright{width:100%;justify-content:space-between;flex-wrap:nowrap}
   .sortsel span{display:none}
-  .sortsel select{max-width:36vw}
+  #sortBtn b{max-width:30vw;overflow:hidden;text-overflow:ellipsis}
   #dbStat{padding:8px}
   #dbStat span{display:none}
   .detail .close{top:10px;left:10px}
@@ -360,7 +372,8 @@ dd{margin:0}
   <div class="subbar">
     <div class="subleft"><div class="shelftog" role="group" aria-label="Étagère"><button type="button" id="sCol" aria-pressed="true">Ma collection<small id="nCol"></small></button><button type="button" id="sWish" aria-pressed="false">Mes souhaits<small id="nWish"></small></button></div>
     <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div></div>
-    <div class="subright"><label class="sortsel"><span>Tri</span><select id="sortSel" aria-label="Trier"><option value="ajout">Derniers ajouts</option><option value="artiste">Artiste</option><option value="titre">Titre</option><option value="annee">Année ↑</option><option value="annee-">Année ↓</option><option value="label">Label</option></select></label>
+    <div class="subright"><div class="sortsel"><span>Tri</span><button type="button" id="sortBtn" aria-haspopup="listbox" aria-expanded="false"><b id="sortLbl">Derniers ajouts</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Derniers ajouts</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
     <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button><button type="button" id="vStats" aria-pressed="false">Stats</button></div></div>
   </div>
 
@@ -1419,8 +1432,16 @@ $("#backupBtn").addEventListener("click",async()=>{
     toast("Sauvegarde téléchargée ✓ (une copie est aussi gardée chaque semaine en ligne)");
   }catch(e){toast(e.message,true)}
 });
-$("#sortSel").value=sortBy;
-$("#sortSel").addEventListener("change",e=>{sortBy=e.target.value;store.set("tri",sortBy);refilter();if(!$("#listView").hidden)renderList()});
+function paintSort(){
+  $("#sortMenu").querySelectorAll("li").forEach(li=>li.setAttribute("aria-selected",String(li.dataset.v===sortBy)));
+  const cur=$("#sortMenu").querySelector(`li[data-v="${sortBy}"]`); $("#sortLbl").textContent=cur?cur.textContent:"";
+}
+function sortMenu(open){$("#sortMenu").hidden=!open;$("#sortBtn").setAttribute("aria-expanded",String(open))}
+paintSort();
+$("#sortBtn").addEventListener("click",e=>{e.stopPropagation();sortMenu($("#sortMenu").hidden)});
+$("#sortMenu").addEventListener("click",e=>{const li=e.target.closest("li");if(!li)return;sortBy=li.dataset.v;store.set("tri",sortBy);paintSort();sortMenu(false);refilter();if(!$("#listView").hidden)renderList()});
+document.addEventListener("click",e=>{if(!e.target.closest(".sortsel"))sortMenu(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sortMenu").hidden){sortMenu(false);$("#sortBtn").focus()}});
 function renderList(){
   const rows=mine.filter(d=>state.list.includes(d));
   const cmp=(a,b)=>{const k=lst.sort,x=a[k]??"",y=b[k]??"";return (typeof x==="number"&&typeof y==="number"?x-y:String(x).localeCompare(String(y),"fr",{numeric:true,sensitivity:"base"}))*lst.dir};
