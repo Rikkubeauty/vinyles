@@ -57,7 +57,7 @@
 [hidden]{display:none!important}
 .lock.mOnly,.viewtog svg{display:none}
 .msheet{display:none}
-body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.readonly #bulkDel,body.readonly .coll td:first-child,body.readonly .coll th:first-child,body.readonly .coll .acts2,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
+body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.readonly #bulkDel,body.readonly .coll tr:not(.gh) td:first-child,body.readonly .coll th:first-child,body.readonly .coll .acts2,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
@@ -1661,11 +1661,12 @@ const GROUPS={
   artiste:d=>{const a=(d.artiste||"").trim();return a?{k:artKey(a).toLowerCase(),l:a}:{k:"\uffff",l:"Artiste inconnu"}},
   style:d=>{const g=(d.genres||"").split(/,\s*/)[0].trim();return g?{k:g.toLowerCase(),l:g}:{k:"\uffff",l:"Sans style"}},
   decennie:d=>{const x=decadeOf(d);return x?{k:x,l:"Années "+(x>=2000?x:String(x).slice(2))}:{k:99999,l:"Année inconnue"}}};
-function groupRows(rows){
+function groupRows(rows,cmp){
   const f=GROUPS[groupBy]; if(!f) return [[null,rows]];
   const m=new Map();
   for(const d of rows){const g=f(d); const e=m.get(g.l)||m.set(g.l,{k:g.k,l:g.l,items:[]}).get(g.l); e.items.push(d)}
-  return [...m.values()].sort((a,b)=>typeof a.k==="number"?a.k-b.k:cmpTxt(a.k,b.k)).map(g=>[g.l,g.items]);
+  // en Liste, l'ordre des groupes suit le tri choisi (sinon trier par titre ne changerait rien quand chaque artiste a un seul disque)
+  return [...m.values()].sort(cmp?(a,b)=>cmp(a.items[0],b.items[0])||cmpTxt(String(a.k),String(b.k)):(a,b)=>typeof a.k==="number"?a.k-b.k:cmpTxt(a.k,b.k)).map(g=>[g.l,g.items]);
 }
 function paintGrp(){
   $("#grpMenu").querySelectorAll("li").forEach(li=>li.setAttribute("aria-selected",String(li.dataset.v===groupBy)));
@@ -1703,7 +1704,7 @@ function renderList(){
   $("#tableWrap").innerHTML=`<table class="coll"><thead><tr>
     <th><input type="checkbox" id="selAll" aria-label="Tout sélectionner" ${all?"checked":""}></th><th></th>
     ${COLS.map(([k,l])=>`<th aria-sort="${lst.sort===k?(lst.dir>0?"ascending":"descending"):"none"}"><button type="button" data-sort="${k}">${l}</button></th>`).join("")}<th></th></tr></thead>
-    <tbody>${groupRows(rows).map(([l,items])=>(l===null?"":`<tr class="gh"><td colspan="${COLS.length+3}">${esc(l)}<small>${items.length}</small></td></tr>`)+items.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
+    <tbody>${groupRows(rows,cmp).map(([l,items])=>(l===null?"":`<tr class="gh"><td colspan="${COLS.length+3}">${esc(l)}<small>${items.length}</small></td></tr>`)+items.map(d=>`<tr data-id="${esc(d.id)}" class="${lst.sel.has(d.id)?"sel":""}">
       <td><input type="checkbox" data-sel="${esc(d.id)}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></td>
       <td><div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div></td>
       <td><span class="tt" data-open="${esc(d.id)}">${esc(d.titre)}</span></td><td>${esc(d.artiste)}</td>
