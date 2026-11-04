@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>La Discothèque d’Eduardo</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#f1efea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Discothèque">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -1592,7 +1600,7 @@ document.addEventListener("click",e=>{if(!$("#mSheet").hidden&&!e.target.closest
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#mSheet").hidden){mSheet(false);$("#mFilt").focus()}});
 $("#mSearch").addEventListener("click",()=>{const on=!document.body.classList.contains("msearch");document.body.classList.toggle("msearch",on);$("#mSearch").setAttribute("aria-expanded",String(on));if(on)$("#q").focus();else{$("#q").value="";state.q="";refilter()}});
 $("#q").addEventListener("blur",()=>{if(mq.matches&&!$("#q").value.trim()){document.body.classList.remove("msearch");$("#mSearch").setAttribute("aria-expanded","false")}});
-function paintTheme(){const d=document.documentElement.dataset.theme==="sombre";$("#themeBtn").setAttribute("aria-label",d?"Mode clair":"Mode sombre");$("#themeBtn").title=d?"Mode clair":"Mode sombre";$("#themeBtn").setAttribute("aria-pressed",String(d))}
+function paintTheme(){const d=document.documentElement.dataset.theme==="sombre";document.querySelector('meta[name="theme-color"]').content=d?"#121212":"#f1efea";$("#themeBtn").setAttribute("aria-label",d?"Mode clair":"Mode sombre");$("#themeBtn").title=d?"Mode clair":"Mode sombre";$("#themeBtn").setAttribute("aria-pressed",String(d))}
 paintTheme();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,d=r.dataset.theme!=="sombre";if(d)r.dataset.theme="sombre";else delete r.dataset.theme;store.set("theme",d?"sombre":"clair");paintTheme()});
 $("#vList").addEventListener("click",()=>setView("list"));
@@ -1794,5 +1802,6 @@ async function translateRecord(d){
 </script>
 
 
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))</script>
 </body>
 </html>
