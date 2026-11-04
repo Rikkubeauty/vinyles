@@ -47,6 +47,8 @@
 @media (max-width:640px){:root{--S:min(64vw,250px)}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+.lock.mOnly,.viewtog svg{display:none}
+.msheet{display:none}
 body.readonly #addBtn,body.readonly #backupBtn,body.readonly #newBlank,body.readonly #bulkDel,body.readonly .coll td:first-child,body.readonly .coll th:first-child,body.readonly .coll .acts2,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
@@ -382,6 +384,54 @@ dd{margin:0}
   #dbStat{padding:8px}
   #dbStat span{display:none}
   .detail .close{top:10px;left:10px}
+  /* ===== mobile « plein écran » : en-tête court, interrupteur fixe, barre de vues en bas, + flottant ===== */
+  :root{--S:min(78vw,320px)}
+  .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+  header{flex-wrap:nowrap;position:relative}
+  :root[data-look="galerie"] h1{font-size:clamp(17px,5vw,22px);width:auto;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .tools{width:auto;flex:none;gap:2px}
+  .tools .lock{width:42px;height:42px;border:0;background:none;color:var(--fg)}
+  .tools .lock.mOnly{display:grid}
+  .tools .search{display:none}
+  body.msearch .tools .search{display:block;position:absolute;left:0;right:88px;top:50%;transform:translateY(-50%);width:auto;height:42px;font-size:14px;z-index:2;background:var(--night);border-color:var(--fg)}
+  body.msearch #mSearch{color:var(--amber)}
+  #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
+  #addBtn::before{font-size:30px}
+  .viewtog{position:fixed;z-index:60;left:calc(16px + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));order:0;padding:4px;background:var(--fg);border:0;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+  .viewtog button{width:46px;height:44px;padding:0;display:grid;place-items:center;color:var(--night)}
+  .viewtog button span{display:none}
+  .viewtog svg{display:block}
+  .viewtog button[aria-pressed="true"]{background:var(--night);color:var(--fg)}
+  .subbar{display:block}
+  .subleft{margin:0;padding:0;width:100%;overflow:visible;display:block}
+  .shelftog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:4px;border-radius:14px;background:var(--hover);gap:0}
+  .shelftog button{text-align:center;padding:10px 0;border-radius:11px;font-size:16px}
+  .shelftog button[aria-pressed="true"]{box-shadow:0 2px 8px rgba(0,0,0,.12);background:var(--panel)}
+  .subright{display:none}
+  #dbStat{display:none}
+  .capline{grid-template-columns:minmax(0,1fr)}
+  .caption{text-align:left;padding-inline:6px;grid-template-columns:1fr auto;align-items:baseline;column-gap:12px;min-height:0}
+  .caption .ct{grid-column:1/-1;font-size:26px}
+  .caption .ca{font-size:16px}
+  .caption .cy{text-align:right}
+  .caption .empty{grid-column:1/-1;text-align:center}
+  .scrub{display:none}
+  .flow{height:calc(var(--S) * 1.32)}
+  #flowView{display:flex;flex-direction:column;justify-content:center;min-height:calc(100svh - 250px)}
+  .msheet{display:grid;gap:14px;position:fixed;z-index:80;top:calc(64px + env(safe-area-inset-top,0px));left:12px;right:12px;padding:16px;border-radius:18px;background:var(--menu,#fbfaf7);border:1px solid var(--line);box-shadow:0 24px 50px rgba(0,0,0,.25)}
+  .msheet[hidden]{display:none!important}
+  .mrow{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:10px}
+  .mlbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .mval{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .mval .sortsel span{display:none}
+  .mval .chips{flex-wrap:wrap;flex:1 1 auto;min-width:0}
+  .mtools .lock{width:40px;height:40px}
+  .mtools #dbStat{font-size:10.5px}
+  .mtools{display:flex;gap:8px;align-items:center;padding-top:12px;border-top:1px solid var(--line)}
+  .mtools .lock{width:44px;height:44px;border:1px solid var(--line);background:var(--field)}
+  .mtools #dbStat{display:flex;position:static;margin-left:auto;box-shadow:none}
+  .mtools #dbStat span{display:inline}
+  .mtools .status{display:none}
 }
 </style>
 </head>
@@ -396,6 +446,8 @@ dd{margin:0}
     <div class="tools">
       <input class="search" id="q" type="search" placeholder="Chercher un disque, un artiste…" aria-label="Chercher">
       <div class="status" id="status" hidden><i></i><span></span></div>
+      <button class="lock mOnly" id="mSearch" type="button" aria-label="Chercher" aria-expanded="false"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="lock mOnly" id="mFilt" type="button" aria-label="Filtres et réglages" aria-expanded="false" aria-controls="mSheet"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <button class="lock" id="lockBtn" type="button" hidden aria-label="Mode édition" title="Mode édition"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
       <button class="lock" id="themeBtn" type="button" aria-label="Mode sombre" title="Mode sombre"><svg class="moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <button class="lock" id="shareBtn" type="button" aria-label="Partager ma liste de souhaits" title="Partager ma liste de souhaits"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8" stroke="currentColor" stroke-width="1.8"/></svg></button>
@@ -409,7 +461,7 @@ dd{margin:0}
       <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Récents</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
     <div class="sortsel" id="grpSel" hidden><span>Par</span><button type="button" id="grpBtn" aria-haspopup="listbox" aria-expanded="false"><b id="grpLbl">Artiste</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <ul class="sortmenu" id="grpMenu" role="listbox" aria-label="Regrouper" hidden><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="style">Style</li><li role="option" data-v="decennie">Décennie</li><li role="option" data-v="aucun">Sans regroupement</li></ul></div>
-    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true">Flow</button><button type="button" id="vGrid" aria-pressed="false">Pochettes</button><button type="button" id="vList" aria-pressed="false">Liste</button><button type="button" id="vStats" aria-pressed="false">Stats</button></div></div>
+    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true" aria-label="Flow"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="7" y="5" width="10" height="14" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 8v8M21 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Flow</span></button><button type="button" id="vGrid" aria-pressed="false" aria-label="Pochettes"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Pochettes</span></button><button type="button" id="vList" aria-pressed="false" aria-label="Liste"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Liste</span></button><button type="button" id="vStats" aria-pressed="false" aria-label="Stats"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 19V11M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Stats</span></button></div></div>
   </div>
 
   <div id="flowView">
@@ -484,6 +536,12 @@ dd{margin:0}
   </form>
 </div>
 
+<div class="msheet" id="mSheet" hidden role="dialog" aria-label="Filtres et réglages">
+  <div class="mrow"><span class="mlbl">Tri</span><div id="mshTri" class="mval"></div></div>
+  <div class="mrow"><span class="mlbl">Années</span><div id="mshChips" class="mval"></div></div>
+  <div class="mrow mtools" id="mshTools"></div>
+</div>
+<div id="dbStat" role="status" title="Connexion à la base de données"><i></i><span>Base : vérification…</span></div>
 <script>
 const DISQUES = [
   {
@@ -1515,6 +1573,20 @@ function setView(v){
 }
 $("#vFlow").addEventListener("click",()=>setView("flow"));
 $("#vGrid").addEventListener("click",()=>setView("grid"));
+/* ---------- Mobile : déplace tri, décennies et réglages dans le panneau « Filtres » ---------- */
+const mq=matchMedia("(max-width:640px)");
+const mMoves=[[".sortsel:not(#grpSel)","#mshTri"],["#grpSel","#mshTri"],["#chips","#mshChips"],["#lockBtn","#mshTools"],["#themeBtn","#mshTools"],["#shareBtn","#mshTools"],["#dbStat","#mshTools"],[".viewtog","body"]].map(([sel,to])=>{const el=document.querySelector(sel);return {el,to,home:el.parentNode,next:el.nextSibling}});
+function mobileLayout(){
+  for(const m of mMoves){ if(mq.matches){ if(m.el.parentNode!==$(m.to)) $(m.to).appendChild(m.el) } else if(m.el.parentNode!==m.home) m.home.insertBefore(m.el,m.next&&m.next.parentNode===m.home?m.next:null) }
+  if(!mq.matches){mSheet(false);document.body.classList.remove("msearch")}
+}
+function mSheet(open){$("#mSheet").hidden=!open;$("#mFilt").setAttribute("aria-expanded",String(open))}
+mq.addEventListener("change",()=>{mobileLayout();setFocus(state.focus,true)}); mobileLayout();
+$("#mFilt").addEventListener("click",e=>{e.stopPropagation();mSheet($("#mSheet").hidden)});
+document.addEventListener("click",e=>{if(!$("#mSheet").hidden&&!e.target.closest("#mSheet,#mFilt"))mSheet(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#mSheet").hidden){mSheet(false);$("#mFilt").focus()}});
+$("#mSearch").addEventListener("click",()=>{const on=!document.body.classList.contains("msearch");document.body.classList.toggle("msearch",on);$("#mSearch").setAttribute("aria-expanded",String(on));if(on)$("#q").focus();else{$("#q").value="";state.q="";refilter()}});
+$("#q").addEventListener("blur",()=>{if(mq.matches&&!$("#q").value.trim()){document.body.classList.remove("msearch");$("#mSearch").setAttribute("aria-expanded","false")}});
 function paintTheme(){const d=document.documentElement.dataset.theme==="sombre";$("#themeBtn").setAttribute("aria-label",d?"Mode clair":"Mode sombre");$("#themeBtn").title=d?"Mode clair":"Mode sombre";$("#themeBtn").setAttribute("aria-pressed",String(d))}
 paintTheme();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,d=r.dataset.theme!=="sombre";if(d)r.dataset.theme="sombre";else delete r.dataset.theme;store.set("theme",d?"sombre":"clair");paintTheme()});
@@ -1716,6 +1788,6 @@ async function translateRecord(d){
 })();
 </script>
 
-<div id="dbStat" role="status" title="Connexion à la base de données"><i></i><span>Base : vérification…</span></div>
+
 </body>
 </html>
