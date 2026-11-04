@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La Discothèque de Hugo</title>
-
+<title>La Discothèque d’Eduardo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -24,6 +23,7 @@
 }
 @media (max-width:640px){:root{--S:200px}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{min-height:100%}
 body{background:var(--night);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.5;overflow-x:hidden}
 button{font:inherit;color:inherit}
@@ -141,17 +141,41 @@ dd{margin:0}
 .widget{margin-top:14px;border-radius:8px;overflow:hidden}
 .widget iframe{display:block;width:100%;height:320px;border:0}
 
-/* ---------- Import Discogs ---------- */
-.importer{border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.25)}
-.importer summary{cursor:pointer;padding:13px 18px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
-.importer .body{padding:2px 18px 18px;display:grid;gap:12px;max-width:780px}
-.importer form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-.importer label{display:grid;gap:4px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:1 1 200px;min-width:0}
-.importer input{font-family:var(--f-mono);font-size:14px;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:9px 11px;width:100%}
-.importer input:focus{outline:2px solid var(--amber);border-color:transparent}
-.importer p{margin:0;font-size:15.5px;color:var(--muted)}
-.importer a{color:var(--amber)}
-.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:rgba(0,0,0,.3);padding:10px 14px;border-radius:999px;cursor:pointer}
+/* ---------- Ajouter un disque ---------- */
+.adder{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:rgba(18,15,13,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-left:1px solid var(--line);box-shadow:-30px 0 60px rgba(0,0,0,.5);display:grid;gap:14px;align-content:start;
+  padding-block:max(20px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px));animation:slidein .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes slidein{from{transform:translateX(40px);opacity:0}}
+.adhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.adhead h2{font-family:var(--f-display);font-weight:800;font-size:26px;letter-spacing:-.02em;margin:0}
+.close2{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
+.close2:focus-visible{outline:2px solid var(--amber)}
+.results{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important}
+.addform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.addform label{display:grid;gap:5px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:1 1 260px;min-width:0}
+.addform input{font-family:var(--f-mono);font-size:15px;letter-spacing:0;text-transform:none;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.addform input:focus{outline:2px solid var(--amber);border-color:transparent}
+#scanVideo{width:100%;max-width:420px;border-radius:10px;background:#000}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.res{all:unset;cursor:pointer;display:grid;gap:8px;align-content:start;font-size:14.5px;line-height:1.3;border-radius:8px;padding:6px;transition:background .2s}
+.res:hover{background:rgba(255,255,255,.06)}
+.res:focus-visible{outline:2px solid var(--amber)}
+.res .rc{aspect-ratio:1;max-width:100%;border-radius:4px;background:#222 center/cover;box-shadow:0 8px 18px rgba(0,0,0,.5);position:relative}
+.res .rc::after{content:"+ Ajouter";position:absolute;right:8px;bottom:8px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--amber);color:#1b1206;padding:4px 7px;border-radius:999px;opacity:0;transition:.2s}
+.res:hover .rc::after,.res:focus-visible .rc::after{opacity:1}
+.res b{font-weight:500}
+.res small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.03em}
+.res.added .rc::after{content:"Ajouté ✓";opacity:1;background:#7bd389}
+.tokenbox summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tokenbox .body{display:grid;gap:10px;padding-top:10px}
+.tokenbox p{margin:0;font-size:15px;color:var(--muted)}
+.tokenbox a{color:var(--amber)}
+.coltools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:12px;border-top:1px solid var(--line)}
+.coltools span{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:auto}
+.btn.pri{background:var(--amber);border-color:var(--amber);color:#1b1206}
+.btn.pri:hover{color:#1b1206;filter:brightness(1.08)}
+.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--fg);padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-block}
+.btn[disabled]{opacity:.5;cursor:default}
 .btn:hover{border-color:var(--amber);color:var(--amber)}
 .imsg{font-family:var(--f-mono);font-size:13px}
 .imsg.err{color:#f39a7d}
@@ -165,10 +189,11 @@ dd{margin:0}
 
 <div class="wrap">
   <header>
-    <h1>La discothèque <span>de Hugo</span></h1>
+    <h1>La discothèque <span>d’Eduardo</span></h1>
     <div class="tools">
       <input class="search" id="q" type="search" placeholder="Chercher un disque, un artiste…" aria-label="Chercher">
       <div class="status" id="status"><i></i><span>Recherche de Deezer…</span></div>
+      <button class="btn pri" id="addBtn" type="button" aria-expanded="false" aria-controls="adder">+ Ajouter un disque</button>
     </div>
   </header>
   <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div>
@@ -183,20 +208,31 @@ dd{margin:0}
   </div>
   <input class="scrub" id="scrub" type="range" min="0" max="0" value="0" aria-label="Parcourir la collection">
 
-  <details class="importer" id="importer">
-    <summary>Importer ma collection Discogs</summary>
-    <div class="body">
-      <p>Entre ton nom d'utilisateur Discogs et ton jeton personnel (sans jeton, Discogs ne donne pas les pochettes). Crée-le sur <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>, bouton « Generate new token ». Il reste dans ce navigateur.</p>
-      <form id="imForm">
-        <label for="imUser">Utilisateur Discogs<input id="imUser" autocomplete="username" placeholder="ex. hugo_vinyles" required></label>
-        <label for="imToken">Jeton personnel<input id="imToken" type="password" autocomplete="off" placeholder="recommandé"></label>
-        <button class="btn" type="submit" id="imBtn">Importer</button>
-        <button class="btn" type="button" id="imReset" hidden>Revenir aux exemples</button>
-      </form>
-      <div class="imsg" id="imMsg" role="status"></div>
+  <section class="adder" id="adder" hidden role="dialog" aria-label="Ajouter un disque">
+    <div class="adhead"><h2>Ajouter un disque</h2><button class="close2" id="adClose" type="button" aria-label="Fermer">✕</button></div>
+    <form class="addform" id="addForm">
+      <label for="aq">Titre, artiste, EAN ou code-barres<input id="aq" type="search" autocomplete="off" placeholder="ex. Melody Nelson Gainsbourg, ou 042281204721" required></label>
+      <button class="btn pri" type="submit" id="aGo">Chercher sur Discogs</button>
+      <button class="btn" type="button" id="scanBtn" hidden>Scanner le code-barres</button>
+    </form>
+    <video id="scanVideo" playsinline muted hidden></video>
+    <div class="imsg" id="aMsg" role="status"></div>
+    <div class="results" id="results"></div>
+    <button class="btn" type="button" id="moreBtn" hidden>Voir plus de résultats</button>
+    <details class="tokenbox" id="tokenBox">
+      <summary>Jeton Discogs</summary>
+      <div class="body">
+        <p>La recherche Discogs demande ton jeton personnel (« Personal access token » sur <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>). Il reste dans ce navigateur.</p>
+        <form id="tokForm" class="addform"><label for="tok">Jeton personnel<input id="tok" type="password" autocomplete="off"></label><button class="btn" type="submit">Enregistrer</button></form>
+      </div>
+    </details>
+    <div class="coltools">
+      <span id="colCount"></span>
+      <button class="btn" type="button" id="exportBtn">Télécharger collection.json</button>
+      <label class="btn" for="importFile">Charger un fichier<input id="importFile" type="file" accept="application/json,.json" hidden></label>
     </div>
-  </details>
-  <p class="foot" id="foot">Cinq disques d'exemple en attendant ta collection. L'import Discogs et le son Deezer marchent quand tu ouvres le fichier dans ton navigateur ; l'aperçu en ligne les bloque.</p>
+  </section>
+  <p class="foot" id="foot"></p>
 </div>
 
 <div class="detail" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
@@ -562,7 +598,7 @@ function renderInfo(d){
     <p class="by">${esc(d.artiste)}</p>
     ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
     ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
-    <dl>${row("Sortie",d.sortie)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}</dl>
+    <dl>${row("Sortie",d.sortie)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes Discogs":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>Face ${esc(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     <div class="now" id="now">${state.track>=0?"":"Clique la pochette ou un morceau pour écouter."}</div>
@@ -571,12 +607,15 @@ function renderInfo(d){
       ${info?`<button id="fullBtn" type="button">Lecteur Deezer complet</button><a href="https://www.deezer.com/album/${info.albumId}" target="_blank" rel="noopener">Ouvrir dans Deezer</a>`
             :`<a href="${deezerSearch(d)}" target="_blank" rel="noopener">Écouter sur Deezer</a>`}
       ${d.discogsId?`<a href="https://www.discogs.com/release/${d.discogsId}" target="_blank" rel="noopener">Fiche Discogs</a>`:""}
+      ${mine.some(x=>x.id===d.id)?`<button id="rmBtn" type="button">Retirer de ma discothèque</button>`:""}
     </div>
     ${state.deezer===false?`<p class="hint">Les extraits Deezer ne passent pas dans cet aperçu. Ouvre le fichier dans ton navigateur pour les entendre.</p>`:""}
     <div class="widget" id="widget"></div>`;
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   $("#playAll").addEventListener("click",()=>{state.track<0?playTrack(0):stopAudio()});
+  const rm=$("#rmBtn");
+  if(rm) rm.addEventListener("click",()=>{if(rm.dataset.sure){removeRecord(d)}else{rm.dataset.sure="1";rm.textContent="Confirmer le retrait"}});
   const fb=$("#fullBtn");
   if(fb) fb.addEventListener("click",()=>{stopAudio();$("#widget").innerHTML=`<iframe title="Lecteur Deezer" src="https://widget.deezer.com/widget/dark/album/${info.albumId}?tracklist=true" allow="encrypted-media; clipboard-write"></iframe>`;fb.remove()});
 }
@@ -607,34 +646,136 @@ function stopAudio(){
 $("#audio").addEventListener("ended",()=>{const n=state.track+1;state.cur&&state.cur.tracks.length>n?playTrack(n):stopAudio()});
 function highlight(){document.querySelectorAll(".tr").forEach(b=>b.classList.toggle("cur",+b.dataset.i===state.track))}
 
-/* ---------- Import Discogs ---------- */
-function useCollection(list,user){
-  records=list; renderChips(); refilter(); $("#imReset").hidden=false;
-  $("#foot").textContent=`Collection Discogs de ${user} : ${list.length} disques. La fiche complète se charge quand tu ouvres une pochette.`;
+/* ---------- Ma collection ---------- */
+const KEY="mes-disques";
+let mine=store.get(KEY)||[];
+function rebuild(focusId){
+  records=mine.length?mine:demo;
+  renderChips(); refilter(focusId);
+  $("#colCount").textContent=mine.length?`${mine.length} disque${mine.length>1?"s":""} dans ta discothèque`:"Ta discothèque est vide : les 5 disques affichés sont des exemples.";
+  $("#foot").textContent=mine.length?"":"Ajoute ton premier vinyle avec « + Ajouter un disque » : les exemples disparaîtront.";
 }
-$("#imForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const user=$("#imUser").value.trim(), token=$("#imToken").value.trim(); if(!user) return;
-  $("#imBtn").disabled=true; $("#imMsg").className="imsg";
+function saveMine(){store.set(KEY,mine)}
+
+/* une fiche Discogs complète devient un disque de la discothèque */
+function recordFromRelease(r){
+  const lab=(r.labels||[])[0]||{}, [lc,li]=LABELS[hash(r.id)%LABELS.length];
+  const d={id:"dg"+r.id,discogsId:r.id,source:"discogs",titre:r.title,artiste:(r.artists||[]).map(a=>cleanName(a.anv||a.name)).join(", "),
+    annee:r.year||null,sortie:r.year?String(r.year):"Date inconnue",label:cleanName(lab.name)||"",cat:lab.catno||"",
+    cover:(r.images&&r.images[0]&&r.images[0].uri)||null,genres:[...(r.genres||[]),...(r.styles||[])].join(", "),
+    pays:r.country||"",ean:((r.identifiers||[]).find(x=>/barcode/i.test(x.type))||{}).value||"",
+    sleeve:{bg:`linear-gradient(135deg,hsl(${hash(r.title)%360} 35% 28%),hsl(${(hash(r.title)+40)%360} 30% 14%))`,ink:"#f3eadb"},
+    labelColor:lc,labelInk:li,tracks:[],details:false,ajoute:new Date().toISOString().slice(0,10)};
+  store.set("dg-rel-"+r.id,{released:r.released,tracklist:r.tracklist,extraartists:r.extraartists,companies:r.companies,notes:r.notes,images:(r.images||[]).slice(0,1)});
+  return d;
+}
+async function addRelease(id,btn){
+  const token=store.get("dg-token");
+  if(mine.some(d=>d.discogsId===id)){setFocus(state.list.findIndex(d=>d.discogsId===id));$("#aMsg").textContent="Ce disque est déjà dans ta discothèque.";return}
+  btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche Discogs…";
   try{
-    if(token) store.set("dg-token",token); else store.del("dg-token");
-    const list=await importDiscogs(user,token||null);
-    if(!list.length) throw new Error("La collection est vide.");
-    store.set("dg-collection",{user,list,at:Date.now()});
-    useCollection(list,user);
-    $("#imMsg").textContent=`${list.length} disques importés.${list.some(d=>!d.cover)?" Certaines pochettes manquent : j'essaie celles de Deezer.":""}`;
-  }catch(err){
-    $("#imMsg").className="imsg err";
-    $("#imMsg").textContent=err.message==="Failed to fetch"?"Discogs est injoignable depuis cet aperçu. Ouvre le fichier dans ton navigateur et réessaie.":err.message;
-  }finally{$("#imBtn").disabled=false}
+    const r=await dgFetch(`/releases/${id}`,token);
+    const d=recordFromRelease(r); await loadDetails(d);
+    mine.unshift(d); saveMine(); rebuild(d.id);
+    btn&&btn.classList.add("added");
+    $("#aMsg").textContent=`« ${d.titre} » ajouté.`;
+    resolveDeezer(d).then(()=>applyCover(d));
+  }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err)}
+  finally{btn&&(btn.disabled=false)}
+}
+const niceErr=err=>err.message==="Failed to fetch"?"Discogs est injoignable depuis cet aperçu. Ouvre la page depuis ton site ou ton ordinateur.":err.message;
+
+/* recherche : titre / artiste, ou EAN / code-barres. Les suggestions arrivent pendant la frappe. */
+const srch={q:"",page:1,pages:1,items:[],seq:0};
+async function searchDiscogs(q,page){
+  const token=store.get("dg-token");
+  if(!token){$("#tokenBox").open=true;throw new Error("Ajoute d'abord ton jeton Discogs (ci-dessous).")}
+  const digits=q.replace(/[\s-]/g,"");
+  const path=/^\d{8,14}$/.test(digits)
+    ?`/database/search?barcode=${digits}&type=release&per_page=30&page=${page}`
+    :`/database/search?q=${encodeURIComponent(q)}&type=release&format=Vinyl&per_page=30&page=${page}`;
+  return dgFetch(path,token);
+}
+function renderResults(list){
+  $("#results").innerHTML=list.map(r=>{
+    const [art,...rest]=String(r.title).split(" - "), tit=rest.join(" - ")||art;
+    const meta=[r.year,r.country,(r.label||[])[0],r.catno].filter(Boolean).map(esc).join(" · ");
+    const cov=r.cover_image&&!/spacer\.gif/.test(r.cover_image)?r.cover_image:r.thumb;
+    return `<button class="res${mine.some(d=>d.discogsId===r.id)?" added":""}" type="button" data-id="${r.id}">
+      <span class="rc" style="${cov?`background-image:url('${esc(cov)}')`:""}"></span>
+      <span><b>${esc(tit)}</b><br>${esc(rest.length?art:"")}</span><small>${meta}${(r.format||[]).length?"<br>"+esc(r.format.slice(0,3).join(", ")):""}</small></button>`}).join("");
+}
+async function runSearch(q,more){
+  const my=++srch.seq;
+  if(!more){srch.q=q;srch.page=1;srch.items=[]}else srch.page++;
+  $("#aMsg").className="imsg"; $("#aMsg").textContent=more?"Chargement…":"Recherche sur Discogs…";
+  try{
+    const j=await searchDiscogs(srch.q,srch.page); if(my!==srch.seq) return;
+    srch.pages=(j.pagination&&j.pagination.pages)||1;
+    srch.items=srch.items.concat(j.results||[]); renderResults(srch.items);
+    const tot=(j.pagination&&j.pagination.items)||srch.items.length;
+    $("#aMsg").textContent=srch.items.length?`${tot} résultat${tot>1?"s":""} sur Discogs. Clique sur ton pressage pour l'ajouter.`:"Aucun résultat. Essaie avec moins de mots, ou le numéro de catalogue.";
+    $("#moreBtn").hidden=srch.page>=srch.pages;
+  }catch(err){if(my!==srch.seq)return;$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err);$("#moreBtn").hidden=true}
+}
+$("#results").addEventListener("click",e=>{const b=e.target.closest(".res");if(b)addRelease(+b.dataset.id,b)});
+$("#moreBtn").addEventListener("click",()=>runSearch(srch.q,true));
+$("#addForm").addEventListener("submit",e=>{e.preventDefault();const q=$("#aq").value.trim();if(q)runSearch(q)});
+let typeT=null;
+$("#aq").addEventListener("input",()=>{clearTimeout(typeT);const q=$("#aq").value.trim();
+  if(q.length<3){srch.seq++;$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";return}
+  typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
+$("#tokForm").addEventListener("submit",e=>{e.preventDefault();const t=$("#tok").value.trim();if(t){store.set("dg-token",t);$("#tok").value="";$("#tokenBox").open=false;$("#aMsg").className="imsg";$("#aMsg").textContent="Jeton enregistré dans ce navigateur."}});
+function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
+  if(open){if(!store.get("dg-token"))$("#tokenBox").open=true;$("#aq").focus()}else{stopScan();$("#addBtn").focus()}}
+$("#addBtn").addEventListener("click",()=>toggleAdder($("#adder").hidden));
+$("#adClose").addEventListener("click",()=>toggleAdder(false));
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
+
+/* scanner de code-barres (Chrome, Edge, Android) */
+let scanStream=null;
+if("BarcodeDetector" in window) $("#scanBtn").hidden=false;
+$("#scanBtn").addEventListener("click",async()=>{
+  if(scanStream){stopScan();return}
+  try{
+    const det=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    const v=$("#scanVideo"); v.srcObject=scanStream; v.hidden=false; await v.play();
+    $("#scanBtn").textContent="Arrêter le scan"; $("#aMsg").className="imsg"; $("#aMsg").textContent="Montre le code-barres au dos de la pochette.";
+    const tick=async()=>{ if(!scanStream) return;
+      try{const c=await det.detect(v); if(c.length){$("#aq").value=c[0].rawValue;stopScan();$("#addForm").requestSubmit();return}}catch(e){}
+      requestAnimationFrame(tick)};
+    tick();
+  }catch(err){stopScan();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible. Tape le code-barres à la main."}
 });
-$("#imReset").addEventListener("click",()=>{store.del("dg-collection");records=demo;renderChips();refilter();$("#imReset").hidden=true;$("#imMsg").textContent="Retour aux disques d'exemple.";$("#foot").textContent="Cinq disques d'exemple en attendant ta collection."});
+function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").textContent="Scanner le code-barres"}
+
+/* sauvegarde : collection.json */
+$("#exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({discotheque:"Eduardo",exporte:new Date().toISOString(),disques:mine},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="collection.json"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+});
+$("#importFile").addEventListener("change",async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{const j=JSON.parse(await f.text()); const list=Array.isArray(j)?j:j.disques; if(!Array.isArray(list)) throw 0;
+    const ids=new Set(mine.map(d=>d.id)); list.forEach(d=>{if(d&&d.id&&!ids.has(d.id)){mine.push(d);ids.add(d.id)}});
+    saveMine(); rebuild(); $("#aMsg").className="imsg"; $("#aMsg").textContent=`${list.length} disques chargés depuis ${f.name}.`;
+  }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent="Ce fichier n'est pas une collection valide."}
+  e.target.value="";
+});
+function removeRecord(d){
+  mine=mine.filter(x=>x.id!==d.id); saveMine(); closeDetail(); rebuild();
+}
 
 /* ---------- Démarrage ---------- */
-const saved=store.get("dg-collection");
-if(saved&&saved.list&&saved.list.length){$("#imUser").value=saved.user;useCollection(saved.list.map(d=>({...d,details:false,tracks:[]})),saved.user)}
-else{renderChips();refilter()}
-(async()=>{for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)} if(state.deezer===null)setStatus(false)})();
+(async()=>{
+  // sur ton site, collection.json (à côté de index.html) sert de point de départ
+  if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
+  rebuild();
+  for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)}
+  if(state.deezer===null) setStatus(false);
+})();
 </script>
 
 </body>
