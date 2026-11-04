@@ -49,6 +49,7 @@ body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .keybox input{font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--field);color:var(--fg)}
 .keybox input:focus{outline:2px solid var(--amber);border-color:transparent}
 .keyacts{display:flex;gap:10px}
+body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 #dbStat{position:fixed;z-index:90;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;padding:6px 11px 6px 9px;border-radius:999px;background:var(--bg,#f1efea);border:1px solid var(--line,#d9d5cc);font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--muted);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 #dbStat i{width:9px;height:9px;border-radius:50%;background:#a9a59c;flex:none}
 #dbStat.ok i{background:#1fa64a;box-shadow:0 0 0 3px rgba(31,166,74,.18)}
@@ -605,6 +606,7 @@ function refilter(focusId){
   const fi=focusId?Math.max(0,state.list.findIndex(d=>d.id===focusId)):Math.min(2,state.list.length-1);
   $("#scrub").max=Math.max(0,state.list.length-1);
   if(typeof renderList==="function"&&!$("#listView").hidden) renderList();
+  document.body.classList.toggle("vide",!state.list.length);
   if(!state.list.length){$("#caption").innerHTML=`<div class="empty">${!records.length&&shelf==="souhaits"?"Ta liste de souhaits est vide. Ajoute un disque avec « Mes souhaits » coché dans « + Ajouter un disque ».":!records.length?"Ta collection est vide.":"Aucun disque ne correspond."}</div>`;return}
   setFocus(fi,true);
 }
@@ -801,7 +803,7 @@ const isWish=d=>d.statut==="souhait";
 let shelf=store.get("etagere")==="souhaits"?"souhaits":"collection";
 function rebuild(focusId){
   const col=mine.filter(d=>!isWish(d)), wish=mine.filter(isWish);
-  records=shelf==="souhaits"?wish:(col.length?col:(mine.length?[]:demo));
+  records=shelf==="souhaits"?wish:(col.length||cloud.on?col:(mine.length?[]:demo));
   $("#nCol").textContent=col.length||""; $("#nWish").textContent=wish.length||"";
   $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
@@ -1137,8 +1139,9 @@ async function translateRecord(d){
   if(list){
     cloud.on=true; cloud.key=store.get("cle");
     const local=mine; mine=list; snap=new Map(list.map(d=>[d.id,JSON.stringify(d)]));
-    store.set(KEY,mine); setEditable(!!cloud.key); $("#lockBtn").hidden=false;
+    setEditable(!!cloud.key); $("#lockBtn").hidden=false;
     const extra=local.filter(d=>!snap.has(d.id));
+    store.set(KEY,mine.concat(extra)); // les disques pas encore envoyés restent sur l'appareil
     if(extra.length){mine=mine.concat(extra);toast(`${extra.length} disque${extra.length>1?"s":""} de cet appareil à envoyer en ligne…`);scheduleSync()}
   }
   setInterval(()=>{if(!document.hidden)checkDb()},120000);
