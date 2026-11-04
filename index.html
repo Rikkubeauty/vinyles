@@ -397,6 +397,11 @@ dd{margin:0}
   body.msearch #mSearch{color:var(--amber)}
   #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
   #addBtn::before{font-size:30px}
+  body.readonly:not(.partage) #addBtn{display:grid!important}
+  .msheet .sortmenu{z-index:100}
+  .mtools{position:relative;z-index:0}
+  .caption{grid-template-columns:minmax(0,1fr)}
+  .caption .cy{text-align:left}
   .viewtog{position:fixed;z-index:60;left:calc(16px + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));order:0;padding:4px;background:var(--fg);border:0;box-shadow:0 12px 28px rgba(0,0,0,.28)}
   .viewtog button{width:46px;height:44px;padding:0;display:grid;place-items:center;color:var(--night)}
   .viewtog button span{display:none}
@@ -1084,7 +1089,7 @@ async function syncNow(){
       const r=await api("/disques/"+encodeURIComponent(id),{method:"DELETE"});
       if(r.ok){snap.delete(id);n++}
     }
-    if(n){toast("Enregistré en ligne ✓");dbStatus("ok",`Base connectée · ${mine.length} disque${mine.length>1?"s":""}`)}
+    if(n){toast("Enregistré en ligne ✓");dbStatus("ok","Base connectée")}
   }catch(err){toast(err.message==="Failed to fetch"?"Pas de connexion : réessaie dans un instant.":err.message,true);if(err.message==="Failed to fetch")dbStatus("ko","Base injoignable");else checkDb()}
   finally{syncing=false}
 }
@@ -1092,7 +1097,7 @@ function dbStatus(state,txt){const el=$("#dbStat");if(!el)return;el.className=st
 async function checkDb(){
   if(!location.protocol.startsWith("http")){dbStatus("ko","Base : hors ligne (fichier local)");return null}
   try{const r=await fetch("/api/disques",{cache:"no-store"});
-    if(r.ok&&(r.headers.get("content-type")||"").includes("json")){const l=await r.json();dbStatus("ok",`Base connectée · ${l.length} disque${l.length>1?"s":""}`);return l}
+    if(r.ok&&(r.headers.get("content-type")||"").includes("json")){const l=await r.json();dbStatus("ok","Base connectée");return l}
     let info="";try{info=(await r.json()).erreur||""}catch(e){}
     dbStatus("ko",`Base déconnectée (${r.status}${info?" : "+info:""})`);
   }catch(e){dbStatus("ko","Base injoignable")}
@@ -1366,7 +1371,7 @@ $("#aq").addEventListener("input",()=>{clearTimeout(typeT);const el=$("#aq");if(
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
 function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
   if(open){$("#aq").focus()}else{stopBurst();stopScan();$("#addBtn").focus()}}
-$("#addBtn").addEventListener("click",()=>toggleAdder($("#adder").hidden));
+$("#addBtn").addEventListener("click",async()=>{if($("#adder").hidden&&document.body.classList.contains("readonly")&&!(await askKey()))return;toggleAdder($("#adder").hidden)});
 $("#adClose").addEventListener("click",()=>toggleAdder(false));
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
 
@@ -1780,7 +1785,7 @@ async function translateRecord(d){
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
   rebuild();
-  if(new URLSearchParams(location.search).has("souhaits")) shelf="souhaits";
+  if(new URLSearchParams(location.search).has("souhaits")){shelf="souhaits";document.body.classList.add("partage")}
   await loadResas();
   if(["list","grid","stats"].includes(store.get("vue"))) setView(store.get("vue"));
   if(shelf==="souhaits") setShelf("souhaits");
