@@ -591,6 +591,10 @@ dd{margin:0}
   .pfoot .pkeys{display:none}
   .pfoot button{flex:1 1 0;text-align:center;padding:14px 0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600}
 }
+
+/* interface « carrée » : angles droits partout, seuls les disques (et petits points) restent ronds */
+*,*::before,*::after{border-radius:0!important}
+.disc,.disc *,.disc::after,.disc .lab::after,.vinyl::after,#dbStat i,.status i,.anec li::before{border-radius:50%!important}
 </style>
 </head>
 <body>
