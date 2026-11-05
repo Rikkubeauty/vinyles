@@ -1787,8 +1787,8 @@ const mesResas=()=>store.get("mes-resas")||{};
 // prix d'un souhait : celui saisi à la main (pas de prix automatique : les sites français ne le donnent pas)
 const prixVal=d=>d.prix||"";
 const prixOf=d=>isWish(d)?prixVal(d):"";
-// achat : lien saisi, sinon recherche sur le site de la Fnac (par code-barres quand il est connu = même pressage)
-const qAchat=d=>encodeURIComponent(d.ean||(d.artiste+" "+d.titre+" vinyle"));
+// achat : lien saisi, sinon recherche sur le site de la Fnac par titre de l'album + artiste
+const qAchat=d=>encodeURIComponent(d.titre+" "+d.artiste);
 const achatOf=d=>d.lienAchat||`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${qAchat(d)}`;
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
 const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // le propriétaire ne voit rien : surprise
