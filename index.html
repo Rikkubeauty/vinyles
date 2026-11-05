@@ -141,7 +141,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 h1{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:clamp(24px,3.4vw,36px);letter-spacing:-.02em;line-height:1;margin:0}
 h1 span{color:var(--amber)}
 .prixb{position:absolute;top:7%;right:7%;z-index:2;background:#fff;color:#111;font:700 13px/1 var(--f-body,system-ui);padding:6px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none}
-.acq{margin:6px 0 0;color:var(--muted);font-size:15px}.buy{display:flex;align-items:center;gap:12px;margin:14px 0 4px}.buy .cart{box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#fff;text-decoration:none;transition:transform .2s}.buy .cart:hover{transform:scale(1.08)}.buy a{text-decoration:none}.ailleurs{margin:4px 0 8px;font-size:14px;color:var(--muted,#777)}.ailleurs a{color:inherit;text-underline-offset:3px}.buy .prix{font-size:24px}
+.acq{margin:6px 0 0;color:var(--muted);font-size:15px}.buy{display:flex;align-items:center;gap:12px;margin:14px 0 4px}.buy .cart{box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#fff;text-decoration:none;transition:transform .2s}.buy .cart:hover{transform:scale(1.08)}.buy .alt{color:var(--muted);font-size:14px;text-underline-offset:3px}.buy a{text-decoration:none}.ailleurs{margin:4px 0 8px;font-size:14px;color:var(--muted,#777)}.ailleurs a{color:inherit;text-underline-offset:3px}.buy .prix{font-size:24px}
 details.plus{margin-top:22px;border-top:1px solid var(--line,rgba(0,0,0,.12));padding-top:12px}
 details.plus>summary{cursor:pointer;font-weight:600;list-style:none;padding:6px 0}details.plus>summary::-webkit-details-marker{display:none}
 details.plus>summary::after{content:" +";color:var(--amber)}details.plus[open]>summary::after{content:" −"}
@@ -1169,7 +1169,6 @@ function setFocus(i,instant,virt){
   clearTimeout(ambT); ambT=setTimeout(()=>{
     if(state.list[state.focus]!==d) return;
     setAmbient(d);
-    prixDiscogs(d).then(ch=>{if(ch&&state.cur===d&&!$("#detail").hidden)renderInfo(d)});
   resolveDeezer(d).then(()=>applyCover(d));
   },instant?0:180);
 }
@@ -1288,7 +1287,7 @@ function renderInfo(d){
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
     ${!isWish(d)&&d.acquis?`<p class="acq">Acquis le ${esc(fmtAcq(d.acquis))}</p>`:""}
-    <div class="buy">${prixVal(d)?`<b class="prix">${esc(prixVal(d))}</b>`:""}<a class="ico cart" href="${esc(achatOf(d))}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="Acheter ce disque">${ICON.cart}</a></div>
+    <div class="buy">${prixVal(d)?`<b class="prix">${esc(prixVal(d))}</b>`:""}<a class="ico cart" href="${esc(achatOf(d))}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="${d.lienAchat?"Acheter ce disque":"Trouver ce disque en France"}">${ICON.cart}</a></div>
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
@@ -1785,19 +1784,14 @@ async function wikiFor(d){
 /* ---------- Souhaits : la famille réserve un cadeau (« Je l'offre ») ---------- */
 let resa={};
 const mesResas=()=>store.get("mes-resas")||{};
-// prix d'un souhait : celui saisi à la main, sinon le moins cher sur Discogs
-const prixVal=d=>d.prix||(d.prixAuto?`dès ${String(d.prixAuto).replace(".",",")} €`:"");
+// prix d'un souhait : celui saisi à la main (pas de prix automatique : les sites français ne le donnent pas)
+const prixVal=d=>d.prix||"";
 const prixOf=d=>isWish(d)?prixVal(d):"";
-// un seul lien : le même pressage (même pochette, même label, même référence), offres triées du moins cher au plus cher
-const achatOf=d=>d.lienAchat||(d.discogsId?`https://www.discogs.com/sell/release/${d.discogsId}?sort=price%2Casc&currency=EUR`
-  :`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${encodeURIComponent(d.ean||(d.artiste+" "+d.titre+" vinyle"))}`);
+// achat en France : lien saisi, sinon Google Shopping France (Fnac, Amazon.fr, Cultura, disquaires… avec leurs prix),
+// par code-barres quand il est connu, pour tomber sur le même pressage
+const qAchat=d=>encodeURIComponent(d.ean||(d.artiste+" "+d.titre+" vinyle"));
+const achatOf=d=>d.lienAchat||`https://www.google.fr/search?tbm=shop&gl=fr&hl=fr&q=${qAchat(d)}`;
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
-async function prixDiscogs(d){
-  if(!d.discogsId||d.source==="demo"||(d.prixAutoAt&&Date.now()-d.prixAutoAt<3*864e5)) return false;
-  try{const r=await dgFetch(`/releases/${d.discogsId}?curr_abbr=EUR`,discogsToken()); if(!r) return false;
-    const lp=r.lowest_price; d.prixAuto=typeof lp==="number"?(Math.round(lp*100)/100).toFixed(2):null; d.prixAutoAt=Date.now();
-    if(cloud.key&&mine.includes(d)) saveMine(); return true}catch(e){return false}
-}
 const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // le propriétaire ne voit rien : surprise
 async function loadResas(){
   if(!viaRelais||cloud.key) return;
@@ -2050,7 +2044,7 @@ function openEditor(d){
     <div class="two">${f("edL","Label",e.label)}${f("edC","Référence catalogue",e.cat)}</div>
     <div class="two">${f("edE","EAN / code-barres",e.ean)}${f("edP","Pays",e.pays)}</div>
     ${f("edAq","Date d'acquisition",e.acquis||"","date")}
-    <div class="two">${f("edPx","Prix",e.prix||"","text",'placeholder="'+(e.prixAuto?"Discogs : dès "+String(e.prixAuto).replace(".",",")+" €":"ex. 29,99 €")+'"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="https://…"')}</div>
+    <div class="two">${f("edPx","Prix",e.prix||"","text",'placeholder="ex. 29,99 €"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="Fnac, Cultura, disquaire… (sinon recherche en France)"')}</div>
     ${f("edG","Genre",e.genres)}
     ${f("edLi","Lieu d'enregistrement",e.lieu)}
     ${f("edCo","Compositeurs",e.compositeurs)}
@@ -2128,9 +2122,6 @@ $("#edForm").addEventListener("submit",async ev=>{
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
   rebuild(); setView("grid");
-  // prix Discogs des souhaits, mis à jour en arrière-plan (au plus tous les 3 jours) pour que la famille les voie
-  if(cloud.key) (async()=>{let ch=false; for(const d of mine.filter(isWish)){ if(await prixDiscogs(d)){ch=true; await wait(1100)} }
-    if(ch){rebuild(state.cur&&state.cur.id); if(!$("#gridView").hidden) renderGrid(); if(!$("#listView").hidden) renderList()}})();
   if(new URLSearchParams(location.search).has("souhaits")){shelf="souhaits";document.body.classList.add("partage")}
   await loadResas();
   // à l'ouverture, toujours la vue Flow (Hugo, 2026-11-05)
