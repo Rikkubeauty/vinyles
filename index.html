@@ -1157,7 +1157,7 @@ function renderInfo(d){
     <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${isWish(d)?giftBox(d):""}
     ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
-    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
+    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(d.source==="discogs"?fixFr(a):a)}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
     <div class="acts">
@@ -1990,8 +1990,13 @@ $("#edForm").addEventListener("submit",async ev=>{
 const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing)\b/gi;
 const FR=/\b(le|la|les|des|du|et|avec|est|une|pour|dans|sur|par|enregistr|pochette)\b/gi;
 const looksEnglish=t=>((t.match(EN)||[]).length>=2)&&((t.match(EN)||[]).length>(t.match(FR)||[]).length*2);
+/* Jargon vinyle : la traduction automatique le rend mot à mot (spine → colonne vertébrale…) */
+const PRE=[[/\binner sleeves?\b/gi,"pochette intérieure"],[/\bspines?\b/gi,"tranche"],[/\b(?:run-?out|dead wax|matrix)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],[/\b(?:sleeves?|jackets?)\b/gi,"pochette"],[/\bshrink(?:-?wrap)?\b/gi,"cellophane"],[/\bgatefold\b/gi,"pochette ouvrante"]];
+const POST=[[/colonnes? vertébrales?/gi,"tranche"],[/(?:manches?|manchons?) intérieur(?:e|s|es)?/gi,"pochette intérieure"],[/\b(?:la |une )?(?:manche|manchon)\b/gi,m=>m.replace(/manche|manchon/i,"pochette")],[/\bdos de la couverture\b/gi,"dos de la pochette"],[/\b(?:la |une )?veste\b/gi,m=>m.replace(/veste/i,"pochette")],[/\bcire morte\b/gi,"matrice"],[/\bmanches\b/gi,"pochettes"]];
+const fixFr=t=>POST.reduce((a,[r,v])=>a.replace(r,v),t||"");
 async function toFr(t){
   if(!looksEnglish(t)) return t;
+  t=PRE.reduce((a,[r,v])=>a.replace(r,v),t);
   const parts=t.match(/[^.!?]+[.!?]*\s*/g)||[t], chunks=[]; let cur="";
   for(const p of parts){ if((cur+p).length>450&&cur){chunks.push(cur);cur=""} cur+=p } if(cur) chunks.push(cur);
   const out=[];
@@ -2001,7 +2006,7 @@ async function toFr(t){
     if(j.responseStatus!=200||!tr||/MYMEMORY WARNING|QUERY LENGTH/i.test(tr)) return t;
     out.push(tr.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,"&"));
   }
-  return out.join(" ").replace(/\s+/g," ").trim();
+  return fixFr(out.join(" ").replace(/\s+/g," ").trim());
 }
 async function translateRecord(d){
   if(d.anecdotesFr||!d.anecdotes||!d.anecdotes.length) return;
