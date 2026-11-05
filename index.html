@@ -1189,9 +1189,13 @@ $("#flow").addEventListener("keydown",e=>{
   else if(e.key==="Enter"||e.key===" "){openDetail(state.list[state.focus]);e.preventDefault()}
 });
 // molette / pavé tactile : une pochette par geste (un geste = des évènements à moins de 180 ms d'écart, inertie comprise)
-let wAcc=0,wPrev=0,wDone=false;
+let wAcc=0,wPrev=0,wDone=false,wNotch=0;
 $("#flow").addEventListener("wheel",e=>{const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault();
-  const n=performance.now(); if(n-wPrev>180){wAcc=0;wDone=false} wPrev=n;
+  const n=performance.now();
+  // vraie molette de souris (crans) : une pochette par cran, et ça accélère quand on tourne vite
+  if(e.deltaMode===1||(Math.abs(v)>=50&&Number.isInteger(v)&&!e.deltaX)){const gap=n-wNotch; wNotch=n; wPrev=n; wAcc=0; wDone=false;
+    step(Math.sign(v)*(gap<60?3:gap<120?2:1)); return}
+  if(n-wPrev>180){wAcc=0;wDone=false} wPrev=n;
   if(wDone) return;
   wAcc+=v; if(Math.abs(wAcc)<30) return;
   step(wAcc>0?1:-1); wDone=true},{passive:false});
