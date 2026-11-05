@@ -931,7 +931,7 @@ const fmtDate=s=>{
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
 const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
 /* ---------- Traduction des notes Discogs, avec le vocabulaire du disque et du studio ---------- */
-const TRV=7; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
+const TRV=8; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
 const EN=/\b(the|and|with|was|were|has|have|had|than|not|but|also|only|its|it's|which|including|includes|version|variant|different|same|logo|this|that|these|from|by|on|of|is|are|in|at|for|to|as|an|album|sleeve|jacket|track|tracks|side|issue|pressing|printed|cover|label|labels|recorded|released|reissue|copies|edition|limited|numbered|made|original|recipe|cocktail|print|prints|card|includes?|poster|bonus|exclusive|edition|sound|recordings?|records|ltd|all|rights|reserved|copyright|distributed|manufactured|marketed|under|license|licence|inc|printed|produced|written|composed|arranged)\b/gi;
 const FR=/\b(le|la|les|des|du|et|avec|est|sont|une|un|pour|dans|sur|par|pas|mais|aussi|enregistr\w*|pochette|disque|cette|ce|qui)\b/gi;
 const unq=t=>String(t||"").replace(/(["“”„«»]|,,)[\s\S]*(["“”„«»])/g," ");
@@ -973,7 +973,7 @@ const PRE=[
   [/\b(?:front|outer) cover\b/gi,"recto de la pochette"],[/\b(?:back|rear) cover\b/gi,"verso de la pochette"],
   [/\binner sleeves?\b/gi,"pochette intérieure"],[/\bouter sleeves?\b/gi,"pochette extérieure"],[/\bpicture sleeves?\b/gi,"pochette illustrée"],
   [/\bgatefold(?: sleeves?| covers?| jackets?)?\b/gi,"pochette ouvrante"],[/\bspines?\b/gi,"tranche"],
-  [/\b(?:run-?out(?: grooves?)?|dead wax|matrix(?: numbers?)?)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],
+  [/\b(?:run-?outs|run-?out grooves|matrix numbers|matrices)\b/gi,"matrices"],[/\b(?:run-?out(?: groove)?|dead wax|matrix(?: number)?)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],
   [/\bliner notes\b/gi,"notes de pochette"],[/\binserts?\b/gi,"encart"],[/\bshrink(?:-?wrap)?\b/gi,"cellophane"],
   [/\b(?:sleeves?|jackets?)\b/gi,"pochette"],[/\b(?:catalog(?:ue)? numbers?|cat\.? ?(?:no\.?|#))/gi,"numéro de catalogue"],
   [/\b([AB])-side\b/g,"face $1"],[/\bside ([A-H])\b/gi,"face $1"],[/\b(\d{2,3}) ?(?:g|gram|grams)\b/gi,"$1 grammes"],
@@ -995,7 +995,7 @@ const POST=[
   [/\bcôté ([A-H])\b/gi,"face $1"],[/\btours par minute\b/gi,"tours"],[/\bpressage d'essai\b/gi,"pressage test"],
   [/\bétiquette (?:de disques?|d'enregistrement|discographique)\b/gi,"label"],[/\bmaison de disques\b/gi,"label"],
   [/\bingénieur(?:s)? (?:de son|sonore|d'enregistrement)\b/gi,"ingénieur du son"],[/\bplateau\b/gi,"platine"],
-  [/\bbande maîtresse\b/gi,"bande master"],[/\bmaîtrisé\b/gi,"masterisé"],[/\bréémission\b/gi,"réédition"],[/\bré-?émis\b/gi,"réédité"]
+  [/\bbande maîtresse\b/gi,"bande master"],[/\bmaîtrisé\b/gi,"masterisé"],[/\bréémission\b/gi,"réédition"],[/\b(sont|étaient) (?:en |à )?(gravé|frappé)s?(?!\p{L})/giu,(m,v,g)=>v+" "+g+"es"],[/\b(est|était) (?:en |à )?(gravé|frappé)(?!\p{L})/giu,(m,v,g)=>v+" "+g+"e"],[/\b(du|le|au|un|des) tampons? (?!«)([0-9A-Z][^\s,.;:)]*)/g,(m,a,x)=>a+" « "+x+" » frappé"],[/\b(?:les )?runouts?\b/gi,m=>/^les/i.test(m)?"les matrices":"matrice"],[/\bré-?émis\b/gi,"réédité"]
 ];
 const capS=t=>String(t||"").replace(/(^[^\p{L}\d]*|[.!?…]\s+[^\p{L}\d]*)(\p{Ll})/gu,(m,p,c)=>p+c.toUpperCase());
 const fixFr=t=>capS(POST.reduce((a,[r,v])=>a.replace(r,v),t||""));
