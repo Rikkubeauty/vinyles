@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La Discothèque d’Eduardo</title>
+<title>Ma discothèque</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -140,6 +140,11 @@ button{font:inherit;color:inherit}
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px}
 h1{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:clamp(24px,3.4vw,36px);letter-spacing:-.02em;line-height:1;margin:0}
 h1 span{color:var(--amber)}
+.prixb{position:absolute;top:7%;right:7%;z-index:2;background:#fff;color:#111;font:700 13px/1 var(--f-body,system-ui);padding:6px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none}
+.buy{display:flex;align-items:center;gap:14px;margin:14px 0 4px}.buy a{text-decoration:none}.buy .prix{font-size:24px}
+details.plus{margin-top:22px;border-top:1px solid var(--line,rgba(0,0,0,.12));padding-top:12px}
+details.plus>summary{cursor:pointer;font-weight:600;list-style:none;padding:6px 0}details.plus>summary::-webkit-details-marker{display:none}
+details.plus>summary::after{content:" +";color:var(--amber)}details.plus[open]>summary::after{content:" −"}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .search{font-family:var(--f-mono);font-size:13px;background:var(--field);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:8px 14px;width:220px;max-width:100%}
 .search:focus{outline:2px solid var(--amber);border-color:transparent}
@@ -595,7 +600,7 @@ dd{margin:0}
 
 <div class="wrap">
   <header>
-    <h1>La discothèque <span>d’Eduardo</span></h1>
+    <h1>Ma <span>discothèque</span></h1>
     <div class="tools">
       <input class="search" id="q" type="search" placeholder="Chercher un disque, un artiste…" aria-label="Chercher">
       <div class="status" id="status" hidden><i></i><span></span></div>
@@ -614,7 +619,7 @@ dd{margin:0}
       <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Récents</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
     <div class="sortsel" id="grpSel" hidden><span>Par</span><button type="button" id="grpBtn" aria-haspopup="listbox" aria-expanded="false"><b id="grpLbl">Rien</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <ul class="sortmenu" id="grpMenu" role="listbox" aria-label="Regrouper" hidden><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="style">Style</li><li role="option" data-v="decennie">Décennie</li><li role="option" data-v="aucun">Sans regroupement</li></ul></div>
-    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true" aria-label="Flow"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="7" y="5" width="10" height="14" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 8v8M21 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Flow</span></button><button type="button" id="vGrid" aria-pressed="false" aria-label="Pochettes"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Pochettes</span></button><button type="button" id="vList" aria-pressed="false" aria-label="Liste"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Liste</span></button><button type="button" id="vStats" aria-pressed="false" aria-label="Stats"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 19V11M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Stats</span></button></div></div>
+    <div class="viewtog" role="group" aria-label="Affichage"><button type="button" id="vFlow" aria-pressed="true" aria-label="Flow"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="7" y="5" width="10" height="14" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 8v8M21 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Flow</span></button><button type="button" id="vGrid" aria-pressed="false" aria-label="Pochettes"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Pochettes</span></button><button type="button" id="vList" aria-pressed="false" aria-label="Liste"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Liste</span></button></div></div>
   </div>
 
   <div id="flowView">
@@ -1107,7 +1112,7 @@ function cvEl(d,i){
   const el=document.createElement("div"); el.className="cv"; el.dataset.i=i; el.dataset.id=d.id;
   el.innerHTML=`<div class="tilt">
       <div class="vinyl"><div class="disc"><div class="lab" style="${labOf(d)}"></div></div></div>
-      <div class="refl" style="${bgOf(d)}"></div><div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}</div>
+      <div class="refl" style="${bgOf(d)}"></div><div class="sleeve" style="${bgOf(d)}">${d.cover?"":`<div class="tt" style="color:${d.sleeve.ink}"><small>${esc(d.artiste)}</small>${esc(d.titre)}</div>`}${bulle(d)}</div>
       <div class="shade"></div></div>`;
   return el;
 }
@@ -1164,7 +1169,8 @@ function setFocus(i,instant,virt){
   clearTimeout(ambT); ambT=setTimeout(()=>{
     if(state.list[state.focus]!==d) return;
     setAmbient(d);
-    resolveDeezer(d).then(()=>applyCover(d));
+    prixDiscogs(d).then(ch=>{if(ch&&state.cur===d&&!$("#detail").hidden)renderInfo(d)});
+  resolveDeezer(d).then(()=>applyCover(d));
   },instant?0:180);
 }
 $("#lane").addEventListener("click",e=>{
@@ -1232,7 +1238,7 @@ let lastFocusEl=null;
 async function openDetail(d,fromEl){
   if(!d) return;
   lastFocusEl=document.activeElement; document.body.classList.add("fiche");
-  if(state.cur!==d){stopAudio();state.cur=d;state.track=-1}
+  if(state.cur!==d){stopAudio();state.cur=d;state.track=-1;plusOpen=false}
   paintPack(d); renderInfo(d);
   const det=$("#detail"), pack=$("#pack");
   pack.classList.remove("out");
@@ -1268,6 +1274,7 @@ $("#pack").addEventListener("click",()=>{const d=state.cur;if(!d||!dz[d.id])retu
 
 const ICON={play:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',deezer:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 17h3v2H3zM7.5 14h3v5h-3zM12 11h3v8h-3zM16.5 7h3v12h-3z" fill="currentColor"/></svg>',disc:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/></svg>',tag:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 12.2V4.5h7.7l9.3 9.3-7.7 7.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.6" fill="currentColor"/></svg>',check:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',pencil:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19zM13.5 7.3l3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',mb:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7.5l8-4.5 8 4.5v9l-8 4.5-8-4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 15V9.5l4 3 4-3V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',trash:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const sideName=s=>/^[A-H]$/.test(s)?`Face ${s}`:"Autres";
+let plusOpen=false;
 function renderInfo(d){
   const info=dz[d.id], sides=[...new Set(d.tracks.map(t=>t.side))];
   const row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
@@ -1277,17 +1284,21 @@ function renderInfo(d){
   const playable=!!info;
   const loading=!d.details&&!d.detailErr;
   $("#info").innerHTML=`
-    <div class="eyebrow">${[d.label,d.cat,"LP 33⅓"].filter(Boolean).map(esc).join(" · ")}</div>
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
-    ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
-    ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
-    <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
+    ${isWish(d)?`<div class="buy">${prixOf(d)?`<b class="prix">${esc(prixOf(d))}</b>`:""}<a class="btn pri" href="${esc(achatOf(d))}" target="_blank" rel="noopener">Acheter</a></div>`:""}
     ${isWish(d)?giftBox(d):""}
-    ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
-    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${notesShown(d).map(a=>`<li>${esc(capS(a))}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
+    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc(...dzMain(info),false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}
+    <details class="plus"${plusOpen?" open":""}><summary>Plus d'infos</summary>
+    ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
+    ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
+    <div class="eyebrow">${[d.label,d.cat,"LP 33⅓"].filter(Boolean).map(esc).join(" · ")}</div>
+    <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
+    ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
+    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${notesShown(d).map(a=>`<li>${esc(capS(a))}</li>`).join("")}</ul>`:""}
+    </details>
     <div class="acts">
       ${isWish(d)?`<button class="ico big" id="gotBtn" type="button" aria-label="Je l'ai : passer dans ma collection" title="Je l'ai : passer dans ma collection">${ICON.check}</button>`:""}
       <span class="grp">
@@ -1297,8 +1308,8 @@ function renderInfo(d){
       ${isWish(d)&&d.discogsId?`<a class="ico" href="https://www.discogs.com/sell/release/${d.discogsId}" target="_blank" rel="noopener" aria-label="Offres de vente sur Discogs" title="Offres de vente sur Discogs">${ICON.tag}</a>`:""}
       </span>
       ${mine.some(x=>x.id===d.id)?`<span class="grp"><button class="ico" id="edBtn" type="button" aria-label="Modifier" title="Modifier">${ICON.pencil}</button><button class="ico" id="rmBtn" type="button" aria-label="Retirer de ma discothèque" title="Retirer de ma discothèque">${ICON.trash}</button><span class="confirm" id="rmConf" hidden>Cliquer encore pour supprimer</span></span>`:""}
-    </div>
-    ${info?`<div class="widget" id="widget"><iframe title="Lecteur Deezer" loading="lazy" src="${widgetSrc(...dzMain(info),false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}`;
+    </div>`;
+  const pl=$("#info .plus"); if(pl) pl.addEventListener("toggle",()=>{plusOpen=pl.open});
   highlight();
   $("#info").querySelectorAll(".tr").forEach(b=>b.addEventListener("click",()=>playTrack(+b.dataset.i)));
   bindGift(d);
@@ -1773,7 +1784,17 @@ async function wikiFor(d){
 /* ---------- Souhaits : la famille réserve un cadeau (« Je l'offre ») ---------- */
 let resa={};
 const mesResas=()=>store.get("mes-resas")||{};
-const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // Eduardo ne voit rien : surprise
+// prix d'un souhait : celui saisi à la main, sinon le moins cher sur Discogs
+const prixOf=d=>isWish(d)?(d.prix||(d.prixAuto?`${String(d.prixAuto).replace(".",",")} €`:"")):"";
+const achatOf=d=>d.lienAchat||(d.discogsId?`https://www.discogs.com/sell/release/${d.discogsId}`:`https://www.discogs.com/search/?type=release&format=Vinyl&q=${encodeURIComponent(d.artiste+" "+d.titre)}`);
+const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
+async function prixDiscogs(d){
+  if(!isWish(d)||!d.discogsId||d.source==="demo"||(d.prixAutoAt&&Date.now()-d.prixAutoAt<3*864e5)) return false;
+  try{const r=await dgFetch(`/releases/${d.discogsId}?curr_abbr=EUR`,discogsToken()); if(!r) return false;
+    const lp=r.lowest_price; d.prixAuto=typeof lp==="number"?(Math.round(lp*100)/100).toFixed(2):null; d.prixAutoAt=Date.now();
+    if(cloud.key&&mine.includes(d)) saveMine(); return true}catch(e){return false}
+}
+const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // le propriétaire ne voit rien : surprise
 async function loadResas(){
   if(!viaRelais||cloud.key) return;
   try{const r=await fetch("/api/reservations",{cache:"no-store"});if(r.ok){resa={};for(const x of await r.json())resa[x.disque_id]=x;refilter(state.cur&&state.cur.id)}}catch(e){}
@@ -1781,14 +1802,14 @@ async function loadResas(){
 function giftBox(d){
   if(cloud.key||!cloud.on) return "";
   const r=resa[d.id], mien=mesResas()[d.id];
-  if(r&&mien) return `<div class="gift">🎁 Disque réservé par ${esc(r.nom)}. Eduardo ne le voit pas.<button class="btn" type="button" id="giftCancel">Annuler</button></div>`;
+  if(r&&mien) return `<div class="gift">🎁 Disque réservé par ${esc(r.nom)}. Je ne le vois pas.<button class="btn" type="button" id="giftCancel">Annuler</button></div>`;
   if(r) return `<div class="gift">🎁 Déjà réservé par ${esc(r.nom)}.</div>`;
-  return `<div class="gift">Envie d'offrir ce disque ? Une réservation évite que quelqu'un d'autre l'achète. Eduardo ne verra rien.<button class="btn pri" type="button" id="giftBtn">🎁 Je l'offre</button></div>`;
+  return `<div class="gift">Envie d'offrir ce disque ? Une réservation évite que quelqu'un d'autre l'achète. Je ne verrai rien.<button class="btn pri" type="button" id="giftBtn">🎁 Je l'offre</button></div>`;
 }
 function bindGift(d){
   const g=$("#giftBtn");
   if(g) g.addEventListener("click",async()=>{
-    const nom=(prompt("Prénom (visible par les autres, pas par Eduardo) :",store.get("mon-prenom")||"")||"").trim(); if(!nom) return;
+    const nom=(prompt("Prénom (visible par les autres, pas par moi) :",store.get("mon-prenom")||"")||"").trim(); if(!nom) return;
     store.set("mon-prenom",nom); g.disabled=true;
     try{const r=await fetch("/api/reservations/"+encodeURIComponent(d.id),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({nom})});
       const j=await r.json().catch(()=>({}));
@@ -1808,7 +1829,7 @@ function bindGift(d){
 /* ---------- Partager la liste de souhaits ---------- */
 $("#shareBtn").addEventListener("click",async()=>{
   const url=location.origin+location.pathname+"?souhaits";
-  const data={title:"La discothèque d'Eduardo",text:"Les disques qu'Eduardo aimerait recevoir 🎁",url};
+  const data={title:"Ma discothèque",text:"Les disques que j'aimerais recevoir 🎁",url};
   try{ if(navigator.share){await navigator.share(data);return} }catch(e){if(e&&e.name==="AbortError")return}
   try{await navigator.clipboard.writeText(url);toast("Lien copié : "+url)}catch(e){prompt("Lien à copier :",url)}
 });
@@ -1862,9 +1883,10 @@ async function startCamera(){
 const lst={sort:"artiste",dir:1,sel:new Set(),confirm:null,pick:false,open:null};
 const COLS=[["titre","Titre"],["artiste","Artiste"],["annee","Année"],["label","Label"],["genres","Genre"]];
 function setView(v){
+  if(v==="stats") v="grid";
   const list=v==="list", stats=v==="stats", grid=v==="grid", flow=!list&&!stats&&!grid;
   $("#flowView").hidden=!flow; $("#gridView").hidden=!grid; $("#listView").hidden=!list; $("#statsView").hidden=!stats;
-  $("#vFlow").setAttribute("aria-pressed",String(flow)); $("#vGrid").setAttribute("aria-pressed",String(grid)); $("#vList").setAttribute("aria-pressed",String(list)); $("#vStats").setAttribute("aria-pressed",String(stats));
+  $("#vFlow").setAttribute("aria-pressed",String(flow)); $("#vGrid").setAttribute("aria-pressed",String(grid)); $("#vList").setAttribute("aria-pressed",String(list)); 
   $(".sortsel").hidden=stats; $("#grpSel").hidden=!(grid||list);
   store.set("vue",v); if(list) renderList(); else if(grid) renderGrid(); else if(stats) renderStats(); else setFocus(state.focus,true);
 }
@@ -1888,7 +1910,6 @@ function paintTheme(){const d=document.documentElement.dataset.theme==="sombre";
 paintTheme();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,d=r.dataset.theme!=="sombre";if(d)r.dataset.theme="sombre";else delete r.dataset.theme;store.set("theme",d?"sombre":"clair");paintTheme()});
 $("#vList").addEventListener("click",()=>setView("list"));
-$("#vStats").addEventListener("click",()=>setView("stats"));
 $("#backupBtn").addEventListener("click",async()=>{
   try{const r=await api("/sauvegarde"); if(!r.ok) throw new Error((await r.json().catch(()=>({}))).erreur||"Sauvegarde impossible.");
     const a=document.createElement("a"); a.href=URL.createObjectURL(await r.blob()); a.download=`discotheque-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -1932,7 +1953,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#grpMenu").hidd
 function renderGrid(){
   const rows=state.list;
   if(!rows.length){$("#gridView").innerHTML=`<div class="listempty"><p>${!records.length?(shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."):"Aucun disque ne correspond."}</p>${state.q?onlineOffer():""}</div>`;return}
-  const card=d=>`<button type="button" class="gcard" data-open="${esc(d.id)}"><span class="gc" style="${bgOf(d)}">${d.cover?"":`<em style="color:${d.sleeve.ink}">${esc(d.titre)}</em>`}</span><b>${esc(d.titre)}</b><i>${esc(d.artiste)}${d.annee?" · "+d.annee:""}</i></button>`;
+  const card=d=>`<button type="button" class="gcard" data-open="${esc(d.id)}"><span class="gc" style="${bgOf(d)}">${d.cover?"":`<em style="color:${d.sleeve.ink}">${esc(d.titre)}</em>`}${bulle(d)}</span><b>${esc(d.titre)}</b><i>${esc(d.artiste)}${d.annee?" · "+d.annee:""}</i></button>`;
   $("#gridView").innerHTML=groupRows(rows).map(([l,items])=>`<section class="grp">${l===null?"":`<h3>${esc(l)}<small>${items.length}</small></h3>`}<div class="grid">${items.map(card).join("")}</div></section>`).join("");
 }
 for(const ev of ["mouseover","focusin"]){
@@ -1957,7 +1978,7 @@ function renderList(){
     return `<div class="rrow${lst.sel.has(d.id)?" on":""}${lst.open===d.id?" swiped":""}${wish?" wishy":""}" data-id="${id}">
     <div class="rin"><label class="rck"><input type="checkbox" data-sel="${id}" aria-label="Sélectionner ${esc(d.titre)}" ${lst.sel.has(d.id)?"checked":""}></label>
       <div class="thumb" style="${d.cover?`background-image:url('${esc(d.cover)}')`:`background:${d.sleeve.bg}`}"></div>
-      <div class="rt"><b data-open="${id}" role="button" tabindex="0">${esc(d.titre)}</b><span>${esc(d.artiste)}${wish&&d.annee?" · "+esc(d.annee):""}</span></div>
+      <div class="rt"><b data-open="${id}" role="button" tabindex="0">${esc(d.titre)}</b><span>${esc(d.artiste)}${wish&&d.annee?" · "+esc(d.annee):""}${wish&&prixOf(d)?" · "+esc(prixOf(d)):""}</span></div>
       <span class="ra">${esc(d.artiste)}</span><span class="ry">${esc(d.annee||"")}</span><span class="rl">${esc(d.label)}</span><span class="rl">${esc((d.genres||"").split(", ").slice(0,2).join(", "))}</span>
       <div class="racts">${wish?`<button class="got" type="button" data-got="${id}">Je l'ai</button>`:""}<button class="mini" type="button" data-edit="${id}">Modifier</button><button class="mini${sure?" danger":""}" type="button" data-del="${id}">${sure?"Confirmer":"Supprimer"}</button></div></div>
     <div class="rswipe"${lst.open===d.id?"":" inert"}><button type="button" data-edit="${id}">Modifier</button><button type="button" data-del="${id}">${sure?"Confirmer":"Supprimer"}</button></div></div>`};
@@ -2037,6 +2058,7 @@ function openEditor(d){
     <div class="two">${f("edY","Année",e.annee||"","number",'min="1900" max="2100"')}${f("edS","Date de sortie",e.sortie)}</div>
     <div class="two">${f("edL","Label",e.label)}${f("edC","Référence catalogue",e.cat)}</div>
     <div class="two">${f("edE","EAN / code-barres",e.ean)}${f("edP","Pays",e.pays)}</div>
+    <div class="two">${f("edPx","Prix (souhaits)",e.prix||"","text",'placeholder="'+(e.prixAuto?"Discogs : "+String(e.prixAuto).replace(".",",")+" €":"ex. 29,99 €")+'"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="https://…"')}</div>
     ${f("edG","Genre",e.genres)}
     ${f("edLi","Lieu d'enregistrement",e.lieu)}
     ${f("edCo","Compositeurs",e.compositeurs)}
@@ -2070,7 +2092,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#editor").hidden)closeEd
 $("#edForm").addEventListener("submit",async ev=>{
   ev.preventDefault(); const e=editing, v=id=>$("#"+id).value.trim();
   e.titre=v("edT"); e.artiste=v("edA"); e.annee=v("edY")?+v("edY"):null; e.sortie=v("edS")||(e.annee?String(e.annee):"");
-  e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
+  e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); {const px=v("edPx"); e.prix=px?(/\d$/.test(px)?px+" €":px):""; if(!e.prix) delete e.prix; const bu=v("edBuy"); if(/^https?:\/\//.test(bu)) e.lienAchat=bu; else delete e.lienAchat} e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
   {const nv=$("#edN").value.split("\n").map(x=>x.trim()).filter(Boolean);
    if(nv.join("\n")!==notesShown(e).join("\n")){e.anecdotes=nv; if(e.source==="discogs") e.notesEdit=true; delete e.notesFr; delete e.notesFrC}}
   e.anecdotesFr=true; e.notesVO=true;
@@ -2113,7 +2135,10 @@ $("#edForm").addEventListener("submit",async ev=>{
   addEventListener("online",checkDb); addEventListener("offline",()=>dbStatus("ko","Pas de connexion internet"));
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
-  rebuild();
+  rebuild(); setView("grid");
+  // prix Discogs des souhaits, mis à jour en arrière-plan (au plus tous les 3 jours) pour que la famille les voie
+  if(cloud.key) (async()=>{let ch=false; for(const d of mine.filter(isWish)){ if(await prixDiscogs(d)){ch=true; await wait(1100)} }
+    if(ch){rebuild(state.cur&&state.cur.id); if(!$("#gridView").hidden) renderGrid(); if(!$("#listView").hidden) renderList()}})();
   if(new URLSearchParams(location.search).has("souhaits")){shelf="souhaits";document.body.classList.add("partage")}
   await loadResas();
   // à l'ouverture, toujours la vue Flow (Hugo, 2026-11-05)
