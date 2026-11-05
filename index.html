@@ -913,6 +913,13 @@ const fmtDate=s=>{
   if(m[2]&&m[2]!=="00") return `${mois[+m[2]-1]} ${m[1]}`; return m[1];
 };
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
+const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
+/* Les notes Discogs restent en version originale : remet celles qui avaient été traduites */
+async function restoreNotes(d){
+  if(d.source!=="discogs"||d.notesVO||!d.anecdotesFr||!d.discogsId) return false;
+  const r=store.get("dg-rel-"+d.discogsId)||await dgFetch(`/releases/${d.discogsId}`,discogsToken());
+  d.anecdotes=notesOf(r); d.notesVO=true; delete d.anecdotesFr; if(mine.includes(d)) saveMine(); return true;
+}
 async function loadDetails(d){
   if(d.details) return;
   const cached=store.get("dg-rel-"+d.discogsId);
@@ -928,7 +935,7 @@ async function loadDetails(d){
   d.compositeurs=comp.length?comp.join(", "):"";
   d.credits=credits.length?credits.join(" · "):"";
   d.lieu=places.length?places.join(", "):"";
-  d.anecdotes=r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
+  d.anecdotes=notesOf(r); d.notesVO=true;
   d.tracks=(r.tracklist||[]).filter(t=>!t.type_||t.type_==="track").map(t=>{
     const m=/^([A-Z])/i.exec(t.position||""); const [mm,ss]=(t.duration||"").split(":");
     return {title:t.title,side:m?m[1].toUpperCase():"A",pos:t.position,duration:t.duration?(+mm*60+ +ss):0};
@@ -1122,7 +1129,7 @@ async function openDetail(d,fromEl){
   await wait(reduce?0:550); pack.classList.add("out");
   if(!d.details){ try{await loadDetails(d)}catch(err){d.detailErr=err.message} if(state.cur===d){renderInfo(d);paintPack(d)} }
   resolveDeezer(d).then(()=>{applyCover(d);if(state.cur===d&&!$("#detail").hidden)renderInfo(d)});
-  if(d.source==="discogs"&&!d.anecdotesFr){await translateRecord(d);if(state.cur===d&&!$("#detail").hidden)renderInfo(d)}
+  try{if(await restoreNotes(d)&&state.cur===d&&!$("#detail").hidden)renderInfo(d)}catch(e){}
   if(d.wiki===undefined&&d.source!=="demo"){await wikiFor(d);if(d.wiki&&state.cur===d&&!$("#detail").hidden)renderInfo(d);if(cloud.key&&mine.includes(d))saveMine()}
 }
 function closeDetail(){
@@ -1157,7 +1164,7 @@ function renderInfo(d){
     <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${isWish(d)?giftBox(d):""}
     ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
-    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(d.source==="discogs"?fixFr(a):a)}</li>`).join("")}</ul>`:""}
+    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${d.anecdotes.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
     <div class="acts">
@@ -1349,7 +1356,6 @@ async function enrichLater(d,full){
     await loadDetails(d);
   });
   await step(()=>mbEnrich(d));
-  await step(()=>translateRecord(d));
   await step(()=>wikiFor(d));
   resolveDeezer(d).then(()=>applyCover(d)).catch(()=>{});
 }
@@ -1722,7 +1728,7 @@ async function buildFromCode(code){
   if(list.length){
     const ex=mine.find(d=>list.some(r=>r.id===d.discogsId)); if(ex) return {deja:ex};
     const d=recordFromRelease(await dgFetch(`/releases/${list[0].id}`,discogsToken()));
-    await loadDetails(d); await mbEnrich(d); await translateRecord(d); await wikiFor(d);
+    await loadDetails(d); await mbEnrich(d); await wikiFor(d);
     const autres=new Set(list.map(r=>r.title)).size>1;
     return {d,doute:autres?`${list.length} pressages possibles`:""};
   }
@@ -1974,7 +1980,7 @@ $("#edForm").addEventListener("submit",async ev=>{
   ev.preventDefault(); const e=editing, v=id=>$("#"+id).value.trim();
   e.titre=v("edT"); e.artiste=v("edA"); e.annee=v("edY")?+v("edY"):null; e.sortie=v("edS")||(e.annee?String(e.annee):"");
   e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
-  e.anecdotes=$("#edN").value.split("\n").map(x=>x.trim()).filter(Boolean); e.anecdotesFr=true;
+  e.anecdotes=$("#edN").value.split("\n").map(x=>x.trim()).filter(Boolean); e.anecdotesFr=true; e.notesVO=true;
   e.tracks=textToTracks($("#edTr").value);
   if((document.querySelector("input[name=edStat]:checked")||{}).value==="souhait") e.statut="souhait"; else delete e.statut;
   if(e._cover!==undefined){e.cover=e._cover||null;delete e._cover}
@@ -1986,32 +1992,6 @@ $("#edForm").addEventListener("submit",async ev=>{
 });
 
 
-/* ---------- Traduction des notes Discogs (souvent en anglais) ---------- */
-const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing)\b/gi;
-const FR=/\b(le|la|les|des|du|et|avec|est|une|pour|dans|sur|par|enregistr|pochette)\b/gi;
-const looksEnglish=t=>((t.match(EN)||[]).length>=2)&&((t.match(EN)||[]).length>(t.match(FR)||[]).length*2);
-/* Jargon vinyle : la traduction automatique le rend mot à mot (spine → colonne vertébrale…) */
-const PRE=[[/\binner sleeves?\b/gi,"pochette intérieure"],[/\bspines?\b/gi,"tranche"],[/\b(?:run-?out|dead wax|matrix)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],[/\b(?:sleeves?|jackets?)\b/gi,"pochette"],[/\bshrink(?:-?wrap)?\b/gi,"cellophane"],[/\bgatefold\b/gi,"pochette ouvrante"]];
-const POST=[[/colonnes? vertébrales?/gi,"tranche"],[/(?:manches?|manchons?) intérieur(?:e|s|es)?/gi,"pochette intérieure"],[/\b(?:la |une )?(?:manche|manchon)\b/gi,m=>m.replace(/manche|manchon/i,"pochette")],[/\bdos de la couverture\b/gi,"dos de la pochette"],[/\b(?:la |une )?veste\b/gi,m=>m.replace(/veste/i,"pochette")],[/\bcire morte\b/gi,"matrice"],[/\bmanches\b/gi,"pochettes"]];
-const fixFr=t=>POST.reduce((a,[r,v])=>a.replace(r,v),t||"");
-async function toFr(t){
-  if(!looksEnglish(t)) return t;
-  t=PRE.reduce((a,[r,v])=>a.replace(r,v),t);
-  const parts=t.match(/[^.!?]+[.!?]*\s*/g)||[t], chunks=[]; let cur="";
-  for(const p of parts){ if((cur+p).length>450&&cur){chunks.push(cur);cur=""} cur+=p } if(cur) chunks.push(cur);
-  const out=[];
-  for(const c of chunks){
-    const r=await fetch("https://api.mymemory.translated.net/get?langpair=en|fr&q="+encodeURIComponent(c.slice(0,480)));
-    const j=await r.json(), tr=j&&j.responseData&&j.responseData.translatedText;
-    if(j.responseStatus!=200||!tr||/MYMEMORY WARNING|QUERY LENGTH/i.test(tr)) return t;
-    out.push(tr.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,"&"));
-  }
-  return fixFr(out.join(" ").replace(/\s+/g," ").trim());
-}
-async function translateRecord(d){
-  if(d.anecdotesFr||!d.anecdotes||!d.anecdotes.length) return;
-  try{ d.anecdotes=await Promise.all(d.anecdotes.map(toFr)); d.anecdotesFr=true; saveMine(); }catch(e){}
-}
 
 /* ---------- Démarrage ---------- */
 (async()=>{
