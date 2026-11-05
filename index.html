@@ -1922,7 +1922,7 @@ function openEditor(d){
   const e=editing;
   $("#edForm").innerHTML=`
     <div class="edcover"><span class="thumb" id="edThumb" style="${e.cover?`background-image:url('${esc(e.cover)}')`:`background:${e.sleeve.bg}`}"></span>
-      <div><label for="edCover">Pochette (adresse de l'image)<input id="edCover" type="url" value="${esc(e.cover&&!e.cover.startsWith("data:")?e.cover:"")}" placeholder="https://…"></label>
+      <div><label for="edCover">Pochette (adresse de l'image)<input id="edCover" type="text" inputmode="url" autocomplete="off" value="${esc(e.cover&&/^https?:/.test(e.cover)?e.cover:"")}" placeholder="${e.cover?"Pochette actuelle conservée · coller une adresse pour la changer":"https://…"}"></label>
       <label class="btn" for="edFile" style="justify-self:start">Choisir une photo<input id="edFile" type="file" accept="image/*" hidden></label></div></div>
     <div class="dest" role="radiogroup" aria-label="Étagère">Étagère <label><input type="radio" name="edStat" value="collection" ${isWish(e)?"":"checked"}>Ma collection</label><label><input type="radio" name="edStat" value="souhait" ${isWish(e)?"checked":""}>Mes souhaits</label></div>
     ${f("edT","Titre",e.titre,"text","required")}
