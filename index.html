@@ -2022,12 +2022,16 @@ async function translateRecord(d){
     if(extra.length){mine=mine.concat(extra);toast(`${extra.length} disque${extra.length>1?"s":""} de cet appareil à envoyer en ligne…`);scheduleSync()}
   }
   // la collection se met à jour toute seule (ajouts et suppressions faits depuis un autre appareil)
-  const refresh=async()=>{const l=await checkDb(); if(!l||!cloud.on||syncing||!$("#editor").hidden||(store.get("a-envoyer")||[]).length) return;
+  const refresh=async()=>{const l=await checkDb(); if(!l||!cloud.on||syncing||!$("#editor").hidden||(store.get("a-envoyer")||[]).length) return false;
     const fresh=new Map(l.map(d=>[d.id,JSON.stringify(d)]));
-    if(fresh.size===snap.size&&[...fresh].every(([k,v])=>snap.get(k)===v)) return;
-    mine=l; snap=fresh; proxCovers(); store.set(KEY,mine); rebuild(state.cur&&state.cur.id); if(!$("#listView").hidden) renderList(); if(!$("#gridView").hidden) renderGrid()};
+    if(fresh.size===snap.size&&[...fresh].every(([k,v])=>snap.get(k)===v)) return true;
+    mine=l; snap=fresh; proxCovers(); store.set(KEY,mine); rebuild(state.cur&&state.cur.id); if(!$("#listView").hidden) renderList(); if(!$("#gridView").hidden) renderGrid(); return true};
   setInterval(()=>{if(!document.hidden)refresh()},60000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()});
+  // quasi temps réel : une petite empreinte de la base toutes les 4 s, la collection n'est rechargée que si elle a changé
+  let lastV=null;
+  const poll=async()=>{if(document.hidden||syncing)return; try{const r=await fetch("/api/version",{cache:"no-store"}); if(!r.ok)return; const {v}=await r.json(); if(lastV!==null&&v!==lastV&&!(await refresh())) return; lastV=v}catch(e){}};
+  poll(); setInterval(poll,4000);
   addEventListener("online",checkDb); addEventListener("offline",()=>dbStatus("ko","Pas de connexion internet"));
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
