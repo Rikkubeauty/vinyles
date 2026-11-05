@@ -1286,7 +1286,7 @@ function renderInfo(d){
   $("#info").innerHTML=`
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
-    ${isWish(d)?`<div class="buy">${prixOf(d)?`<b class="prix">${esc(prixOf(d))}</b>`:""}<a class="btn pri" href="${esc(achatOf(d))}" target="_blank" rel="noopener">Acheter</a></div>`:""}
+    ${isWish(d)?`<div class="buy">${prixOf(d)?`<b class="prix">${esc(prixOf(d))}</b>`:""}<a class="btn pri" href="${esc(achatOf(d))}" target="_blank" rel="noopener">${d.lienAchat?"Acheter":"Acheter à la Fnac"}</a></div>`:""}
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
@@ -1786,7 +1786,7 @@ let resa={};
 const mesResas=()=>store.get("mes-resas")||{};
 // prix d'un souhait : celui saisi à la main, sinon le moins cher sur Discogs
 const prixOf=d=>isWish(d)?(d.prix||(d.prixAuto?`${String(d.prixAuto).replace(".",",")} €`:"")):"";
-const achatOf=d=>d.lienAchat||(d.discogsId?`https://www.discogs.com/sell/release/${d.discogsId}`:`https://www.discogs.com/search/?type=release&format=Vinyl&q=${encodeURIComponent(d.artiste+" "+d.titre)}`);
+const achatOf=d=>d.lienAchat||`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${encodeURIComponent(d.artiste+" "+d.titre+" vinyle")}`;
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
 async function prixDiscogs(d){
   if(!isWish(d)||!d.discogsId||d.source==="demo"||(d.prixAutoAt&&Date.now()-d.prixAutoAt<3*864e5)) return false;
