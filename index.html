@@ -1320,26 +1320,53 @@ function recordFromRelease(r){
   store.set("dg-rel-"+r.id,{released:r.released,tracklist:r.tracklist,extraartists:r.extraartists,companies:r.companies,notes:r.notes,images:(r.images||[]).slice(0,1)});
   return d;
 }
+// ajout immédiat depuis le résultat de recherche ; la fiche complète (Discogs, MusicBrainz, traduction, Wikipédia) arrive ensuite
+function recordFromResult(it){
+  const [art,...rest]=String(it.title||"").split(" - "), tit=rest.join(" - ")||art, [lc,li]=LABELS[hash(it.id)%LABELS.length];
+  const cov=it.cover_image&&!/spacer\.gif/.test(it.cover_image)?it.cover_image:(it.thumb||null);
+  return {id:"dg"+it.id,discogsId:it.id,source:"discogs",titre:tit,artiste:rest.length?cleanName(art):"",
+    annee:+it.year||null,sortie:it.year?String(it.year):"Date inconnue",label:cleanName((it.label||[])[0]||""),cat:it.catno||"",
+    cover:cov,genres:[...(it.genre||[]),...(it.style||[])].join(", "),pays:it.country||"",ean:(it.barcode||[])[0]||"",
+    sleeve:{bg:`linear-gradient(135deg,hsl(${hash(tit)%360} 35% 28%),hsl(${(hash(tit)+40)%360} 30% 14%))`,ink:"#f3eadb"},
+    labelColor:lc,labelInk:li,tracks:[],details:false,ajoute:new Date().toISOString().slice(0,10)};
+}
+function refreshRec(d){
+  if(!mine.includes(d)) return; // supprimé entre-temps
+  saveMine(); rebuild(state.cur&&state.cur.id);
+  if(state.cur===d&&!$("#detail").hidden) renderInfo(d);
+  if(!$("#listView").hidden) renderList(); else if(!$("#gridView").hidden) renderGrid();
+}
+async function enrichLater(d,full){
+  const step=async f=>{try{await f()}catch(e){} refreshRec(d)};
+  await step(async()=>{
+    if(!full) return;
+    const keep={id:d.id,ajoute:d.ajoute,statut:d.statut,cover:d.cover}, f=recordFromRelease(await full());
+    Object.assign(d,f,{id:keep.id,ajoute:keep.ajoute,cover:f.cover||keep.cover}); if(keep.statut) d.statut=keep.statut;
+    await loadDetails(d);
+  });
+  await step(()=>mbEnrich(d));
+  await step(()=>translateRecord(d));
+  await step(()=>wikiFor(d));
+  resolveDeezer(d).then(()=>applyCover(d)).catch(()=>{});
+}
 async function addRelease(id,btn){
   const token=discogsToken();
   const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
   const ex=mine.find(d=>d.discogsId===id);
   if(ex){$("#aMsg").className="imsg";$("#aMsg").textContent=isWish(ex)?"Ce disque est déjà dans les souhaits.":"Ce disque est déjà dans la collection.";return}
-  btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche Discogs…";
+  btn&&(btn.disabled=true); $("#aMsg").className="imsg";
   try{
-    const r=await dgFetch(`/releases/${id}`,token);
-    const d=recordFromRelease(r); await loadDetails(d);
-    $("#aMsg").textContent="Compléments MusicBrainz…"; await mbEnrich(d);
-    $("#aMsg").textContent="Traduction des notes en français…"; await translateRecord(d);
-    $("#aMsg").textContent="Histoire de l'album sur Wikipédia…"; await wikiFor(d);
+    const it=srch.items.find(x=>x.id===id); let d, full=()=>dgFetch(`/releases/${id}`,token);
+    if(it) d=recordFromResult(it);
+    else {$("#aMsg").textContent="Lecture de la fiche Discogs…"; d=recordFromRelease(await full()); full=null; await loadDetails(d).catch(()=>{})}
     if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
     mine.unshift(d); saveMine();
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
     rebuild(d.id);
     btn&&btn.classList.add("added");
-    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}.`;
-    resolveDeezer(d).then(()=>applyCover(d));
+    $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}. La fiche se complète en arrière-plan.`;
+    enrichLater(d,full);
   }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=niceErr(err)}
   finally{btn&&(btn.disabled=false)}
 }
@@ -1447,7 +1474,6 @@ async function addMbRelease(id,btn){
   btn&&(btn.disabled=true); $("#aMsg").className="imsg"; $("#aMsg").textContent="Lecture de la fiche MusicBrainz…";
   try{
     const d=recordFromMb(await mbFetch(`release/${id}?inc=${MB_INC}`));
-    $("#aMsg").textContent="Histoire de l'album sur Wikipédia…"; await wikiFor(d);
     if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
     mine.unshift(d); saveMine();
@@ -1455,6 +1481,7 @@ async function addMbRelease(id,btn){
     rebuild(d.id); btn&&btn.classList.add("added");
     $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}.`;
     resolveDeezer(d).then(()=>applyCover(d));
+    wikiFor(d).then(()=>refreshRec(d)).catch(()=>{});
   }catch(err){$("#aMsg").className="imsg err";$("#aMsg").textContent=err.message}
   finally{btn&&(btn.disabled=false)}
 }
