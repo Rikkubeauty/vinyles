@@ -316,6 +316,7 @@ h1 span{color:var(--amber)}
 .edform input,.edform textarea{font-family:var(--f-body);font-size:15px;letter-spacing:0;text-transform:none;background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
 .edform textarea{min-height:90px;resize:vertical;line-height:1.45;overflow:hidden}
 /* panneau d'édition opaque : la fiche ne transparaît plus dessous */
+#editor:focus{outline:none}
 #editor{background:var(--night);overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
 .edform textarea.mono{font-family:var(--f-mono);font-size:13px}
 .edform input:focus,.edform textarea:focus{outline:2px solid var(--amber);border-color:transparent}
@@ -1940,7 +1941,7 @@ function openEditor(d){
     <div class="edfoot"><button class="btn pri" type="submit">Enregistrer</button><button class="btn" type="button" id="edCancel">Annuler</button>
       ${blank?"":`<button class="btn" type="button" id="edDel" style="margin-left:auto">Supprimer ce disque</button>`}</div>
     <div class="imsg" id="edMsg" role="status"></div>`;
-  $("#editor").hidden=false; $("#edT").focus();
+  $("#editor").hidden=false; $("#editor").scrollTop=0; if(matchMedia("(hover:hover) and (pointer:fine)").matches) $("#edT").focus(); else {$("#editor").tabIndex=-1; $("#editor").focus({preventScroll:true})}
   // les zones de texte prennent la hauteur de leur contenu : la liste des morceaux s'affiche en entier
   $("#editor").querySelectorAll("textarea").forEach(t=>{const fit=()=>{t.style.height="auto";t.style.height=t.scrollHeight+2+"px"};fit();t.addEventListener("input",fit)});
   $("#edCover").addEventListener("input",ev=>{const v=ev.target.value.trim();if(v){editing._cover=v;$("#edThumb").style.cssText=`background-image:url('${v.replace(/'/g,"%27")}')`}});
