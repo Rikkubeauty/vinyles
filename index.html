@@ -141,7 +141,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 h1{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:clamp(24px,3.4vw,36px);letter-spacing:-.02em;line-height:1;margin:0}
 h1 span{color:var(--amber)}
 .prixb{position:absolute;top:7%;right:7%;z-index:2;background:#fff;color:#111;font:700 13px/1 var(--f-body,system-ui);padding:6px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none}
-.buy{display:flex;align-items:center;gap:14px;margin:14px 0 4px}.buy a{text-decoration:none}.buy .prix{font-size:24px}
+.buy{display:flex;align-items:center;gap:14px;margin:14px 0 4px}.buy a{text-decoration:none}.ailleurs{margin:4px 0 8px;font-size:14px;color:var(--muted,#777)}.ailleurs a{color:inherit;text-underline-offset:3px}.buy .prix{font-size:24px}
 details.plus{margin-top:22px;border-top:1px solid var(--line,rgba(0,0,0,.12));padding-top:12px}
 details.plus>summary{cursor:pointer;font-weight:600;list-style:none;padding:6px 0}details.plus>summary::-webkit-details-marker{display:none}
 details.plus>summary::after{content:" +";color:var(--amber)}details.plus[open]>summary::after{content:" −"}
@@ -1286,7 +1286,7 @@ function renderInfo(d){
   $("#info").innerHTML=`
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
-    ${isWish(d)?`<div class="buy">${prixOf(d)?`<b class="prix">${esc(prixOf(d))}</b>`:""}<a class="btn pri" href="${esc(achatOf(d))}" target="_blank" rel="noopener">${d.lienAchat?"Acheter":"Acheter à la Fnac"}</a></div>`:""}
+    ${isWish(d)?`<div class="buy">${prixOf(d)?`<b class="prix">${esc(prixOf(d))}</b>`:""}<a class="btn pri" href="${esc(achatOf(d))}" target="_blank" rel="noopener">${d.lienAchat?"Acheter":"Acheter à la Fnac"}</a></div><p class="ailleurs">Sinon : ${autresSites(d).map(([n,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join(" · ")}</p>`:""}
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
@@ -1787,6 +1787,9 @@ const mesResas=()=>store.get("mes-resas")||{};
 // prix d'un souhait : celui saisi à la main, sinon le moins cher sur Discogs
 const prixOf=d=>isWish(d)?(d.prix||(d.prixAuto?`${String(d.prixAuto).replace(".",",")} €`:"")):"";
 const achatOf=d=>d.lienAchat||`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${encodeURIComponent(d.artiste+" "+d.titre+" vinyle")}`;
+const qA=d=>encodeURIComponent(d.artiste+" "+d.titre+" vinyle");
+const autresSites=d=>[["Amazon",`https://www.amazon.fr/s?k=${qA(d)}&i=popular`],["Cultura",`https://www.cultura.com/search/results?search_query=${qA(d)}`],["Discogs",d.discogsId?`https://www.discogs.com/sell/release/${d.discogsId}`:`https://www.discogs.com/search/?type=release&format=Vinyl&q=${encodeURIComponent(d.artiste+" "+d.titre)}`]]
+  .concat(d.lienAchat?[["Fnac",`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${qA(d)}`]]:[]);
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
 async function prixDiscogs(d){
   if(!isWish(d)||!d.discogsId||d.source==="demo"||(d.prixAutoAt&&Date.now()-d.prixAutoAt<3*864e5)) return false;
