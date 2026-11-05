@@ -1221,7 +1221,11 @@ function rebuild(focusId){
   $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
 }
-function saveMine(){store.set(KEY,mine);if(cloud.on){markPending();scheduleSync()}}
+// pochettes externes servies via le site (copie dans R2) pour qu'elles se chargent toujours en entier
+const COVER_HOSTS=/^https:\/\/(i\.discogs\.com|img\.discogs\.com|coverartarchive\.org|e-cdns-images\.dzcdn\.net|cdn-images\.dzcdn\.net|cdns-images\.dzcdn\.net)\//;
+const viaSite=u=>typeof u==="string"&&location.protocol.startsWith("http")&&COVER_HOSTS.test(u)?"/api/image?u="+encodeURIComponent(u):u;
+function proxCovers(){let ch=false;for(const d of mine){const c=viaSite(d.cover);if(c!==d.cover){d.cover=c;ch=true}}return ch}
+function saveMine(){proxCovers();store.set(KEY,mine);if(cloud.on){markPending();scheduleSync()}}
 // disques créés ou modifiés ici mais pas encore envoyés en ligne : eux seuls sont renvoyés au démarrage
 // (un disque absent de la base et absent de cette liste a été supprimé depuis un autre appareil)
 function markPending(){store.set("a-envoyer",mine.filter(d=>snap.get(d.id)!==JSON.stringify(d)).map(d=>d.id))}
@@ -2012,6 +2016,7 @@ async function translateRecord(d){
     cloud.on=true; cloud.key=store.get("cle");
     const local=mine; mine=list; snap=new Map(list.map(d=>[d.id,JSON.stringify(d)]));
     setEditable(!!cloud.key); $("#lockBtn").hidden=false;
+    if(proxCovers()){store.set(KEY,mine);if(cloud.key)scheduleSync()}
     const pend=new Set(store.get("a-envoyer")||[]), extra=local.filter(d=>!snap.has(d.id)&&pend.has(d.id));
     store.set(KEY,mine.concat(extra)); // les disques pas encore envoyés restent sur l'appareil
     if(extra.length){mine=mine.concat(extra);toast(`${extra.length} disque${extra.length>1?"s":""} de cet appareil à envoyer en ligne…`);scheduleSync()}
@@ -2020,7 +2025,7 @@ async function translateRecord(d){
   const refresh=async()=>{const l=await checkDb(); if(!l||!cloud.on||syncing||!$("#editor").hidden||(store.get("a-envoyer")||[]).length) return;
     const fresh=new Map(l.map(d=>[d.id,JSON.stringify(d)]));
     if(fresh.size===snap.size&&[...fresh].every(([k,v])=>snap.get(k)===v)) return;
-    mine=l; snap=fresh; store.set(KEY,mine); rebuild(state.cur&&state.cur.id); if(!$("#listView").hidden) renderList(); if(!$("#gridView").hidden) renderGrid()};
+    mine=l; snap=fresh; proxCovers(); store.set(KEY,mine); rebuild(state.cur&&state.cur.id); if(!$("#listView").hidden) renderList(); if(!$("#gridView").hidden) renderGrid()};
   setInterval(()=>{if(!document.hidden)refresh()},60000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()});
   addEventListener("online",checkDb); addEventListener("offline",()=>dbStatus("ko","Pas de connexion internet"));
