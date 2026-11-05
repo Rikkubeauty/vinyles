@@ -2009,6 +2009,19 @@ async function translateRecord(d){
 </script>
 
 
-<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))</script>
+<script>
+/* app installée (PWA) : vérifie s'il existe une nouvelle version à chaque retour sur l'app, et recharge dès qu'elle est prête */
+if("serviceWorker" in navigator)addEventListener("load",async()=>{
+  try{
+    const had=!!navigator.serviceWorker.controller;
+    const reg=await navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"});
+    let reloaded=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!reloaded){reloaded=true;location.reload()}});
+    const check=()=>reg.update().catch(()=>{});
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});
+    setInterval(check,15*60*1000);
+  }catch(e){}
+});
+</script>
 </body>
 </html>
