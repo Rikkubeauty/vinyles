@@ -608,7 +608,7 @@ dd{margin:0}
     </div>
   </header>
   <div class="subbar">
-    <div class="subleft"><div class="shelftog" role="group" aria-label="Étagère"><button type="button" id="sCol" aria-pressed="true">Ma collection<small id="nCol"></small></button><button type="button" id="sWish" aria-pressed="false">Mes souhaits<small id="nWish"></small></button></div>
+    <div class="subleft"><div class="shelftog" role="group" aria-label="Étagère"><button type="button" id="sCol" aria-pressed="true">Ma collection</button><button type="button" id="sWish" aria-pressed="false">Mes souhaits</button></div>
     <div class="chips" id="chips" role="group" aria-label="Filtrer par décennie"></div></div>
     <div class="subright"><div class="sortsel"><span>Tri</span><button type="button" id="sortBtn" aria-haspopup="listbox" aria-expanded="false"><b id="sortLbl">Récents</b><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <ul class="sortmenu" id="sortMenu" role="listbox" aria-label="Trier" hidden><li role="option" data-v="ajout">Récents</li><li role="option" data-v="artiste">Artiste</li><li role="option" data-v="titre">Titre</li><li role="option" data-v="annee">Année ↑</li><li role="option" data-v="annee-">Année ↓</li><li role="option" data-v="label">Label</li></ul></div>
@@ -1217,11 +1217,14 @@ let shelf=store.get("etagere")==="souhaits"?"souhaits":"collection";
 function rebuild(focusId){
   const col=mine.filter(d=>!isWish(d)), wish=mine.filter(isWish);
   records=shelf==="souhaits"?wish:(col.length||cloud.on?col:(mine.length?[]:demo));
-  $("#nCol").textContent=col.length||""; $("#nWish").textContent=wish.length||"";
+  
   $("#sCol").setAttribute("aria-pressed",String(shelf==="collection")); $("#sWish").setAttribute("aria-pressed",String(shelf==="souhaits"));
   renderChips(); refilter(focusId);
 }
-function saveMine(){store.set(KEY,mine);if(cloud.on)scheduleSync()}
+function saveMine(){store.set(KEY,mine);if(cloud.on){markPending();scheduleSync()}}
+// disques créés ou modifiés ici mais pas encore envoyés en ligne : eux seuls sont renvoyés au démarrage
+// (un disque absent de la base et absent de cette liste a été supprimé depuis un autre appareil)
+function markPending(){store.set("a-envoyer",mine.filter(d=>snap.get(d.id)!==JSON.stringify(d)).map(d=>d.id))}
 
 /* ---------- Synchronisation avec Cloudflare ---------- */
 let snap=new Map(), syncT=null, syncing=false;
@@ -1250,6 +1253,7 @@ async function syncNow(){
       const r=await api("/disques/"+encodeURIComponent(id),{method:"DELETE"});
       if(r.ok){snap.delete(id);n++}
     }
+    markPending();
     if(n){toast("Enregistré en ligne ✓");dbStatus("ok","Base connectée")}
   }catch(err){toast(err.message==="Failed to fetch"?"Pas de connexion. Nouvel essai possible dans un instant.":err.message,true);if(err.message==="Failed to fetch")dbStatus("ko","Base injoignable");else checkDb()}
   finally{syncing=false}
@@ -1868,7 +1872,7 @@ $("#tableWrap").addEventListener("keydown",e=>{const op=e.target.closest("[data-
  $("#tableWrap").addEventListener("touchstart",e=>{const r=e.target.closest(".rrow[data-id]"); if(!r||document.body.classList.contains("readonly")||lst.pick||!matchMedia("(max-width:640px)").matches) return; const p=e.touches[0]; sw={r,x:p.clientX,y:p.clientY,dx:0,on:null,base:r.classList.contains("open")?-164:0}},{passive:true});
  $("#tableWrap").addEventListener("touchmove",e=>{if(!sw)return; const p=e.touches[0], dx=p.clientX-sw.x, dy=p.clientY-sw.y;
    if(sw.on===null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return; sw.on=Math.abs(dx)>Math.abs(dy); if(!sw.on){sw=null;return}}
-   sw.dx=dx; const v=Math.max(-190,Math.min(0,sw.base+dx)), rin=sw.r.querySelector(".rin"); sw.r.classList.add("swiping"); rin.style.transition="none"; rin.style.transform=`translateX(${v}px)`},{passive:true});
+   sw.dx=dx; const v=Math.max(-164,Math.min(0,sw.base+dx)), rin=sw.r.querySelector(".rin"); sw.r.classList.add("swiping"); rin.style.transition="none"; rin.style.transform=`translateX(${v}px)`},{passive:true});
  $("#tableWrap").addEventListener("touchend",()=>{if(!sw)return; const {r,dx,base,on}=sw; sw=null; if(!on)return; const rin=r.querySelector(".rin"); rin.style.transition=""; rin.style.transform="";
    const open=base+dx<-70; lst.confirm=null; lst.open=open?r.dataset.id:null; renderList()});
 }
@@ -1981,11 +1985,17 @@ async function translateRecord(d){
     cloud.on=true; cloud.key=store.get("cle");
     const local=mine; mine=list; snap=new Map(list.map(d=>[d.id,JSON.stringify(d)]));
     setEditable(!!cloud.key); $("#lockBtn").hidden=false;
-    const extra=local.filter(d=>!snap.has(d.id));
+    const pend=new Set(store.get("a-envoyer")||[]), extra=local.filter(d=>!snap.has(d.id)&&pend.has(d.id));
     store.set(KEY,mine.concat(extra)); // les disques pas encore envoyés restent sur l'appareil
     if(extra.length){mine=mine.concat(extra);toast(`${extra.length} disque${extra.length>1?"s":""} de cet appareil à envoyer en ligne…`);scheduleSync()}
   }
-  setInterval(()=>{if(!document.hidden)checkDb()},120000);
+  // la collection se met à jour toute seule (ajouts et suppressions faits depuis un autre appareil)
+  const refresh=async()=>{const l=await checkDb(); if(!l||!cloud.on||syncing||!$("#editor").hidden||(store.get("a-envoyer")||[]).length) return;
+    const fresh=new Map(l.map(d=>[d.id,JSON.stringify(d)]));
+    if(fresh.size===snap.size&&[...fresh].every(([k,v])=>snap.get(k)===v)) return;
+    mine=l; snap=fresh; store.set(KEY,mine); rebuild(state.cur&&state.cur.id); if(!$("#listView").hidden) renderList(); if(!$("#gridView").hidden) renderGrid()};
+  setInterval(()=>{if(!document.hidden)refresh()},60000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()});
   addEventListener("online",checkDb); addEventListener("offline",()=>dbStatus("ko","Pas de connexion internet"));
   // sur ton site, collection.json (à côté de index.html) sert de point de départ
   if(!mine.length){try{const r=await fetch("collection.json",{cache:"no-store"}); if(r.ok){const j=await r.json(); const l=Array.isArray(j)?j:j.disques; if(Array.isArray(l)&&l.length){mine=l;saveMine()}}}catch(e){}}
