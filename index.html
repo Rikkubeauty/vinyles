@@ -2002,7 +2002,7 @@ async function translateRecord(d){
   rebuild();
   if(new URLSearchParams(location.search).has("souhaits")){shelf="souhaits";document.body.classList.add("partage")}
   await loadResas();
-  if(["list","grid","stats"].includes(store.get("vue"))) setView(store.get("vue"));
+  // à l'ouverture, toujours la vue Flow (Hugo, 2026-11-05)
   if(shelf==="souhaits") setShelf("souhaits");
   for(const d of records.slice(0,12)){await resolveDeezer(d);applyCover(d)}
 })();
