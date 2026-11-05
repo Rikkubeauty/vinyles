@@ -931,10 +931,10 @@ const fmtDate=s=>{
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
 const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
 /* ---------- Traduction des notes Discogs, avec le vocabulaire du disque et du studio ---------- */
-const TRV=3; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
-const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing|printed|cover|label)\b/gi;
-const FR=/\b(le|la|les|des|du|et|avec|est|une|pour|dans|sur|par|enregistr|pochette)\b/gi;
-const looksEnglish=t=>((t.match(EN)||[]).length>=2)&&((t.match(EN)||[]).length>(t.match(FR)||[]).length*2);
+const TRV=4; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
+const EN=/\b(the|and|with|was|were|has|have|had|than|not|but|also|only|its|it's|which|including|includes|version|variant|different|same|logo|this|that|these|from|by|on|of|is|are|in|at|for|to|as|an|album|sleeve|jacket|track|tracks|side|issue|pressing|printed|cover|label|labels|recorded|released|reissue|copies|edition|limited|numbered)\b/gi;
+const FR=/\b(le|la|les|des|du|et|avec|est|sont|une|un|pour|dans|sur|par|pas|mais|aussi|enregistr\w*|pochette|disque|cette|ce|qui)\b/gi;
+const looksEnglish=t=>{const e=(t.match(EN)||[]).length,f=(t.match(FR)||[]).length,w=(t.match(/\p{L}+/gu)||[]).length;return e>=2&&e>f*2||(w>=4&&e>=1&&f===0&&/^[\x00-\x7F]*$/.test(t))};
 // avant traduction : on remplace le jargon anglais par le terme français consacré
 const PRE=[
   // formats
@@ -1001,7 +1001,7 @@ async function toFr(t){
 // le texte d'origine reste dans d.anecdotes ; la version française est gardée à côté
 const notesShown=d=>d.source==="discogs"&&!d.notesEdit&&d.notesFr&&d.notesFrV===TRV&&d.notesFr.length===(d.anecdotes||[]).length?d.notesFr:(d.anecdotes||[]);
 async function translateRecord(d){
-  if(d.source!=="discogs"||d.notesEdit||!d.notesVO||!d.anecdotes||!d.anecdotes.length||(d.notesFr&&d.notesFrV===TRV)) return false;
+  if(d.source!=="discogs"||d.notesEdit||(d.anecdotesFr&&!d.notesVO)||!d.anecdotes||!d.anecdotes.length||(d.notesFr&&d.notesFrV===TRV)) return false;
   try{ d.notesFr=await Promise.all(d.anecdotes.map(toFr)); d.notesFrV=TRV; if(mine.includes(d)) saveMine(); return true }catch(e){ return false }
 }
 /* anciennes notes traduites sans garder l'original : on récupère l'original */
