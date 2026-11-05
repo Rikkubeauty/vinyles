@@ -931,12 +931,19 @@ const fmtDate=s=>{
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
 const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
 /* ---------- Traduction des notes Discogs, avec le vocabulaire du disque et du studio ---------- */
-const TRV=4; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
-const EN=/\b(the|and|with|was|were|has|have|had|than|not|but|also|only|its|it's|which|including|includes|version|variant|different|same|logo|this|that|these|from|by|on|of|is|are|in|at|for|to|as|an|album|sleeve|jacket|track|tracks|side|issue|pressing|printed|cover|label|labels|recorded|released|reissue|copies|edition|limited|numbered)\b/gi;
+const TRV=5; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
+const EN=/\b(the|and|with|was|were|has|have|had|than|not|but|also|only|its|it's|which|including|includes|version|variant|different|same|logo|this|that|these|from|by|on|of|is|are|in|at|for|to|as|an|album|sleeve|jacket|track|tracks|side|issue|pressing|printed|cover|label|labels|recorded|released|reissue|copies|edition|limited|numbered|made|original|sound|recordings?|records|ltd|all|rights|reserved|copyright|distributed|manufactured|marketed|under|license|licence|inc|printed|produced|written|composed|arranged)\b/gi;
 const FR=/\b(le|la|les|des|du|et|avec|est|sont|une|un|pour|dans|sur|par|pas|mais|aussi|enregistr\w*|pochette|disque|cette|ce|qui)\b/gi;
-const looksEnglish=t=>{const e=(t.match(EN)||[]).length,f=(t.match(FR)||[]).length,w=(t.match(/\p{L}+/gu)||[]).length;return e>=2&&e>f*2||(w>=4&&e>=1&&f===0&&/^[\x00-\x7F]*$/.test(t))};
+const looksEnglish=t=>{const e=(t.match(EN)||[]).length,f=(t.match(FR)||[]).length,w=(t.match(/\p{L}+/gu)||[]).length;return e>=2&&e>f*2||(w>=4&&e>=1&&f===0&&!/[àâçéèêëîïôûùüÿœæ]/i.test(t))};
 // avant traduction : on remplace le jargon anglais par le terme français consacré
 const PRE=[
+  // mentions légales
+  [/\boriginal sound recordings? made by\b/gi,"enregistrements sonores originaux réalisés par"],[/\ball rights reserved\b/gi,"tous droits réservés"],
+  [/\bmanufactured (?:and distributed )?by\b/gi,m=>/distributed/i.test(m)?"fabriqué et distribué par":"fabriqué par"],[/\bdistributed by\b/gi,"distribué par"],
+  [/\bmarketed by\b/gi,"commercialisé par"],[/\bunder (?:exclusive )?licen[cs]e (?:from|to)\b/gi,m=>/exclusive/i.test(m)?"sous licence exclusive de":"sous licence de"],
+  [/\bmade in france\b/gi,"fabriqué en France"],[/\bprinted in france\b/gi,"imprimé en France"],[/\bmade in (?:the )?(eu|e\.u\.|europe)\b/gi,"fabriqué en Europe"],
+  [/\bmade in (?:the )?(usa|u\.s\.a\.|us)\b/gi,"fabriqué aux États-Unis"],[/\bmade in (?:the )?(uk|u\.k\.|england)\b/gi,m=>/england/i.test(m)?"fabriqué en Angleterre":"fabriqué au Royaume-Uni"],
+  [/\bmade in germany\b/gi,"fabriqué en Allemagne"],[/\bmade in (?:holland|the netherlands)\b/gi,"fabriqué aux Pays-Bas"],[/\bmade in italy\b/gi,"fabriqué en Italie"],[/\bmade in japan\b/gi,"fabriqué au Japon"],
   // formats
   [/\b(?:2 ?x ?LP|double LP|double album)s?\b/gi,"double LP"],[/\b3 ?x ?LP\b/gi,"triple LP"],[/\bLPs\b/g,"LP"],[/\bEPs\b/g,"EP"],
   [/\b12(?:"|”|''| ?inch| ?in\.?)(?: maxi)?[- ]singles?\b/gi,"maxi 45 tours"],[/\b7(?:"|”|''| ?inch| ?in\.?)[- ]singles?\b/gi,"45 tours"],
@@ -986,7 +993,7 @@ const POST=[
 const capS=t=>String(t||"").replace(/(^[^\p{L}\d]*|[.!?…]\s+[^\p{L}\d]*)(\p{Ll})/gu,(m,p,c)=>p+c.toUpperCase());
 const fixFr=t=>capS(POST.reduce((a,[r,v])=>a.replace(r,v),t||""));
 async function toFr(t){
-  if(!looksEnglish(t)) return t;
+  if(!looksEnglish(t)) return capS(PRE.slice(0,14).reduce((a,[r,v])=>a.replace(r,v),t));
   const src=PRE.reduce((a,[r,v])=>a.replace(r,v),t);
   const parts=src.match(/[^.!?]+[.!?]*\s*/g)||[src], chunks=[]; let cur="";
   for(const p of parts){ if((cur+p).length>450&&cur){chunks.push(cur);cur=""} cur+=p } if(cur) chunks.push(cur);
