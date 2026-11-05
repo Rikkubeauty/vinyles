@@ -612,6 +612,11 @@ dd{margin:0}
 /* tel : dock des vues seulement en bas de page */
 .viewtog{transition:opacity .25s,transform .25s}
 @media (max-width:640px){body:not(.basdepage) .viewtog:not(.deplie){opacity:0;transform:translateY(16px);pointer-events:none}}
+/* vues dans les réglages */
+#mshVue .viewtog{position:static!important;opacity:1!important;transform:none!important;pointer-events:auto!important;box-shadow:none!important;background:transparent;border:1px solid var(--line);padding:0!important}
+#mshVue .viewtog button{width:52px!important;height:44px!important;opacity:1!important;pointer-events:auto!important;color:var(--fg)}
+#mshVue .viewtog button[aria-pressed="true"]{background:var(--amber);color:var(--on-accent,#fff)}
+.mvue{padding-bottom:12px;border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -720,9 +725,10 @@ dd{margin:0}
   </form>
 </div>
 
-<div class="msheet" id="mSheet" hidden role="dialog" aria-label="Filtres et réglages">
+<div class="msheet" id="mSheet" hidden role="dialog" aria-label="Réglages">
   <div class="mrow" hidden><span class="mlbl">Tri</span><div id="mshTri" class="mval"></div></div>
   <div class="mrow" hidden><span class="mlbl">Années</span><div id="mshChips" class="mval"></div></div>
+  <div class="mrow mvue"><span class="mlbl">Vue</span><div id="mshVue" class="mval"></div></div>
   <div class="mrow mtools" id="mshTools"></div>
 </div>
 <div id="dbStat" role="status" title="Connexion à la base de données"><i></i><span>Base : vérification…</span></div>
@@ -1914,7 +1920,7 @@ $("#vFlow").addEventListener("click",()=>setView("flow"));
 $("#vGrid").addEventListener("click",()=>setView("grid"));
 /* ---------- Mobile : déplace tri, décennies et réglages dans le panneau « Filtres » ---------- */
 const mq=matchMedia("all");
-const mMoves=[[".sortsel:not(#grpSel)","#mshTri"],["#grpSel","#mshTri"],["#chips","#mshChips"],["#lockBtn","#mshTools"],["#themeBtn","#mshTools"],["#shareBtn","#mshTools"],["#dbStat","#mshTools"],[".viewtog","body"]].map(([sel,to])=>{const el=document.querySelector(sel);return {el,to,home:el.parentNode,next:el.nextSibling}});
+const mMoves=[[".sortsel:not(#grpSel)","#mshTri"],["#grpSel","#mshTri"],["#chips","#mshChips"],["#lockBtn","#mshTools"],["#themeBtn","#mshTools"],["#shareBtn","#mshTools"],["#dbStat","#mshTools"],[".viewtog","#mshVue"]].map(([sel,to])=>{const el=document.querySelector(sel);return {el,to,home:el.parentNode,next:el.nextSibling}});
 function mobileLayout(){
   for(const m of mMoves){ if(mq.matches){ if(m.el.parentNode!==$(m.to)) $(m.to).appendChild(m.el) } else if(m.el.parentNode!==m.home) m.home.insertBefore(m.el,m.next&&m.next.parentNode===m.home?m.next:null) }
   if(!mq.matches){mSheet(false);document.body.classList.remove("msearch")}
@@ -1933,6 +1939,7 @@ $("#vList").addEventListener("click",()=>setView("list"));
 $("#vStats").addEventListener("click",()=>setView("stats"));
 {const vt=$(".viewtog");
  vt.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(vt.closest("#mSheet")){setTimeout(()=>mSheet(false),120);return}
   if(!vt.classList.contains("deplie")){e.preventDefault();e.stopImmediatePropagation();vt.classList.add("deplie");return}
   setTimeout(()=>vt.classList.remove("deplie"),0)},true);
  document.addEventListener("click",e=>{if(!e.target.closest(".viewtog"))vt.classList.remove("deplie")});
