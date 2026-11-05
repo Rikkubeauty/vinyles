@@ -931,10 +931,11 @@ const fmtDate=s=>{
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
 const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
 /* ---------- Traduction des notes Discogs, avec le vocabulaire du disque et du studio ---------- */
-const TRV=6; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
+const TRV=7; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
 const EN=/\b(the|and|with|was|were|has|have|had|than|not|but|also|only|its|it's|which|including|includes|version|variant|different|same|logo|this|that|these|from|by|on|of|is|are|in|at|for|to|as|an|album|sleeve|jacket|track|tracks|side|issue|pressing|printed|cover|label|labels|recorded|released|reissue|copies|edition|limited|numbered|made|original|recipe|cocktail|print|prints|card|includes?|poster|bonus|exclusive|edition|sound|recordings?|records|ltd|all|rights|reserved|copyright|distributed|manufactured|marketed|under|license|licence|inc|printed|produced|written|composed|arranged)\b/gi;
 const FR=/\b(le|la|les|des|du|et|avec|est|sont|une|un|pour|dans|sur|par|pas|mais|aussi|enregistr\w*|pochette|disque|cette|ce|qui)\b/gi;
-const looksEnglish=t=>{const e=(t.match(EN)||[]).length,f=(t.match(FR)||[]).length,w=(t.match(/\p{L}+/gu)||[]).length;return e>=2&&e>f*2||(w>=3&&e>=1&&f===0&&!/[àâçéèêëîïôûùüÿœæ]/i.test(t))};
+const unq=t=>String(t||"").replace(/(["“”„«»]|,,)[\s\S]*(["“”„«»])/g," ");
+const looksEnglish=t0=>{const t=unq(t0),e=(t.match(EN)||[]).length,f=(t.match(FR)||[]).length,w=(t.match(/\p{L}+/gu)||[]).length;return e>=2&&e>f*2||(w>=3&&e>=1&&f===0&&!/[àâçéèêëîïôûùüÿœæ]/i.test(t))};
 // avant traduction : on remplace le jargon anglais par le terme français consacré
 const PRE=[
   // mentions légales
@@ -964,7 +965,7 @@ const PRE=[
   [/\bfirst pressings?\b/gi,"premier pressage"],[/\boriginal pressings?\b/gi,"pressage original"],[/\bpressing plants?\b/gi,"usine de pressage"],
   [/\bpressed (?:by|at)\b/gi,m=>/at/i.test(m)?"pressé à":"pressé par"],[/\blead-?out grooves?\b/gi,"sillon de sortie"],[/\bgrooves?\b/gi,m=>/s$/i.test(m)?"sillons":"sillon"],
   [/\bhand-?etched\b/gi,"gravé à la main"],[/\betchings?\b/gi,"gravure"],[/\betched\b/gi,"gravé"],[/\bstamped\b/gi,"frappé"],[/\bmachine-stamped\b/gi,"frappé à la machine"],
-  [/\bremastered\b/gi,"remasterisé"],[/\bmisprints?\b/gi,"erreur d'impression"],
+  [/\bremastered\b/gi,"remasterisé"],[/\bmisprints?\b/gi,"erreur d'impression"],[/\bmispress(?:ing|ed)?s?\b/gi,"erreur de pressage"],[/\boriginally released on\b/gi,"initialement paru sur"],
   // pochette et livret
   [/\bbooklets?\b/gi,"livret"],[/\bdie-?cut(?: sleeves?| covers?)?\b/gi,"pochette découpée"],[/\blaminated\b/gi,"pelliculée"],
   [/\bflip-?back(?: sleeves?| covers?)?\b/gi,"pochette à rabats"],[/\btrack ?list(?:ing)?\b/gi,"liste des morceaux"],
@@ -998,6 +999,12 @@ const POST=[
 ];
 const capS=t=>String(t||"").replace(/(^[^\p{L}\d]*|[.!?…]\s+[^\p{L}\d]*)(\p{Ll})/gu,(m,p,c)=>p+c.toUpperCase());
 const fixFr=t=>capS(POST.reduce((a,[r,v])=>a.replace(r,v),t||""));
+async function mm(c){
+  const r=await fetch("https://api.mymemory.translated.net/get?langpair=en|fr&q="+encodeURIComponent(c.slice(0,480)));
+  const j=await r.json(), tr=j&&j.responseData&&j.responseData.translatedText;
+  if(j.responseStatus!=200||!tr||/MYMEMORY WARNING|QUERY LENGTH/i.test(tr)) throw new Error("traduction indisponible");
+  return tr.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,"&")+(/\s$/.test(c)?" ":"");
+}
 async function toFr(t){
   if(!looksEnglish(t)) return capS(PRE.slice(0,14).reduce((a,[r,v])=>a.replace(r,v),t));
   const src=PRE.reduce((a,[r,v])=>a.replace(r,v),t);
@@ -1005,10 +1012,11 @@ async function toFr(t){
   for(const p of parts){ if((cur+p).length>450&&cur){chunks.push(cur);cur=""} cur+=p } if(cur) chunks.push(cur);
   const out=[];
   for(const c of chunks){
-    const r=await fetch("https://api.mymemory.translated.net/get?langpair=en|fr&q="+encodeURIComponent(c.slice(0,480)));
-    const j=await r.json(), tr=j&&j.responseData&&j.responseData.translatedText;
-    if(j.responseStatus!=200||!tr||/MYMEMORY WARNING|QUERY LENGTH/i.test(tr)) throw new Error("traduction indisponible");
-    out.push(tr.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,"&"));
+    const tr=await mm(c);
+    let o=tr;
+    // resté en anglais (titres français au milieu, etc.) : on retraduit morceau par morceau
+    if(looksEnglish(o)){ const bits=c.match(/[^,;:–—]+[,;:–—]*\s*/g)||[c]; if(bits.length>1){ const rs=[]; for(const b of bits){ rs.push(looksEnglish(b)?await mm(b):b) } o=rs.join("") } }
+    out.push(o);
   }
   return fixFr(out.join(" ").replace(/\s+/g," ").trim());
 }
