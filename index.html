@@ -603,6 +603,12 @@ dd{margin:0}
 .viewtog button{transition:width .28s cubic-bezier(.2,.8,.2,1),opacity .2s;overflow:hidden;flex-shrink:0}
 .viewtog:not(.deplie) button[aria-pressed="false"]{width:0!important;opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.viewtog button{transition:none}}
+/* dock : même taille que le bouton + */
+.viewtog{padding:0!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+.viewtog button{width:58px;height:58px}
+.viewtog svg{width:24px;height:24px}
+.viewtog:not(.deplie){box-shadow:0 10px 22px rgba(14,90,94,.38)!important}
+@media (min-width:641px){.viewtog{bottom:24px!important}.viewtog button{width:60px;height:60px}}
 </style>
 </head>
 <body>
