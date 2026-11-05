@@ -179,7 +179,9 @@ h1 span{color:var(--amber)}
 .disc .lab{position:absolute;left:33%;top:33%;width:34%;height:34%;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
 .disc .lab::after{content:"";position:absolute;left:50%;top:50%;width:8%;height:8%;margin:-4%;border-radius:50%;background:var(--night)}
 .cv.center .tilt{transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg))}
-.cv.center:hover .vinyl{transform:translateZ(-2px) translateX(34%) rotate(40deg)}
+/* le disque sort toujours de la pochette au centre (souris ou tactile, même comportement) */
+.cv.center .vinyl{animation:dOut .7s .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes dOut{from{transform:translateZ(-2px)}to{transform:translateZ(-2px) translateX(34%) rotate(40deg)}}
 .cv:not(.center):hover .tilt{transform:translateY(-4%)}
 .open{position:absolute;right:6%;top:6%;width:calc(var(--S) * .22);height:calc(var(--S) * .22);border-radius:50%;border:0;background:var(--amber);color:var(--on-accent);cursor:pointer;
   display:grid;place-items:center;font-family:var(--f-mono);font-size:calc(var(--S) * .036);letter-spacing:.06em;text-transform:uppercase;line-height:1.2;
@@ -407,7 +409,7 @@ dd{margin:0}
 .imsg{font-family:var(--f-mono);font-size:13px}
 .imsg.err{color:#f39a7d}
 .foot{font-size:14.5px;color:var(--muted);margin:0;max-width:75ch}
-@media (prefers-reduced-motion:reduce){.cv,.cv .tilt,.vinyl,.pack .tilt,.ambient div{transition:none!important}.pack.playing .disc{animation:none}}
+@media (prefers-reduced-motion:reduce){.cv,.cv .tilt,.vinyl,.pack .tilt,.ambient div{transition:none!important}.cv.center .vinyl{animation-duration:0s;animation-delay:0s}.pack.playing .disc{animation:none}}
 @media (max-width:640px){
   .wrap{padding-block:12px 76px;gap:10px}
   header{gap:10px}
