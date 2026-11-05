@@ -1287,7 +1287,7 @@ function renderInfo(d){
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
     ${!isWish(d)&&d.acquis?`<p class="acq">Acquis le ${esc(fmtAcq(d.acquis))}</p>`:""}
-    <div class="buy">${prixVal(d)?`<b class="prix">${esc(prixVal(d))}</b>`:""}<a class="ico cart" href="${esc(achatOf(d))}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="${d.lienAchat?"Acheter ce disque":"Trouver ce disque en France"}">${ICON.cart}</a></div>
+    <div class="buy">${prixVal(d)?`<b class="prix">${esc(prixVal(d))}</b>`:""}<a class="ico cart" href="${esc(achatOf(d))}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="${d.lienAchat?"Acheter ce disque":"Chercher ce disque à la Fnac"}">${ICON.cart}</a></div>
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
@@ -1787,10 +1787,9 @@ const mesResas=()=>store.get("mes-resas")||{};
 // prix d'un souhait : celui saisi à la main (pas de prix automatique : les sites français ne le donnent pas)
 const prixVal=d=>d.prix||"";
 const prixOf=d=>isWish(d)?prixVal(d):"";
-// achat en France : lien saisi, sinon Google Shopping France (Fnac, Amazon.fr, Cultura, disquaires… avec leurs prix),
-// par code-barres quand il est connu, pour tomber sur le même pressage
+// achat : lien saisi, sinon recherche sur le site de la Fnac (par code-barres quand il est connu = même pressage)
 const qAchat=d=>encodeURIComponent(d.ean||(d.artiste+" "+d.titre+" vinyle"));
-const achatOf=d=>d.lienAchat||`https://www.google.fr/search?tbm=shop&gl=fr&hl=fr&q=${qAchat(d)}`;
+const achatOf=d=>d.lienAchat||`https://www.fnac.com/SearchResult/ResultList.aspx?Search=${qAchat(d)}`;
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
 const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // le propriétaire ne voit rien : surprise
 async function loadResas(){
@@ -2044,7 +2043,7 @@ function openEditor(d){
     <div class="two">${f("edL","Label",e.label)}${f("edC","Référence catalogue",e.cat)}</div>
     <div class="two">${f("edE","EAN / code-barres",e.ean)}${f("edP","Pays",e.pays)}</div>
     ${f("edAq","Date d'acquisition",e.acquis||"","date")}
-    <div class="two">${f("edPx","Prix",e.prix||"","text",'placeholder="ex. 29,99 €"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="Fnac, Cultura, disquaire… (sinon recherche en France)"')}</div>
+    <div class="two">${f("edPx","Prix",e.prix||"","text",'placeholder="ex. 29,99 €"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="Fnac, Cultura, disquaire… (sinon recherche Fnac)"')}</div>
     ${f("edG","Genre",e.genres)}
     ${f("edLi","Lieu d'enregistrement",e.lieu)}
     ${f("edCo","Compositeurs",e.compositeurs)}
