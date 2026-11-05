@@ -973,7 +973,7 @@ const PRE=[
   [/\b(?:front|outer) cover\b/gi,"recto de la pochette"],[/\b(?:back|rear) cover\b/gi,"verso de la pochette"],
   [/\binner sleeves?\b/gi,"pochette intérieure"],[/\bouter sleeves?\b/gi,"pochette extérieure"],[/\bpicture sleeves?\b/gi,"pochette illustrée"],
   [/\bgatefold(?: sleeves?| covers?| jackets?)?\b/gi,"pochette ouvrante"],[/\bspines?\b/gi,"tranche"],
-  [/\b(?:run-?outs|run-?out grooves|matrix numbers|matrices)\b/gi,"matrices"],[/\b(?:run-?out(?: groove)?|dead wax|matrix(?: number)?)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],
+  [/\b(?:run-?outs|run-?out grooves|matrix numbers|matrices)\b/gi,"matrices"],[/\b(?:run-?out(?: groove)?|dead wax|matrix(?: number)?)\b/gi,"matrice"],[/\bhype stickers?\b/gi,"autocollant promotionnel"],[/\bprice code\b/gi,"code prix"],[/\bgold edition\b/gi,"édition dorée"],[/\bfirst coming\b/gi,"premier pressage"],
   [/\bliner notes\b/gi,"notes de pochette"],[/\binserts?\b/gi,"encart"],[/\bshrink(?:-?wrap)?\b/gi,"cellophane"],
   [/\b(?:sleeves?|jackets?)\b/gi,"pochette"],[/\b(?:catalog(?:ue)? numbers?|cat\.? ?(?:no\.?|#))/gi,"numéro de catalogue"],
   [/\b([AB])-side\b/g,"face $1"],[/\bside ([A-H])\b/gi,"face $1"],[/\b(\d{2,3}) ?(?:g|gram|grams)\b/gi,"$1 grammes"],
@@ -1021,9 +1021,11 @@ async function toFr(t){
   return fixFr(out.join(" ").replace(/\s+/g," ").trim());
 }
 // le texte d'origine reste dans d.anecdotes ; la version française est gardée à côté
-const notesShown=d=>d.source==="discogs"&&!d.notesEdit&&d.notesFr&&d.notesFrV===TRV&&d.notesFr.length===(d.anecdotes||[]).length?d.notesFr:(d.anecdotes||[]);
+// notesFrC : traduction relue à la main (prioritaire, jamais écrasée par la traduction automatique)
+const frC=d=>!d.notesEdit&&Array.isArray(d.notesFrC)&&d.notesFrC.length===(d.anecdotes||[]).length;
+const notesShown=d=>frC(d)?d.notesFrC:d.source==="discogs"&&!d.notesEdit&&d.notesFr&&d.notesFrV===TRV&&d.notesFr.length===(d.anecdotes||[]).length?d.notesFr:(d.anecdotes||[]);
 async function translateRecord(d){
-  if(d.source!=="discogs"||d.notesEdit||(d.anecdotesFr&&!d.notesVO)||!d.anecdotes||!d.anecdotes.length||(d.notesFr&&d.notesFrV===TRV)) return false;
+  if(frC(d)||d.source!=="discogs"||d.notesEdit||(d.anecdotesFr&&!d.notesVO)||!d.anecdotes||!d.anecdotes.length||(d.notesFr&&d.notesFrV===TRV)) return false;
   try{ d.notesFr=await Promise.all(d.anecdotes.map(toFr)); d.notesFrV=TRV; if(mine.includes(d)) saveMine(); return true }catch(e){ return false }
 }
 /* anciennes notes traduites sans garder l'original : on récupère l'original */
@@ -2066,7 +2068,7 @@ $("#edForm").addEventListener("submit",async ev=>{
   e.titre=v("edT"); e.artiste=v("edA"); e.annee=v("edY")?+v("edY"):null; e.sortie=v("edS")||(e.annee?String(e.annee):"");
   e.label=v("edL"); e.cat=v("edC"); e.ean=v("edE"); e.pays=v("edP"); e.genres=v("edG"); e.lieu=v("edLi"); e.compositeurs=v("edCo"); e.credits=v("edCr");
   {const nv=$("#edN").value.split("\n").map(x=>x.trim()).filter(Boolean);
-   if(nv.join("\n")!==notesShown(e).join("\n")){e.anecdotes=nv; if(e.source==="discogs") e.notesEdit=true; delete e.notesFr}}
+   if(nv.join("\n")!==notesShown(e).join("\n")){e.anecdotes=nv; if(e.source==="discogs") e.notesEdit=true; delete e.notesFr; delete e.notesFrC}}
   e.anecdotesFr=true; e.notesVO=true;
   e.tracks=textToTracks($("#edTr").value);
   if((document.querySelector("input[name=edStat]:checked")||{}).value==="souhait") e.statut="souhait"; else delete e.statut;
