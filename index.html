@@ -61,7 +61,7 @@ body.readonly #plusBtn,body.readonly #backupBtn,body.readonly #bulkDel,body.read
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
-.keydlg{position:fixed;inset:0;z-index:90;background:rgba(10,10,10,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:grid;place-items:center;padding:16px}
+.keydlg{position:fixed;inset:0;z-index:95;background:rgba(10,10,10,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:grid;place-items:center;padding:16px}
 #dupDlg{z-index:200}
 .keybox{background:var(--night);color:var(--fg);border-radius:14px;padding:22px;width:min(400px,100%);display:grid;gap:12px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
 .keybox h2{margin:0;font-family:var(--f-display);font-weight:var(--dw);font-stretch:var(--dx);font-size:24px;letter-spacing:-.03em}
@@ -141,7 +141,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 h1{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:clamp(24px,3.4vw,36px);letter-spacing:-.02em;line-height:1;margin:0}
 h1 span{color:var(--amber)}
 .prixb{position:absolute;top:7%;right:7%;z-index:2;background:#fff;color:#111;font:700 13px/1 var(--f-body,system-ui);padding:6px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none}
-.acq{margin:6px 0 0;color:var(--muted);font-size:15px}.buy{display:flex;align-items:center;gap:12px;margin:14px 0 4px}.buy .cart{box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#fff;text-decoration:none;transition:transform .2s}.buy .cart:hover{transform:scale(1.08)}.buy .alt{color:var(--muted);font-size:14px;text-underline-offset:3px}.buy a{text-decoration:none}.ailleurs{margin:4px 0 8px;font-size:14px;color:var(--muted,#777)}.ailleurs a{color:inherit;text-underline-offset:3px}.buy .prix{font-size:24px}
+.acq{margin:6px 0 0;color:var(--muted);font-size:15px}.buy{display:flex;align-items:center;gap:12px;margin:14px 0 4px}.buy .cart{box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#fff;text-decoration:none;transition:transform .2s}.buy .cart:hover{transform:scale(1.08)}#buyDlg label{display:grid;gap:6px;margin:10px 0;font-size:14px}#buyDlg input{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:inherit}.buy .alt{color:var(--muted);font-size:14px;text-underline-offset:3px}.buy a{text-decoration:none}.ailleurs{margin:4px 0 8px;font-size:14px;color:var(--muted,#777)}.ailleurs a{color:inherit;text-underline-offset:3px}.buy .prix{font-size:24px}
 details.plus{margin-top:22px;border-top:1px solid var(--line,rgba(0,0,0,.12));padding-top:12px}
 details.plus>summary{cursor:pointer;font-weight:600;list-style:none;padding:6px 0}details.plus>summary::-webkit-details-marker{display:none}
 details.plus>summary::after{content:" +";color:var(--amber)}details.plus[open]>summary::after{content:" −"}
@@ -1287,7 +1287,7 @@ function renderInfo(d){
     <h2 id="dTitle">${esc(d.titre)}</h2>
     <p class="by">${esc(d.artiste)}</p>
     ${!isWish(d)&&d.acquis?`<p class="acq">Acquis le ${esc(fmtAcq(d.acquis))}</p>`:""}
-    <div class="buy">${prixVal(d)?`<b class="prix">${esc(prixVal(d))}</b>`:""}<a class="ico cart" href="${esc(achatOf(d))}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="${d.lienAchat?"Acheter ce disque":"Chercher ce disque sur Amazon"}">${ICON.cart}</a></div>
+    ${isWish(d)&&(d.prix||d.lienAchat)?`<div class="buy">${d.prix?`<b class="prix">${esc(d.prix)}</b>`:""}${d.lienAchat?`<a class="ico cart" href="${esc(d.lienAchat)}" target="_blank" rel="noopener" aria-label="Acheter ce disque" title="Acheter ce disque">${ICON.cart}</a>`:""}</div>`:""}
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
@@ -1504,7 +1504,7 @@ async function addRelease(id,btn){
     else {$("#aMsg").textContent="Lecture de la fiche Discogs…"; d=recordFromRelease(await full()); full=null; await loadDetails(d).catch(()=>{})}
     if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
-    mine.unshift(d); saveMine();
+    mine.unshift(d); saveMine(); if(dest==="souhait") askBuy(d);
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
     rebuild(d.id);
     btn&&btn.classList.add("added");
@@ -1619,7 +1619,7 @@ async function addMbRelease(id,btn){
     const d=recordFromMb(await mbFetch(`release/${id}?inc=${MB_INC}`));
     if(!(await confirmDup(d))){$("#aMsg").textContent="Ajout annulé.";return}
     if(dest==="souhait") d.statut="souhait";
-    mine.unshift(d); saveMine();
+    mine.unshift(d); saveMine(); if(dest==="souhait") askBuy(d);
     if((dest==="souhait")!==(shelf==="souhaits")) setShelf(dest==="souhait"?"souhaits":"collection");
     rebuild(d.id); btn&&btn.classList.add("added");
     $("#aMsg").textContent=`« ${d.titre} » ajouté ${dest==="souhait"?"aux souhaits":"à la collection"}.`;
@@ -1787,9 +1787,6 @@ const mesResas=()=>store.get("mes-resas")||{};
 // prix d'un souhait : celui saisi à la main (pas de prix automatique : les sites français ne le donnent pas)
 const prixVal=d=>d.prix||"";
 const prixOf=d=>isWish(d)?prixVal(d):"";
-// achat : lien saisi, sinon recherche Amazon.fr dans « Musique : CD & Vinyles » (i=popular) par titre de l'album + artiste
-const qAchat=d=>encodeURIComponent(d.titre+" "+d.artiste);
-const achatOf=d=>d.lienAchat||`https://www.amazon.fr/s?k=${qAchat(d)}&i=popular`;
 const bulle=d=>{const p=prixOf(d);return p?`<span class="prixb">${esc(p)}</span>`:""};
 const resaOf=d=>isWish(d)&&!cloud.key?resa[d.id]:null; // le propriétaire ne voit rien : surprise
 async function loadResas(){
@@ -1823,6 +1820,25 @@ function bindGift(d){
   });
 }
 
+/* prix et lien d'achat saisis à la main à chaque nouveau souhait */
+function askBuy(d){
+  let dl=$("#buyDlg"); if(dl) dl.remove();
+  dl=document.createElement("div"); dl.className="keydlg"; dl.id="buyDlg"; dl.setAttribute("role","dialog"); dl.setAttribute("aria-modal","true");
+  dl.innerHTML=`<form class="keybox"><h2>Où l'acheter ?</h2><p>« ${esc(d.titre)} » · ${esc(d.artiste)}</p>
+    <label>Prix<input id="bdPx" type="text" inputmode="decimal" placeholder="ex. 29,99 €" autocomplete="off"></label>
+    <label>Lien d'achat<input id="bdLk" type="url" placeholder="https://…" autocomplete="off"></label>
+    <div class="keyacts"><button class="btn pri" type="submit">Enregistrer</button><button class="btn" type="button" id="bdNo">Plus tard</button></div></form>`;
+  document.body.appendChild(dl);
+  const close=()=>dl.remove();
+  dl.querySelector("#bdNo").addEventListener("click",close);
+  dl.addEventListener("click",e=>{if(e.target===dl)close()});
+  dl.querySelector("form").addEventListener("submit",e=>{e.preventDefault();
+    const px=$("#bdPx").value.trim(), lk=$("#bdLk").value.trim();
+    if(px) d.prix=/\d$/.test(px)?px+" €":px; if(/^https?:\/\//.test(lk)) d.lienAchat=lk;
+    if(px||lk){saveMine(); rebuild(d.id); if(!$("#gridView").hidden) renderGrid(); if(!$("#listView").hidden) renderList()}
+    close()});
+  setTimeout(()=>$("#bdPx").focus(),50);
+}
 /* ---------- Partager la liste de souhaits ---------- */
 $("#shareBtn").addEventListener("click",async()=>{
   const url=location.origin+location.pathname+"?souhaits";
@@ -2043,7 +2059,7 @@ function openEditor(d){
     <div class="two">${f("edL","Label",e.label)}${f("edC","Référence catalogue",e.cat)}</div>
     <div class="two">${f("edE","EAN / code-barres",e.ean)}${f("edP","Pays",e.pays)}</div>
     ${f("edAq","Date d'acquisition",e.acquis||"","date")}
-    <div class="two">${f("edPx","Prix",e.prix||"","text",'placeholder="ex. 29,99 €"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="Fnac, Cultura, disquaire… (sinon recherche Amazon)"')}</div>
+    <div class="two">${f("edPx","Prix (souhaits)",e.prix||"","text",'placeholder="ex. 29,99 €"')}${f("edBuy","Lien d'achat",e.lienAchat||"","url",'placeholder="Fnac, Cultura, disquaire… (souhaits)"')}</div>
     ${f("edG","Genre",e.genres)}
     ${f("edLi","Lieu d'enregistrement",e.lieu)}
     ${f("edCo","Compositeurs",e.compositeurs)}
