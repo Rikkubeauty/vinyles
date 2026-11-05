@@ -1607,8 +1607,32 @@ $("#burstBtn").addEventListener("click",()=>{
 });
 function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").classList.remove("on");$("#scanBtn").setAttribute("aria-label","Scanner le code-barres")}
 
-function removeRecord(d){
-  mine=mine.filter(x=>x.id!==d.id); saveMine(); if(!$("#detail").hidden) closeDetail(); rebuild();
+/* Suppression animée : la pochette s'envole en tournant, le disque roule hors champ, la ligne se replie */
+function vanishRows(ids){
+  if(reduce) return Promise.resolve();
+  const els=[...document.querySelectorAll(".rrow[data-id],.gcard[data-open]")].filter(e=>ids.has(e.dataset.id||e.dataset.open)&&e.offsetParent);
+  return Promise.all(els.map((el,i)=>{
+    const h=el.offsetHeight, grid=el.classList.contains("gcard");
+    el.style.pointerEvents="none";
+    const a=grid
+      ? el.animate([{transform:"none",opacity:1,filter:"none"},{transform:"translateY(-10px) scale(1.04) rotate(-2deg)",opacity:1,offset:.3},{transform:"translateY(60px) scale(.5) rotate(14deg)",opacity:0,filter:"blur(4px)"}],{duration:520,delay:i*45,easing:"cubic-bezier(.5,0,.75,0)",fill:"forwards"})
+      : el.animate([{transform:"none",opacity:1,background:"transparent"},{transform:"translateX(12px)",background:"color-mix(in srgb,var(--accent) 22%,transparent)",offset:.25},{transform:"translateX(-110%)",opacity:0,background:"color-mix(in srgb,var(--accent) 22%,transparent)",offset:.7,height:h+"px"},{transform:"translateX(-110%)",opacity:0,height:"0px",marginTop:"0px",marginBottom:"0px",paddingTop:"0px",paddingBottom:"0px"}],{duration:560,delay:i*45,easing:"cubic-bezier(.6,0,.3,1)",fill:"forwards"});
+    return a.finished.catch(()=>{});
+  }));
+}
+async function vanishDetail(){
+  const pack=$("#pack"); if(reduce||!pack) return;
+  const disc=pack.querySelector(".vinyl");
+  const anims=[pack.animate([{transform:"none",opacity:1,filter:"none"},{transform:"translateY(-14px) rotate(-3deg) scale(1.03)",offset:.25},{transform:"translate(-30%,70%) rotate(-28deg) scale(.45)",opacity:0,filter:"blur(6px)"}],{duration:650,easing:"cubic-bezier(.55,0,.8,.2)",fill:"forwards"})];
+  if(disc) anims.push(disc.animate([{transform:getComputedStyle(disc).transform==="none"?"none":getComputedStyle(disc).transform},{transform:"translateZ(-2px) translateX(170%) rotate(540deg)"}],{duration:650,easing:"cubic-bezier(.5,0,.7,.3)",fill:"forwards"}));
+  anims.push($("#detail").animate([{opacity:1},{opacity:1,offset:.6},{opacity:0}],{duration:650,fill:"forwards"}));
+  await Promise.all(anims.map(a=>a.finished.catch(()=>{})));
+}
+async function removeRecord(d,ids){
+  ids=ids||new Set([d.id]);
+  if(!$("#detail").hidden&&d&&state.cur===d){ await vanishDetail(); closeDetail(); $("#detail").getAnimations().forEach(a=>a.cancel()); $("#pack").getAnimations({subtree:true}).forEach(a=>a.cancel()); await vanishRows(ids); }
+  else await vanishRows(ids);
+  mine=mine.filter(x=>!ids.has(x.id)); saveMine(); rebuild();
 }
 
 
@@ -1898,7 +1922,7 @@ $("#tableWrap").addEventListener("click",e=>{
   if(t.dataset.sel){t.checked?lst.sel.add(t.dataset.sel):lst.sel.delete(t.dataset.sel); lst.confirm=null; renderList(); return}
   const got=t.closest("[data-got]"); if(got){gotIt(byId(got.dataset.got)); renderList(); return}
   const ed=t.closest("[data-edit]"); if(ed){lst.open=null; openEditor(byId(ed.dataset.edit)); renderList(); return}
-  const del=t.closest("[data-del]"); if(del){const id=del.dataset.del; if(lst.confirm===id){lst.confirm=null; lst.open=null; lst.sel.delete(id); removeRecord(byId(id)); renderList()} else {lst.confirm=id; renderList()} return}
+  const del=t.closest("[data-del]"); if(del){const id=del.dataset.del; if(lst.confirm===id){lst.confirm=null; lst.open=null; lst.sel.delete(id); removeRecord(byId(id))} else {lst.confirm=id; renderList()} return}
   if(lst.open){lst.open=null; lst.confirm=null; renderList(); return}
   if(lst.pick){const r=t.closest(".rrow[data-id]"); if(r&&!t.closest("[data-open]")){const id=r.dataset.id; lst.sel.has(id)?lst.sel.delete(id):lst.sel.add(id); renderList(); return}}
   const op=t.closest("[data-open]"); if(op){openDetail(byId(op.dataset.open))}
@@ -1915,7 +1939,7 @@ $("#tableWrap").addEventListener("keydown",e=>{const op=e.target.closest("[data-
 }
 $("#bulkDel").addEventListener("click",()=>{
   if(lst.confirm!=="bulk"){lst.confirm="bulk";renderList();return}
-  mine=mine.filter(d=>!lst.sel.has(d.id)); lst.sel.clear(); lst.confirm=null; saveMine(); rebuild(); renderList();
+  const ids=new Set(lst.sel); lst.sel.clear(); lst.confirm=null; $("#bulkDel").hidden=true; removeRecord(null,ids);
 });
 
 /* ---------- Édition d'un disque ---------- */
@@ -1970,7 +1994,7 @@ function openEditor(d){
   $("#edFile").addEventListener("change",async ev=>{const file=ev.target.files[0];if(!file)return;
     try{editing._cover=await shrink(file);$("#edThumb").style.cssText=`background-image:url('${editing._cover}')`;$("#edCover").value=""}catch(err){$("#edMsg").className="imsg err";$("#edMsg").textContent="Impossible de lire cette image."}});
   $("#edCancel").addEventListener("click",closeEditor);
-  const del=$("#edDel"); if(del) del.addEventListener("click",()=>{if(del.dataset.sure){removeRecord(editing);closeEditor();renderList()}else{del.dataset.sure="1";del.textContent="Confirmer la suppression"}});
+  const del=$("#edDel"); if(del) del.addEventListener("click",()=>{if(del.dataset.sure){const d=editing;closeEditor();removeRecord(d)}else{del.dataset.sure="1";del.textContent="Confirmer la suppression"}});
 }
 function shrink(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const m=600,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c.toDataURL("image/jpeg",.85))};img.onerror=rej;img.src=URL.createObjectURL(file)})}
 function closeEditor(){$("#editor").hidden=true;editing=null}
