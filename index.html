@@ -609,6 +609,9 @@ dd{margin:0}
 .viewtog svg{width:24px;height:24px}
 .viewtog:not(.deplie){box-shadow:0 10px 22px rgba(14,90,94,.38)!important}
 @media (min-width:641px){.viewtog{bottom:24px!important}.viewtog button{width:60px;height:60px}}
+/* tel : dock des vues seulement en bas de page */
+.viewtog{transition:opacity .25s,transform .25s}
+@media (max-width:640px){body:not(.basdepage) .viewtog:not(.deplie){opacity:0;transform:translateY(16px);pointer-events:none}}
 </style>
 </head>
 <body>
@@ -1934,6 +1937,8 @@ $("#vStats").addEventListener("click",()=>setView("stats"));
   setTimeout(()=>vt.classList.remove("deplie"),0)},true);
  document.addEventListener("click",e=>{if(!e.target.closest(".viewtog"))vt.classList.remove("deplie")});
  document.addEventListener("keydown",e=>{if(e.key==="Escape")vt.classList.remove("deplie")});
+ const bas=()=>document.body.classList.toggle("basdepage",innerHeight+scrollY>=document.documentElement.scrollHeight-60);
+ addEventListener("scroll",bas,{passive:true});addEventListener("resize",bas);new ResizeObserver(bas).observe(document.body);bas();
  vt.addEventListener("focusout",e=>{if(!vt.contains(e.relatedTarget))vt.classList.remove("deplie")});}
 $("#backupBtn").addEventListener("click",async()=>{
   try{const r=await api("/sauvegarde"); if(!r.ok) throw new Error((await r.json().catch(()=>({}))).erreur||"Sauvegarde impossible.");
