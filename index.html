@@ -57,7 +57,7 @@
 [hidden]{display:none!important}
 .lock.mOnly,.viewtog svg{display:none}
 .msheet{display:none}
-body.readonly #addBtn,body.readonly #backupBtn,body.readonly #bulkDel,body.readonly .reg .rck,body.readonly .reg .racts,body.readonly .reg .rswipe,body.readonly .reg .got,body.readonly .rshare,body.partage .rshare,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
+body.readonly #plusBtn,body.readonly #backupBtn,body.readonly #bulkDel,body.readonly .reg .rck,body.readonly .reg .racts,body.readonly .reg .rswipe,body.readonly .reg .got,body.readonly .rshare,body.partage .rshare,body.readonly #edBtn,body.readonly #rmBtn,body.readonly #gotBtn,body.readonly #rmConf{display:none!important}
 body:not(.readonly) #lockBtn{color:var(--amber);border-color:var(--amber)}
 .lock{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);background:var(--field)}
 .lock:focus-visible{outline:2px solid var(--amber)}
@@ -335,7 +335,7 @@ h1 span{color:var(--amber)}
 #detail .close:hover{background:var(--fg);color:var(--night)}
 #detail .close{background:var(--panel);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
 /* fiche ouverte : la barre de vues, le + et la flèche ne recouvrent plus le lecteur */
-body.fiche .viewtog,body.fiche #addBtn,body.fiche #topBtn{display:none!important}
+body.fiche .viewtog,body.fiche #plusBtn,body.fiche #topBtn{display:none!important}
 .close:focus-visible{outline:2px solid var(--amber)}
 .pack{position:relative;width:min(380px,34vw);aspect-ratio:1;max-width:100%;margin:clamp(10px,4vw,40px) 0 0;perspective:1200px}
 @media (max-width:880px){.pack{width:min(340px,52vw);margin-left:max(0px,calc(50% - min(340px,52vw) * .7))}}
@@ -393,12 +393,12 @@ dd{margin:0}
 .acts .confirm{font-family:var(--f-mono);font-size:11.5px;color:var(--amber)}
 
 /* ---------- Ajouter un disque ---------- */
-.adder{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:var(--panel);
+.ajout{position:fixed;z-index:70;top:0;right:0;bottom:0;width:min(560px,100%);overflow-y:auto;background:var(--panel);
   border-left:1px solid var(--line);box-shadow:-30px 0 60px rgba(0,0,0,.5);display:grid;gap:14px;align-content:start;
   padding-block:max(20px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px));animation:slidein .35s cubic-bezier(.2,.8,.2,1)}
 @keyframes slidein{from{transform:translateX(40px);opacity:0}}
-.adhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.adhead h2{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:26px;letter-spacing:-.02em;margin:0}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.phead h2{font-family:var(--f-display);font-weight:var(--dw);font-style:var(--ds);text-transform:var(--dt);font-stretch:var(--dx);font-size:26px;letter-spacing:-.02em;margin:0}
 .close2{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
 .close2:focus-visible{outline:2px solid var(--amber)}
 #scanVideo{width:100%;max-width:420px;border-radius:10px;background:#000}
@@ -426,7 +426,7 @@ dd{margin:0}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
   .capline .nav{display:none}
   #sortBtn{padding:6px 10px;font-size:11.5px}
-  #addBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
+  #plusBtn{font-size:0;letter-spacing:0;width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
   .subbar{gap:8px}
   .subleft{width:100%;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;width:calc(100% + 32px)}
   .subleft::-webkit-scrollbar{display:none}
@@ -456,9 +456,9 @@ dd{margin:0}
   .tools .search{display:none}
   body.msearch .tools .search{display:block;position:absolute;left:0;right:88px;top:50%;transform:translateY(-50%);width:auto;height:42px;font-size:14px;z-index:2;background:var(--night);border-color:var(--fg)}
   body.msearch #mSearch{color:var(--amber)}
-  #addBtn svg{display:block;width:26px;height:26px}
-  #addBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
-  body.readonly:not(.partage) #addBtn{display:grid!important}
+  #plusBtn svg{display:block;width:26px;height:26px}
+  #plusBtn{position:fixed;z-index:60;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 10px 22px rgba(226,35,26,.38)}
+  body.readonly:not(.partage) #plusBtn{display:grid!important}
   #topBtn{all:unset;box-sizing:border-box;cursor:pointer;position:fixed;z-index:59;right:calc(23px + env(safe-area-inset-right,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--fg);color:var(--night);box-shadow:0 8px 20px rgba(0,0,0,.28);opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;transition:opacity .2s,transform .2s}
   #topBtn.on{opacity:1;transform:none;pointer-events:auto}
   #topBtn:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
@@ -527,34 +527,34 @@ dd{margin:0}
   .viewtog button{width:50px;height:44px}
   #topBtn{right:36px;bottom:96px}
   body.readonly.partage #topBtn{bottom:32px}
-  #addBtn{right:28px;bottom:24px;width:60px;height:60px;font-size:0;letter-spacing:0;padding:0;display:grid;place-items:center}
+  #plusBtn{right:28px;bottom:24px;width:60px;height:60px;font-size:0;letter-spacing:0;padding:0;display:grid;place-items:center}
   .caption{margin-top:10px}
 }
 /* ===== Ajouter un disque : palette ===== */
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.adder.palette{position:fixed;inset:0;top:0;right:0;bottom:0;width:auto;overflow:visible;border:0;box-shadow:none;animation:none;z-index:70;background:rgba(10,10,10,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px 16px}
-.adbox{width:min(720px,100%);max-height:84vh;display:flex;flex-direction:column;background:var(--menu,var(--panel));border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px rgba(0,0,0,.5);overflow:hidden;animation:palin .25s cubic-bezier(.2,.8,.2,1)}
+.ajout.palette{position:fixed;inset:0;top:0;right:0;bottom:0;width:auto;overflow:visible;border:0;box-shadow:none;animation:none;z-index:70;background:rgba(10,10,10,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px 16px}
+.pbox{width:min(720px,100%);max-height:84vh;display:flex;flex-direction:column;background:var(--menu,var(--panel));border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px rgba(0,0,0,.5);overflow:hidden;animation:palin .25s cubic-bezier(.2,.8,.2,1)}
 @keyframes palin{from{transform:translateY(-10px) scale(.985);opacity:0}}
-.adtop{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-bottom:1px solid var(--line)}
-.addform{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;color:var(--muted)}
-.addform input{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--fg);font-family:var(--f-body,inherit);font-size:20px;font-weight:500;padding:12px 0;outline:none;-webkit-appearance:none;appearance:none}
-.addform input::placeholder{color:var(--muted);font-weight:400}
-.addform input::-webkit-search-cancel-button{-webkit-appearance:none}
-.adico{all:unset;cursor:pointer;flex:none;width:42px;height:42px;border-radius:11px;background:var(--hover);color:var(--fg);display:grid;place-items:center}
-.adico.on{background:var(--amber);color:var(--on-accent)}
-.adico:focus-visible,.adx:focus-visible,.adfoot button:focus-visible{outline:2px solid var(--amber)}
-.adx{all:unset;cursor:pointer;flex:none;padding:10px 6px;font-size:15px;color:var(--muted)}
-.adx:hover{color:var(--fg)}
-.adder.palette .dest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:12px 18px 4px;font-family:var(--f-body);text-transform:none;letter-spacing:0;padding:3px;border-radius:11px;background:var(--hover);width:auto;max-width:320px}
-.adder.palette .dest label{all:unset;cursor:pointer;text-align:center;padding:8px 0;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
+.ptop{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-bottom:1px solid var(--line)}
+.palform{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;color:var(--muted)}
+.palform input{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--fg);font-family:var(--f-body,inherit);font-size:20px;font-weight:500;padding:12px 0;outline:none;-webkit-appearance:none;appearance:none}
+.palform input::placeholder{color:var(--muted);font-weight:400}
+.palform input::-webkit-search-cancel-button{-webkit-appearance:none}
+.pico{all:unset;cursor:pointer;flex:none;width:42px;height:42px;border-radius:11px;background:var(--hover);color:var(--fg);display:grid;place-items:center}
+.pico.on{background:var(--amber);color:var(--on-accent)}
+.pico:focus-visible,.pclose:focus-visible,.pfoot button:focus-visible{outline:2px solid var(--amber)}
+.pclose{all:unset;cursor:pointer;flex:none;padding:10px 6px;font-size:15px;color:var(--muted)}
+.pclose:hover{color:var(--fg)}
+.ajout.palette .dest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:12px 18px 4px;font-family:var(--f-body);text-transform:none;letter-spacing:0;padding:3px;border-radius:11px;background:var(--hover);width:auto;max-width:320px}
+.ajout.palette .dest label{all:unset;cursor:pointer;text-align:center;padding:8px 0;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
 .dest input{position:absolute;opacity:0;pointer-events:none}
-.adder.palette .dest label:has(input:checked){background:var(--fg);color:var(--night)}
-.adder.palette .dest label:focus-within{outline:2px solid var(--amber)}
-.adbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 8px 10px;display:grid;gap:8px;align-content:start}
-.adbody .imsg{padding:4px 10px;color:var(--muted);font-size:12px}
-.adbody .imsg.err{color:#f39a7d}
-.adbody #moreBtn{justify-self:center;margin:6px}
-.adbody #scanVideo{justify-self:center;margin:4px 10px}
+.ajout.palette .dest label:has(input:checked){background:var(--fg);color:var(--night)}
+.ajout.palette .dest label:focus-within{outline:2px solid var(--amber)}
+.pbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 8px 10px;display:grid;gap:8px;align-content:start}
+.pbody .imsg{padding:4px 10px;color:var(--muted);font-size:12px}
+.pbody .imsg.err{color:#f39a7d}
+.pbody #moreBtn{justify-self:center;margin:6px}
+.pbody #scanVideo{justify-self:center;margin:4px 10px}
 .results{display:flex;flex-direction:column}
 .res{all:unset;cursor:pointer;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:14px;align-items:center;padding:9px 10px;border-radius:12px}
 .res:hover,.res:focus-visible{background:var(--hover)}
@@ -569,20 +569,20 @@ dd{margin:0}
 .res:hover .ra,.res:focus-visible .ra{background:var(--amber);border-color:var(--amber);color:#fff}
 .res.added .ra{display:none}
 .res.added::after{content:"Déjà là";font-family:var(--f-mono);font-size:11px;color:#1fa64a}
-.adfoot{display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
-.adfoot .adkeys{margin-right:auto}
-.adfoot button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;background:var(--hover);color:var(--fg);font-family:var(--f-mono);font-size:12px}
-.adfoot button.on{background:var(--amber);color:var(--on-accent)}
+.pfoot{display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.pfoot .pkeys{margin-right:auto}
+.pfoot button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;background:var(--hover);color:var(--fg);font-family:var(--f-mono);font-size:12px}
+.pfoot button.on{background:var(--amber);color:var(--on-accent)}
 @media (max-width:640px){
-  .adder.palette{padding:0;background:var(--night)}
-  .adbox{width:100%;height:100%;max-height:none;border-radius:0;border:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
-  .adtop{padding:10px 12px 10px 14px;border-bottom:0}
-  .addform{background:var(--hover);border-radius:14px;padding:0 4px 0 14px}
-  .addform input{font-size:17px;padding:13px 0}
-  .adder.palette .dest{margin:0 12px 6px;max-width:none}
-  .adfoot{padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px))}
-  .adfoot .adkeys{display:none}
-  .adfoot button{flex:1 1 0;text-align:center;padding:14px 0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600}
+  .ajout.palette{padding:0;background:var(--night)}
+  .pbox{width:100%;height:100%;max-height:none;border-radius:0;border:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
+  .ptop{padding:10px 12px 10px 14px;border-bottom:0}
+  .palform{background:var(--hover);border-radius:14px;padding:0 4px 0 14px}
+  .palform input{font-size:17px;padding:13px 0}
+  .ajout.palette .dest{margin:0 12px 6px;max-width:none}
+  .pfoot{padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px))}
+  .pfoot .pkeys{display:none}
+  .pfoot button{flex:1 1 0;text-align:center;padding:14px 0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600}
 }
 </style>
 </head>
@@ -602,7 +602,7 @@ dd{margin:0}
       <button class="lock" id="lockBtn" type="button" hidden aria-label="Mode édition" title="Mode édition"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
       <button class="lock" id="themeBtn" type="button" aria-label="Mode sombre" title="Mode sombre"><svg class="moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <button class="lock" id="shareBtn" type="button" aria-label="Partager ma liste de souhaits" title="Partager ma liste de souhaits"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8" stroke="currentColor" stroke-width="1.8"/></svg></button>
-      <button class="btn pri" id="addBtn" type="button" aria-expanded="false" aria-controls="adder" aria-label="Ajouter un disque" title="Ajouter un disque"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+      <button class="btn pri" id="plusBtn" type="button" aria-expanded="false" aria-controls="ajout" aria-label="Ajouter un disque" title="Ajouter un disque"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
     </div>
   </header>
   <div class="subbar">
@@ -638,29 +638,29 @@ dd{margin:0}
 
   <section id="statsView" hidden aria-label="Statistiques"></section>
 
-  <section class="adder" id="editor" hidden role="dialog" aria-labelledby="edTitle">
-    <div class="adhead"><h2 id="edTitle">Modifier le disque</h2><button class="close2" id="edClose" type="button" aria-label="Fermer">✕</button></div>
+  <section class="ajout" id="editor" hidden role="dialog" aria-labelledby="edTitle">
+    <div class="phead"><h2 id="edTitle">Modifier le disque</h2><button class="close2" id="edClose" type="button" aria-label="Fermer">✕</button></div>
     <form class="edform" id="edForm"></form>
   </section>
-  <section class="adder palette" id="adder" hidden role="dialog" aria-modal="true" aria-label="Ajouter un disque">
-   <div class="adbox">
-    <div class="adtop">
-      <form class="addform" id="addForm" role="search">
+  <section class="ajout palette" id="ajout" hidden role="dialog" aria-modal="true" aria-label="Ajouter un disque">
+   <div class="pbox">
+    <div class="ptop">
+      <form class="palform" id="palForm" role="search">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         <input id="aq" type="search" autocomplete="off" enterkeyhint="search" placeholder="Titre, artiste, EAN ou code-barres" aria-label="Titre, artiste, EAN ou code-barres" required>
-        <button class="adico" type="button" id="scanBtn" hidden aria-label="Scanner le code-barres" title="Scanner le code-barres"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <button class="pico" type="button" id="scanBtn" hidden aria-label="Scanner le code-barres" title="Scanner le code-barres"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
         <button class="vh" type="submit" id="aGo">Chercher</button>
       </form>
-      <button class="adx" id="adClose" type="button">Fermer</button>
+      <button class="pclose" id="palClose" type="button">Fermer</button>
     </div>
     <div class="dest" role="radiogroup" aria-label="Ajouter à"><label><input type="radio" name="dest" value="collection" checked>Collection</label><label><input type="radio" name="dest" value="souhait">Souhaits</label></div>
-    <div class="adbody">
+    <div class="pbody">
       <video id="scanVideo" playsinline muted hidden></video>
       <div class="imsg" id="aMsg" role="status"></div>
       <div class="results" id="results"></div>
       <button class="btn" type="button" id="moreBtn" hidden>Plus de résultats</button>
     </div>
-    <div class="adfoot"><span class="adkeys" aria-hidden="true">↑ ↓ choisir · ↵ ajouter · Échap fermer</span><button type="button" id="adBlank">Disque vierge</button></div>
+    <div class="pfoot"><span class="pkeys" aria-hidden="true">↑ ↓ choisir · ↵ ajouter · Échap fermer</span><button type="button" id="palBlank">Disque vierge</button></div>
    </div>
   </section>
 </div>
@@ -1575,7 +1575,7 @@ function lev(a,b){if(Math.abs(a.length-b.length)>1)return 2;const m=[...Array(a.
   for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
 $("#results").addEventListener("click",e=>{const b=e.target.closest(".res");if(!b)return;if(b.dataset.mb)addMbRelease(b.dataset.mb,b);else addRelease(+b.dataset.id,b)});
 $("#moreBtn").addEventListener("click",()=>runSearch(srch.q,true));
-$("#addForm").addEventListener("submit",e=>{e.preventDefault();const q=cleanQ($("#aq").value);$("#aq").value=q;if(q)runSearch(q)});
+$("#palForm").addEventListener("submit",e=>{e.preventDefault();const q=cleanQ($("#aq").value);$("#aq").value=q;if(q)runSearch(q)});
 let typeT=null;
 const cleanQ=v=>v.replace(/[\u00a0\u200b\ufeff]/g," ").replace(/\s+/g," ").trim();
 $("#aq").addEventListener("paste",e=>{const t=(e.clipboardData||window.clipboardData).getData("text");if(t==null)return;e.preventDefault();
@@ -1585,18 +1585,18 @@ $("#aq").addEventListener("blur",e=>{e.target.value=cleanQ(e.target.value)});
 $("#aq").addEventListener("input",()=>{clearTimeout(typeT);const el=$("#aq");if(/^\s/.test(el.value))el.value=el.value.replace(/^\s+/,"");const q=cleanQ(el.value);
   if(q.length<3){srch.seq++;$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";return}
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
-function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
-  if(open){$("#aq").focus()}else{stopScan();srch.seq++;$("#aq").value="";$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";$("#aMsg").className="imsg";$("#addBtn").focus()}}
-$("#addBtn").addEventListener("click",async()=>{if($("#adder").hidden&&document.body.classList.contains("readonly")&&!(await askKey()))return;toggleAdder($("#adder").hidden)});
-$("#adClose").addEventListener("click",()=>toggleAdder(false));
-$("#adder").addEventListener("click",e=>{if(e.target===e.currentTarget)toggleAdder(false)});
-$("#adBlank").addEventListener("click",()=>{const w=document.querySelector("input[name=dest]:checked").value==="souhait";toggleAdder(false);openEditor(null);if(w||shelf==="souhaits")document.querySelector("input[name=edStat][value=souhait]").checked=true});
+function toggleAdder(open){const ad=$("#ajout");ad.hidden=!open;$("#plusBtn").setAttribute("aria-expanded",String(open));
+  if(open){$("#aq").focus()}else{stopScan();srch.seq++;$("#aq").value="";$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";$("#aMsg").className="imsg";$("#plusBtn").focus()}}
+$("#plusBtn").addEventListener("click",async()=>{if($("#ajout").hidden&&document.body.classList.contains("readonly")&&!(await askKey()))return;toggleAdder($("#ajout").hidden)});
+$("#palClose").addEventListener("click",()=>toggleAdder(false));
+$("#ajout").addEventListener("click",e=>{if(e.target===e.currentTarget)toggleAdder(false)});
+$("#palBlank").addEventListener("click",()=>{const w=document.querySelector("input[name=dest]:checked").value==="souhait";toggleAdder(false);openEditor(null);if(w||shelf==="souhaits")document.querySelector("input[name=edStat][value=souhait]").checked=true});
 // clavier : ↓ depuis la recherche vers les résultats, ↑ ↓ entre les résultats
-$("#adder").addEventListener("keydown",e=>{if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;const rs=[...document.querySelectorAll("#results .res")];if(!rs.length)return;
+$("#ajout").addEventListener("keydown",e=>{if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;const rs=[...document.querySelectorAll("#results .res")];if(!rs.length)return;
   const i=rs.indexOf(document.activeElement);
   if(e.target.id==="aq"){if(e.key==="ArrowDown"){e.preventDefault();rs[0].focus()}return}
   if(i<0)return;e.preventDefault();if(e.key==="ArrowDown")rs[Math.min(rs.length-1,i+1)].focus();else if(i===0)$("#aq").focus();else rs[i-1].focus()});
-addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAdder(false)});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#ajout").hidden)toggleAdder(false)});
 
 /* scanner de code-barres (Chrome, Edge, Android) */
 let scanStream=null;
@@ -1607,7 +1607,7 @@ $("#scanBtn").addEventListener("click",async()=>{
     const det=await getDetector(); const v=await startCamera();
     $("#scanBtn").classList.add("on");$("#scanBtn").setAttribute("aria-label","Arrêter le scan"); $("#aMsg").className="imsg"; $("#aMsg").textContent="Code-barres au dos de la pochette, face à la caméra.";
     const tick=async()=>{ if(!scanStream) return;
-      try{const c=await det.detect(v); if(c.length){$("#aq").value=c[0].rawValue;stopScan();$("#addForm").requestSubmit();return}}catch(e){}
+      try{const c=await det.detect(v); if(c.length){$("#aq").value=c[0].rawValue;stopScan();$("#palForm").requestSubmit();return}}catch(e){}
       setTimeout(tick,120)};
     tick();
   }catch(err){stopScan();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible. Saisir le code-barres à la main."}
@@ -1841,7 +1841,7 @@ function renderList(){
   $("#lCount").textContent=tot?`${rows.length} disque${rows.length>1?"s":""}${rows.length!==tot?` sur ${tot}`:""}${shelf==="souhaits"?" souhaités":""}`:"";
   $("#bulkDel").hidden=!lst.sel.size;
   $("#bulkDel").textContent=lst.confirm==="bulk"?`Confirmer : supprimer ${lst.sel.size} disque${lst.sel.size>1?"s":""}`:`Supprimer la sélection (${lst.sel.size})`;
-  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('addBtn').click()">+ Ajouter un disque</button></div>`;return}
+  if(!mine.some(d=>records.includes(d))){$("#tableWrap").innerHTML=`<div class="listempty"><p>${shelf==="souhaits"?"Liste de souhaits vide.":"Collection vide."}</p><button class="btn pri" type="button" onclick="document.getElementById('plusBtn').click()">+ Ajouter un disque</button></div>`;return}
   if(!rows.length){$("#tableWrap").innerHTML=`<div class="listempty"><p>Aucun disque ne correspond à la recherche.</p>${state.q?onlineOffer():""}</div>`;return}
   const all=rows.every(d=>lst.sel.has(d.id)), wish=shelf==="souhaits", ro=document.body.classList.contains("readonly");
   const sortBtn=([k,l])=>`<button type="button" data-sort="${k}" aria-pressed="${lst.sort===k}">${l}${lst.sort===k?(lst.dir>0?" ↑":" ↓"):""}</button>`;
@@ -1905,7 +1905,7 @@ function textToTracks(txt){
   });
 }
 // les panneaux latéraux doivent passer au-dessus de la fiche ouverte (.wrap crée son propre empilement)
-document.body.append($("#editor"),$("#adder"));
+document.body.append($("#editor"),$("#ajout"));
 /* bouton « haut de page », au-dessus du + */
 {const tb=document.createElement("button");tb.type="button";tb.id="topBtn";tb.setAttribute("aria-label","Haut de page");tb.title="Haut de page";
  tb.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V5.5M6 11.5l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
