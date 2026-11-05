@@ -1950,6 +1950,14 @@ function openEditor(d){
 }
 function shrink(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const m=600,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c.toDataURL("image/jpeg",.85))};img.onerror=rej;img.src=URL.createObjectURL(file)})}
 function closeEditor(){$("#editor").hidden=true;editing=null}
+/* clavier tactile : les panneaux s'arrêtent au-dessus du clavier et le champ actif reste visible */
+(()=>{const vv=window.visualViewport; if(!vv) return;
+  const fit=center=>{const kb=Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop));
+    for(const el of [$("#editor"),$("#ajout")]){el.style.top=kb?Math.round(vv.offsetTop)+"px":"";el.style.bottom=kb?kb+"px":""}
+    const a=document.activeElement; if(center&&kb>80&&a&&a.closest&&a.closest("#editor")) a.scrollIntoView({block:"center"})};
+  vv.addEventListener("resize",()=>fit(true)); vv.addEventListener("scroll",()=>fit(false));
+  document.addEventListener("focusin",e=>{const t=e.target; if(t.closest&&t.closest("#editor")&&/INPUT|TEXTAREA/.test(t.tagName)) setTimeout(()=>{if(document.activeElement===t&&innerHeight-vv.height>80) t.scrollIntoView({block:"center",behavior:"smooth"})},400)});
+})();
 $("#edClose").addEventListener("click",closeEditor);
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#editor").hidden)closeEditor()});
 $("#edForm").addEventListener("submit",async ev=>{
