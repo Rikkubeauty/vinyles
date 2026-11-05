@@ -1085,7 +1085,7 @@ document.addEventListener("click",async e=>{
   toggleAdder(true); $("#aq").value=q; srch.q=""; runSearch(q);
 });
 $("#q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();refilter()});
-let sortBy=store.get("tri")||"ajout";
+let sortBy="artiste"; // à chaque ouverture : tri par artiste, sans regroupement
 const cmpTxt=(a,b)=>String(a||"").localeCompare(String(b||""),"fr",{sensitivity:"base"});
 const SORTS={
   ajout:(a,b)=>cmpTxt(b.ajoute,a.ajoute),
@@ -1907,7 +1907,7 @@ function paintSort(){
 function sortMenu(open){$("#sortMenu").hidden=!open;$("#sortBtn").setAttribute("aria-expanded",String(open))}
 paintSort();
 $("#sortBtn").addEventListener("click",e=>{e.stopPropagation();typeof grpMenu==="function"&&grpMenu(false);sortMenu($("#sortMenu").hidden)});
-$("#sortMenu").addEventListener("click",e=>{const li=e.target.closest("li");if(!li)return;sortBy=li.dataset.v;store.set("tri",sortBy);paintSort();sortMenu(false);refilter();if(!$("#listView").hidden)renderList()});
+$("#sortMenu").addEventListener("click",e=>{const li=e.target.closest("li");if(!li)return;sortBy=li.dataset.v;paintSort();sortMenu(false);refilter();if(!$("#listView").hidden)renderList()});
 document.addEventListener("click",e=>{if(!e.target.closest(".sortsel"))sortMenu(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sortMenu").hidden){sortMenu(false);$("#sortBtn").focus()}});
 /* ---------- Regroupements (vue Pochettes et Liste) ---------- */
