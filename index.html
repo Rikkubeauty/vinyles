@@ -96,11 +96,6 @@ body.vide #prev,body.vide #next,body.vide #scrub{visibility:hidden}
 .sortmenu li:hover,.sortmenu li.kb{background:var(--hover)}
 .sortmenu li[aria-selected="true"]{background:var(--fg);color:var(--night)}
 .sortmenu li[aria-selected="true"]::after{content:"●";color:var(--amber);font-size:9px;align-self:center}
-.burst{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:42vh;overflow:auto}
-.burst li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:14px;padding:6px 8px;border-radius:8px;background:var(--field);border:1px solid var(--line)}
-.burst li code{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
-.burst li .st{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-.burst li.ok .st{color:#1a8f40}.burst li.ko .st{color:var(--amber)}.burst li.warn .st{color:#b7791f}
 #statsView{display:grid;gap:18px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .kpi{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
@@ -657,13 +652,12 @@ dd{margin:0}
     </div>
     <div class="dest" role="radiogroup" aria-label="Ajouter à"><label><input type="radio" name="dest" value="collection" checked>Collection</label><label><input type="radio" name="dest" value="souhait">Souhaits</label></div>
     <div class="adbody">
-      <ol class="burst" id="burstLog" hidden></ol>
       <video id="scanVideo" playsinline muted hidden></video>
       <div class="imsg" id="aMsg" role="status"></div>
       <div class="results" id="results"></div>
       <button class="btn" type="button" id="moreBtn" hidden>Plus de résultats</button>
     </div>
-    <div class="adfoot"><span class="adkeys" aria-hidden="true">↑ ↓ choisir · ↵ ajouter · Échap fermer</span><button type="button" id="burstBtn" hidden>Scan en rafale</button><button type="button" id="adBlank">Disque vierge</button></div>
+    <div class="adfoot"><span class="adkeys" aria-hidden="true">↑ ↓ choisir · ↵ ajouter · Échap fermer</span><button type="button" id="adBlank">Disque vierge</button></div>
    </div>
   </section>
 </div>
@@ -1572,7 +1566,7 @@ $("#aq").addEventListener("input",()=>{clearTimeout(typeT);const el=$("#aq");if(
   if(q.length<3){srch.seq++;$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";return}
   typeT=setTimeout(()=>{if(q!==srch.q)runSearch(q)},450)});
 function toggleAdder(open){const ad=$("#adder");ad.hidden=!open;$("#addBtn").setAttribute("aria-expanded",String(open));
-  if(open){$("#aq").focus()}else{stopBurst();stopScan();$("#addBtn").focus()}}
+  if(open){$("#aq").focus()}else{stopScan();srch.seq++;$("#aq").value="";$("#results").innerHTML="";$("#moreBtn").hidden=true;$("#aMsg").textContent="";$("#aMsg").className="imsg";$("#addBtn").focus()}}
 $("#addBtn").addEventListener("click",async()=>{if($("#adder").hidden&&document.body.classList.contains("readonly")&&!(await askKey()))return;toggleAdder($("#adder").hidden)});
 $("#adClose").addEventListener("click",()=>toggleAdder(false));
 $("#adder").addEventListener("click",e=>{if(e.target===e.currentTarget)toggleAdder(false)});
@@ -1586,9 +1580,9 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#adder").hidden)toggleAd
 
 /* scanner de code-barres (Chrome, Edge, Android) */
 let scanStream=null;
-if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){$("#scanBtn").hidden=false;$("#burstBtn").hidden=false}
+if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){$("#scanBtn").hidden=false}
 $("#scanBtn").addEventListener("click",async()=>{
-  if(scanStream){stopBurst();stopScan();return}
+  if(scanStream){stopScan();return}
   try{
     const det=await getDetector(); const v=await startCamera();
     $("#scanBtn").classList.add("on");$("#scanBtn").setAttribute("aria-label","Arrêter le scan"); $("#aMsg").className="imsg"; $("#aMsg").textContent="Code-barres au dos de la pochette, face à la caméra.";
@@ -1597,13 +1591,6 @@ $("#scanBtn").addEventListener("click",async()=>{
       setTimeout(tick,120)};
     tick();
   }catch(err){stopScan();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible. Saisir le code-barres à la main."}
-});
-$("#burstBtn").addEventListener("click",()=>{
-  if(burst){stopBurst();return}
-  if(scanStream) stopScan();
-  burst={on:true,seen:new Set(mine.map(d=>String(d.ean||"").replace(/\D/g,"")).filter(Boolean))};
-  $("#burstBtn").textContent="Arrêter la rafale";$("#burstBtn").classList.add("on"); $("#burstLog").hidden=false; $("#results").innerHTML="";
-  burstLoop();
 });
 function stopScan(){if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null;$("#scanVideo").hidden=true;$("#scanBtn").classList.remove("on");$("#scanBtn").setAttribute("aria-label","Scanner le code-barres")}
 
@@ -1729,7 +1716,7 @@ function renderStats(){
     </div>`;
 }
 
-/* ---------- Scan des codes-barres (avec rafale) ---------- */
+/* ---------- Scan des codes-barres ---------- */
 let detP=null;
 function getDetector(){
   if(!detP) detP=(async()=>{
@@ -1738,65 +1725,9 @@ function getDetector(){
   })().catch(e=>{detP=null;throw e});
   return detP;
 }
-const validEan=c=>{const s=String(c).replace(/\D/g,"");if(![8,12,13].includes(s.length))return false;const d=s.split("").map(Number),chk=d.pop();const sum=d.reverse().reduce((a,x,i)=>a+x*(i%2?1:3),0);return (10-sum%10)%10===chk};
 async function startCamera(){
   scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
   const v=$("#scanVideo"); v.srcObject=scanStream; v.hidden=false; await v.play(); return v;
-}
-let burst=null;
-function stopBurst(){if(!burst)return;burst.on=false;burst=null;$("#burstBtn").textContent="Scan en rafale";$("#burstBtn").classList.remove("on");stopScan()}
-async function buildFromCode(code){
-  // 1. Discogs par code-barres, 2. MusicBrainz sinon
-  let list=[];
-  try{list=(await searchDiscogs(code,1)).results||[]}catch(e){}
-  if(list.length){
-    const ex=mine.find(d=>list.some(r=>r.id===d.discogsId)); if(ex) return {deja:ex};
-    const d=recordFromRelease(await dgFetch(`/releases/${list[0].id}`,discogsToken()));
-    await loadDetails(d); await mbEnrich(d); await wikiFor(d);
-    const autres=new Set(list.map(r=>r.title)).size>1;
-    return {d,doute:autres?`${list.length} pressages possibles`:""};
-  }
-  const mb=await searchMb(code).catch(()=>[]);
-  if(mb.length){
-    const ex=mine.find(d=>mb.some(r=>r.mb===d.mbid)); if(ex) return {deja:ex};
-    const d=recordFromMb(await mbFetch(`release/${mb[0].mb}?inc=${MB_INC}`)); await wikiFor(d);
-    return {d,doute:"trouvé sur MusicBrainz"};
-  }
-  return {};
-}
-async function burstLoop(){
-  const log=$("#burstLog"), queue=[];
-  let busy=false, det;
-  try{det=await getDetector(); await startCamera()}catch(e){stopBurst();$("#aMsg").className="imsg err";$("#aMsg").textContent="Caméra indisponible sur cet appareil.";return}
-  $("#aMsg").className="imsg"; $("#aMsg").textContent="Pochettes une par une devant la caméra : chaque disque est ajouté tout seul.";
-  const run=async()=>{
-    if(busy||!queue.length) return; busy=true;
-    const code=queue.shift(), li=document.createElement("li");
-    li.innerHTML=`<code>${esc(code)}</code><span>Recherche…</span><span class="st">…</span>`; log.prepend(li);
-    try{
-      const {d,deja,doute}=await buildFromCode(code);
-      if(deja){li.className="warn";li.children[1].textContent=`${deja.artiste} – ${deja.titre}`;li.children[2].textContent="déjà là"}
-      else if(d&&!(await confirmDup(d))){li.className="warn";li.children[1].textContent=`${d.artiste} – ${d.titre}`;li.children[2].textContent="annulé"}
-      else if(d){
-        const dest=(document.querySelector("input[name=dest]:checked")||{}).value||"collection";
-        if(dest==="souhait") d.statut="souhait";
-        mine.unshift(d); saveMine(); rebuild(d.id); resolveDeezer(d).then(()=>applyCover(d));
-        li.className=doute?"warn":"ok"; li.children[1].textContent=`${d.artiste} – ${d.titre}`; li.children[2].textContent=doute?"ajouté · à vérifier":"ajouté";
-        if(doute) li.title=doute;
-      } else {li.className="ko";li.children[1].textContent="Introuvable : à ajouter à la main";li.children[2].textContent="raté"}
-    }catch(e){li.className="ko";li.children[1].textContent=niceErr(e);li.children[2].textContent="erreur"}
-    busy=false; run();
-  };
-  const v=$("#scanVideo");
-  const tick=async()=>{
-    if(!burst||!burst.on) return;
-    try{const c=await det.detect(v);
-      for(const x of c){const code=String(x.rawValue).replace(/\D/g,"");
-        if(validEan(code)&&!burst.seen.has(code)){burst.seen.add(code);navigator.vibrate&&navigator.vibrate(60);queue.push(code);run()}}
-    }catch(e){}
-    setTimeout(tick,120);
-  };
-  tick();
 }
 
 /* ---------- Mode liste ---------- */
