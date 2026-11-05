@@ -983,7 +983,8 @@ const POST=[
   [/\bingénieur(?:s)? (?:de son|sonore|d'enregistrement)\b/gi,"ingénieur du son"],[/\bplateau\b/gi,"platine"],
   [/\bbande maîtresse\b/gi,"bande master"],[/\bmaîtrisé\b/gi,"masterisé"],[/\bréémission\b/gi,"réédition"],[/\bré-?émis\b/gi,"réédité"]
 ];
-const fixFr=t=>POST.reduce((a,[r,v])=>a.replace(r,v),t||"");
+const capS=t=>String(t||"").replace(/(^[^\p{L}\d]*|[.!?…]\s+[^\p{L}\d]*)(\p{Ll})/gu,(m,p,c)=>p+c.toUpperCase());
+const fixFr=t=>capS(POST.reduce((a,[r,v])=>a.replace(r,v),t||""));
 async function toFr(t){
   if(!looksEnglish(t)) return t;
   const src=PRE.reduce((a,[r,v])=>a.replace(r,v),t);
@@ -1257,7 +1258,7 @@ function renderInfo(d){
     <dl>${row("Sortie",d.sortie)}${row("Première sortie",d.premiere)}${row("Enregistré",d.lieu)}${row("Composé par",d.compositeurs)}${row("Crédits",d.credits)}${row("Genre",d.genres)}${row("Pays",d.pays)}${row("EAN",d.ean)}</dl>
     ${isWish(d)?giftBox(d):""}
     ${d.wiki&&d.wiki.resume?`<h3>L'histoire de l'album</h3><p class="wiki">${esc(d.wiki.resume)}</p><a class="wikilink" href="${esc(d.wiki.url)}" target="_blank" rel="noopener">Lire sur Wikipédia →</a>`:""}
-    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${notesShown(d).map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
+    ${d.anecdotes&&d.anecdotes.length?`<h3>${d.source==="discogs"?"Notes":"Anecdotes"}</h3><ul class="anec">${notesShown(d).map(a=>`<li>${esc(capS(a))}</li>`).join("")}</ul>`:""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
     <div class="acts">
