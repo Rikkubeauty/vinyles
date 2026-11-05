@@ -316,7 +316,7 @@ h1 span{color:var(--amber)}
 .edform input,.edform textarea{font-family:var(--f-body);font-size:15px;letter-spacing:0;text-transform:none;background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
 .edform textarea{min-height:90px;resize:vertical;line-height:1.45;overflow:hidden}
 /* panneau d'édition opaque : la fiche ne transparaît plus dessous */
-#editor{background:var(--night)}
+#editor{background:var(--night);overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
 .edform textarea.mono{font-family:var(--f-mono);font-size:13px}
 .edform input:focus,.edform textarea:focus{outline:2px solid var(--amber);border-color:transparent}
 .edform small{font-family:var(--f-body);font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted)}
@@ -550,6 +550,7 @@ dd{margin:0}
 .dest input{position:absolute;opacity:0;pointer-events:none}
 .ajout.palette .dest label:has(input:checked){background:var(--fg);color:var(--night)}
 .ajout.palette .dest label:focus-within{outline:2px solid var(--amber)}
+.dest label,.ajout.palette .dest label{position:relative}.dest input{left:0;top:0;width:1px;height:1px;margin:0}
 .pbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 8px 10px;display:grid;gap:8px;align-content:start}
 .pbody .imsg{padding:4px 10px;color:var(--muted);font-size:12px}
 .pbody .imsg.err{color:#f39a7d}
