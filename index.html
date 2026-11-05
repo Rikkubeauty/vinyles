@@ -1148,12 +1148,13 @@ async function openDetail(d,fromEl){
   if(d.wiki===undefined&&d.source!=="demo"){await wikiFor(d);if(d.wiki&&state.cur===d&&!$("#detail").hidden)renderInfo(d);if(cloud.key&&mine.includes(d))saveMine()}
 }
 function closeDetail(){
+  if(!$("#editor").hidden) closeEditor();
   $("#detail").hidden=true; document.body.classList.remove("fiche"); document.body.style.overflow=""; stopAudio(); $("#widget")&&($("#widget").innerHTML="");
   if(lastFocusEl&&lastFocusEl.focus) lastFocusEl.focus(); else $("#flow").focus();
 }
 $("#close").addEventListener("click",closeDetail);
 $("#detail").addEventListener("click",e=>{if(e.target===e.currentTarget||e.target.classList.contains("in"))closeDetail()});
-addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#detail").hidden)closeDetail()});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#detail").hidden&&$("#editor").hidden)closeDetail()});
 $("#pack").addEventListener("mousemove",e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
   const t=e.currentTarget.querySelector(".tilt");t.style.setProperty("--ry",((x-.5)*18).toFixed(1)+"deg");t.style.setProperty("--rx",((.5-y)*14).toFixed(1)+"deg");
   $("#dSleeve").style.setProperty("--gx",(x*100)+"%");$("#dSleeve").style.setProperty("--gy",(y*100)+"%")});
