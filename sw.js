@@ -1,6 +1,6 @@
 // Service worker : l'app s'ouvre même hors connexion (dernière version vue).
 // Les appels /api ne sont jamais mis en cache.
-const CACHE = "disco-v32";
+const CACHE = "disco-v33";
 const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

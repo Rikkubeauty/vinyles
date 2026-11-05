@@ -931,12 +931,30 @@ const fmtDate=s=>{
 const stripDg=s=>String(s).replace(/\[(?:a|l|m|r)=?([^\]]*)\]/g,(_,x)=>/^\d+$/.test(x)?"":x).replace(/\[url=[^\]]*\](.*?)\[\/url\]/g,"$1").replace(/\[\/?[biu]\]/g,"");
 const notesOf=r=>r.notes?stripDg(r.notes).split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(x=>x.length>20).slice(0,3):[];
 /* ---------- Traduction des notes Discogs, avec le vocabulaire du disque et du studio ---------- */
-const TRV=2; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
+const TRV=3; // version du glossaire : l'augmenter re-traduit les notes à l'ouverture des fiches
 const EN=/\b(the|and|with|was|were|recorded|released|this|from|by|on|of|is|in|at|for|album|sleeve|track|tracks|side|issue|pressing|printed|cover|label)\b/gi;
 const FR=/\b(le|la|les|des|du|et|avec|est|une|pour|dans|sur|par|enregistr|pochette)\b/gi;
 const looksEnglish=t=>((t.match(EN)||[]).length>=2)&&((t.match(EN)||[]).length>(t.match(FR)||[]).length*2);
 // avant traduction : on remplace le jargon anglais par le terme français consacré
 const PRE=[
+  // formats
+  [/\b(?:2 ?x ?LP|double LP|double album)s?\b/gi,"double LP"],[/\b3 ?x ?LP\b/gi,"triple LP"],[/\bLPs\b/g,"LP"],[/\bEPs\b/g,"EP"],
+  [/\b12(?:"|”|''| ?inch| ?in\.?)(?: maxi)?[- ]singles?\b/gi,"maxi 45 tours"],[/\b7(?:"|”|''| ?inch| ?in\.?)[- ]singles?\b/gi,"45 tours"],
+  [/\b(\d{1,2})(?:"|”|''| ?inch| ?in\.)(?= |$)/gi,"$1 pouces"],[/\bsingles?\b/gi,m=>/s$/i.test(m)?"singles":"single"],
+  [/\bpicture discs?\b/gi,"picture disc"],[/\b(?:colou?red|color) vinyl\b/gi,"vinyle de couleur"],[/\bclear vinyl\b/gi,"vinyle transparent"],
+  [/\bsplatter(?: vinyl)?\b/gi,"vinyle éclaboussé"],[/\bmarbled?(?: vinyl)?\b/gi,"vinyle marbré"],[/\bvinyls?\b/gi,"vinyle"],
+  // rondelles (étiquettes centrales du disque)
+  [/\b(?:centre|center) labels?\b/gi,"rondelle"],[/\blabel variations?\b/gi,"variante de rondelle"],
+  [/\bon (?:the |both )?labels\b/gi,"sur les rondelles"],[/\bon (?:the )?label\b/gi,"sur la rondelle"],
+  [/\b(red|blue|green|yellow|orange|black|white|grey|gray|silver|gold|pink|purple|brown|tan) labels?\b/gi,(m,c)=>"rondelle "+({red:"rouge",blue:"bleue",green:"verte",yellow:"jaune",orange:"orange",black:"noire",white:"blanche",grey:"grise",gray:"grise",silver:"argentée",gold:"dorée",pink:"rose",purple:"violette",brown:"marron",tan:"beige"})[c.toLowerCase()]],
+  // pressage et gravure
+  [/\bfirst pressings?\b/gi,"premier pressage"],[/\boriginal pressings?\b/gi,"pressage original"],[/\bpressing plants?\b/gi,"usine de pressage"],
+  [/\bpressed (?:by|at)\b/gi,m=>/at/i.test(m)?"pressé à":"pressé par"],[/\blead-?out grooves?\b/gi,"sillon de sortie"],[/\bgrooves?\b/gi,m=>/s$/i.test(m)?"sillons":"sillon"],
+  [/\bhand-?etched\b/gi,"gravé à la main"],[/\betchings?\b/gi,"gravure"],[/\betched\b/gi,"gravé"],[/\bstamped\b/gi,"frappé"],[/\bmachine-stamped\b/gi,"frappé à la machine"],
+  [/\bremastered\b/gi,"remasterisé"],[/\bmisprints?\b/gi,"erreur d'impression"],
+  // pochette et livret
+  [/\bbooklets?\b/gi,"livret"],[/\bdie-?cut(?: sleeves?| covers?)?\b/gi,"pochette découpée"],[/\blaminated\b/gi,"pelliculée"],
+  [/\bflip-?back(?: sleeves?| covers?)?\b/gi,"pochette à rabats"],[/\btrack ?list(?:ing)?\b/gi,"liste des morceaux"],
   [/\btest pressings?\b/gi,"pressage test"],[/\bwhite labels?\b/gi,"white label"],
   [/\b(?:front|outer) cover\b/gi,"recto de la pochette"],[/\b(?:back|rear) cover\b/gi,"verso de la pochette"],
   [/\binner sleeves?\b/gi,"pochette intérieure"],[/\bouter sleeves?\b/gi,"pochette extérieure"],[/\bpicture sleeves?\b/gi,"pochette illustrée"],
@@ -953,6 +971,9 @@ const PRE=[
 ];
 // après traduction : on corrige les traductions mot à mot
 const POST=[
+  [/\bcélibataires?\b/gi,m=>/s$/i.test(m)?"singles":"single"],[/(^|[^\p{L}])([lL]['’] ?)?[ée]tiquette(s?)(?!\p{L})/giu,(m,a,l,pl)=>a+(l?(l[0]==="L"?"La ":"la "):"")+(pl?"rondelles":"rondelle")],
+  [/\brainures?\b/gi,m=>/s$/i.test(m)?"sillons":"sillon"],[/\bvinyles? colorés?\b/gi,"vinyle de couleur"],[/\bdisque d'image\b/gi,"picture disc"],
+  [/\bpouces\b/gi,"pouces"],[/\bgravé à l'eau-forte\b/gi,"gravé"],[/\bestampillé\b/gi,"frappé"],[/\bplante(?:s)? de pressage\b/gi,"usine de pressage"],
   [/colonnes? vertébrales?/gi,"tranche"],[/(?:manches?|manchons?) intérieur(?:e|s|es)?/gi,"pochette intérieure"],
   [/\b(?:manchons?|manches?)\b/gi,m=>/s$/i.test(m)?"pochettes":"pochette"],[/\bvestes?\b/gi,m=>/s$/i.test(m)?"pochettes":"pochette"],
   [/\b(?:au )?dos de la couverture\b/gi,m=>(/^au/i.test(m)?"au ":"")+"verso de la pochette"],[/\bcouverture arrière\b/gi,"verso de la pochette"],
