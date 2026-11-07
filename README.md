@@ -10,6 +10,8 @@ Une discothèque de vinyles en Cover Flow 3D : les pochettes défilent, le vinyl
 
 ## En ligne sur Cloudflare
 
+Pour installer le site sur un autre compte Cloudflare, suivre [INSTALLATION.md](INSTALLATION.md).
+
 Le site tourne sur **Cloudflare Pages** :
 
 - `index.html` : la page

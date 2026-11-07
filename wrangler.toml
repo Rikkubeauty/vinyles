@@ -7,6 +7,7 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "vinyles"
+# Sur un autre compte Cloudflare : remplacer par l'identifiant de votre base D1 (voir INSTALLATION.md).
 database_id = "c6c5b8e4-554b-44b8-ae5d-0106579d21c3"
 
 [[r2_buckets]]
