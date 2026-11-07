@@ -13,7 +13,7 @@ export async function onRequestGet({ request, params }) {
 
   const call = () =>
     fetch(url, {
-      headers: { "User-Agent": "DiscothequeEduardo/1.0 ( https://vinyles.pages.dev )", Accept: "application/json" },
+      headers: { "User-Agent": "MaDiscotheque/1.0 ( https://github.com/hugoflying/vinyles )", Accept: "application/json" },
       cf: { cacheTtlByStatus: { "200-299": 86400, "300-599": 0 } },
     });
   let r = await call();

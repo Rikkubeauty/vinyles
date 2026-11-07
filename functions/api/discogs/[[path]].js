@@ -17,7 +17,7 @@ export async function onRequestGet({ request, env, params }) {
     fetch(url, {
       headers: {
         Authorization: "Discogs token=" + token,
-        "User-Agent": "DiscothequeEduardo/1.0 +https://vinyles.pages.dev",
+        "User-Agent": "MaDiscotheque/1.0 +https://github.com/hugoflying/vinyles",
         Accept: "application/vnd.discogs.v2.discogs+json",
       },
       // Seules les réponses réussies sont mises en cache : une erreur ne doit jamais rester collée.

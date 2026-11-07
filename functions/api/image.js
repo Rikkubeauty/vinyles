@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env }) {
   if (hit) return new Response(hit.body, { headers: { "content-type": hit.httpMetadata?.contentType || "image/jpeg", "cache-control": "public, max-age=31536000, immutable" } });
 
   try {
-    const r = await fetch(src.href, { headers: { "user-agent": "LaDiscothequeDEduardo/1.0 (+https://vinyles.pages.dev)", accept: "image/*" } });
+    const r = await fetch(src.href, { headers: { "user-agent": "MaDiscotheque/1.0 (+https://github.com/hugoflying/vinyles)", accept: "image/*" } });
     const type = (r.headers.get("content-type") || "").split(";")[0];
     if (!r.ok || !type.startsWith("image/")) throw new Error("source " + r.status);
     const body = await r.arrayBuffer();
