@@ -1,7 +1,11 @@
 # Installer la discothèque sur un nouveau compte Cloudflare
 
-Ce guide met le site en ligne sur **votre** compte GitHub et **votre** compte Cloudflare, avec une discothèque vide.
+Ce guide met le site en ligne sur **votre** compte GitHub et **votre** compte Cloudflare, avec une discothèque vide,
+puis donne à Hugo (et à son Claude) l'accès pour continuer les corrections.
 Compter une vingtaine de minutes. Tout se fait dans le navigateur, rien à installer.
+Il faut seulement un compte GitHub et un compte Cloudflare, gratuits tous les deux. Pas besoin de compte Claude.
+
+**Partie A** (étapes 1 à 7) : pour le propriétaire du nouveau compte. **Partie B** (étapes 8 et 9) : pour Hugo.
 
 ## 1. Copier le dépôt sur GitHub
 
@@ -51,3 +55,21 @@ Puis **Deployments → … → Retry deployment** pour que les secrets soient pr
 3. Ajouter un disque avec le bouton + : il doit rester après rechargement de la page.
 
 Si un message parle de la base ou du stockage, vérifier les noms exacts (`vinyles` et `vinyles-pochettes`) et le `database_id` de `wrangler.toml`.
+
+## 8. Donner l'accès à Hugo et à Claude
+
+1. Dans le dépôt sur GitHub : **Settings → Collaborators → Add people**, ajouter `hugoflying`.
+2. Ouvrir https://github.com/apps/claude/installations/new . La page « Sign in to GitHub to continue to Claude » est celle de GitHub :
+   se connecter avec **son propre compte GitHub**.
+3. Choisir son compte, cocher **Only select repositories**, sélectionner `vinyles`, puis **Install**.
+
+Cela permet seulement au Claude de Hugo de lire le dépôt et d'y envoyer des corrections. L'accès se retire à tout moment
+dans GitHub (Settings → Applications).
+
+## 9. Côté Hugo
+
+1. Accepter l'invitation de collaborateur reçue par mail (ou dans les notifications GitHub).
+2. Dans le projet Claude, **Réglages du projet → Ressources** : ajouter le dépôt `son-compte/vinyles`.
+   S'il n'apparaît pas, refaire la connexion sur https://claude.ai/connect-github puis réessayer.
+
+Ensuite, chaque correction fusionnée sur la branche `main` de ce dépôt est mise en ligne automatiquement par Cloudflare.
