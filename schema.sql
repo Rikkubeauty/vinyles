@@ -1,4 +1,4 @@
--- Déjà appliqué sur la base D1 « vinyles ». Gardé ici pour référence.
+-- Les tables sont créées automatiquement au premier appel (functions/api/_middleware.js). Gardé ici pour référence.
 CREATE TABLE IF NOT EXISTS disques (
   id TEXT PRIMARY KEY,
   statut TEXT NOT NULL DEFAULT 'collection',
