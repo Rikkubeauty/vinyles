@@ -7,10 +7,10 @@ Il faut seulement un compte GitHub et un compte Cloudflare, gratuits tous les de
 
 **Partie A** (étapes 1 à 7) : pour le propriétaire du nouveau compte. **Partie B** (étapes 8 et 9) : pour Hugo.
 
-## 1. Copier le dépôt sur GitHub
+## 1. Récupérer le dépôt sur GitHub
 
-1. Ouvrir https://github.com/hugoflying/vinyles et cliquer sur **Fork** (ou demander à Hugo de transférer le dépôt).
-2. Garder le nom `vinyles`.
+Hugo transfère son dépôt `hugoflying/vinyles` vers votre compte (Settings → Transfer ownership).
+Accepter le transfert depuis le mail reçu de GitHub. Le dépôt arrive avec tout son historique.
 
 ## 2. Créer la base de données (D1)
 
