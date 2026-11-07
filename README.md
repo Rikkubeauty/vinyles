@@ -1,4 +1,4 @@
-# La discothèque d’Eduardo
+# Ma discothèque
 
 Une discothèque de vinyles en Cover Flow 3D : les pochettes défilent, le vinyle sort de son carton au survol, et chaque disque s'ouvre sur sa fiche (date, lieu d'enregistrement, compositeurs, crédits, anecdotes, faces A/B).
 
