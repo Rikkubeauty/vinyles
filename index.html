@@ -386,6 +386,9 @@ dd{margin:0}
 .hint{font-size:14.5px;font-style:italic;color:var(--muted);margin:10px 0 0}
 .widget{margin-top:14px;border-radius:8px;overflow:hidden}
 .widget iframe{display:block;width:100%;height:160px;border:0}
+/* Spotify : hauteur exacte du lecteur compact, coins arrondis du lecteur, et pas de fond blanc en mode sombre */
+.widget.sp{border-radius:12px}
+.widget.sp iframe{height:152px;color-scheme:normal;background:transparent}
 .acts{align-items:center;gap:14px}
 .acts .grp{display:inline-flex;gap:8px;align-items:center}
 .acts .ico{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--field);color:var(--fg);transition:transform .15s,border-color .15s,color .15s}
@@ -1346,7 +1349,7 @@ function renderInfo(d){
     ${isWish(d)?giftBox(d):""}
     ${d.tracks.length?`<h3>Morceaux</h3><div class="sides">${sides.map(s=>{n=0;return `<div class="side"><h4>${sideName(s)}</h4><ol>${d.tracks.map((t,i)=>t.side===s?li(t,i):"").join("")}</ol></div>`}).join("")}</div>`:""}
     ${playable?`<div class="now" id="now"></div>`:""}
-    ${info?`<div class="widget" id="widget"><iframe title="Lecteur ${LNAME()}" loading="lazy" src="${widgetSrc(...dzMain(info),false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}
+    ${info?`<div class="widget${LECT==="spotify"?" sp":""}" id="widget"><iframe title="Lecteur ${LNAME()}" loading="lazy" src="${widgetSrc(...dzMain(info),false)}" allow="autoplay; encrypted-media; clipboard-write"></iframe></div>`:""}
     <details class="plus"${plusOpen?" open":""}><summary>Plus d'infos</summary>
     ${loading?`<p class="hint">Lecture de la fiche Discogs…</p>`:""}
     ${d.detailErr?`<p class="hint">Fiche Discogs indisponible : ${esc(d.detailErr)}</p>`:""}
